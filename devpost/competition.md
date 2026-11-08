@@ -1,21 +1,26 @@
-# Competition notes
+# Prior-Art & Competitor Matrix — BUILD ALIVE (2026-11-08)
 
-**No comparison with live entries is possible.** When this was written (2026-11-08) the hackathon's Devpost gallery was unpublished, and the Devpost pages returned HTTP 403 to automated fetches (see `research.md`). So this file makes no claim about what other teams built, whether anyone else has a similar idea, or how EarthProof ranks. It does not claim originality against any specific entry, and it does not claim a place.
+> **Honesty rule:** BUILD ALIVE does **not** claim to be the "world's first 3D code visualizer" or "world's first agent graph." Both 3D software cities and 2D coding-agent visualizers exist. Our specific contribution is an **integrated, desk-scale Snap SPECS Lens** built with CLAD + SIK + UIKit + LEAF that links **sanitized coding-agent lifecycle events → parser-known 3D module dependency bridges → real test failure evidence → interactive fault-prediction learning → human-approved allowlisted host actions**.
 
-## What can honestly be said about the entry itself
+## 1. Direct & Adjacent Prior-Art Comparison
 
-- **One spatial moment, done end to end.** A small rover at real size climbs a two-section ramp. The Small motor stalls on the steep section; the failure is explained in the world; one part swap fixes it; a proof card records why it works.
-- **The explanation is attached to the thing that failed.** The red beam runs from the stall point to the motor block on the rover, and the two numbers (needs, has) come from the same function that decided the outcome (`EarthProofSim.ts`), so the card cannot disagree with what happened.
-- **Why glasses, not a phone:** the test happens at table scale in the room, hands carry the parts, eyes stay on the rover. On a phone the same content is a chart in a second place you have to look. This is the design argument in `design-brief.md`; it has not been tested with people.
-- **Built through CLAD and the Lens Studio MCP, tested with LEAF and with node sweeps**, with the test numbers reported as they came out (`test-results.md`).
+| System / Product | Category & Platform | Source / Link | Where It Overlaps BUILD ALIVE | How BUILD ALIVE Differs (Verified Capabilities) | Where Comparator Is Stronger (Honest Limit) |
+|---|---|---|---|---|---|
+| **Agent Flow** | 2D VS Code Extension for Claude Code / Codex | https://marketplace.visualstudio.com/items?itemName=simon-p.agent-flow | Visualizes coding-agent tool calls, subagents, and session state as a live graph. | Runs in world-anchored 3D on Snap SPECS (`EarthProof.esproj`) with tactile SIK pinch isolation, 3D dependency bridges, before/after Rewind Crystal, and the Learning Atelier prediction game. | Lives directly inside VS Code on a high-resolution desktop monitor where developers already edit text. |
+| **Zoetrope** | Web-based Claude Code Trace Replay | https://www.claudemap.org/en/explore/zoetrope | Replays recorded coding-agent sessions with timeline scrubbing and tool inspection. | Maps trace events onto a spatial 3D architecture city with downstream impact propagation, interactive fault prediction (`F43`–`F46`), and an Approval Dock (`F38`–`F41`). | Web UI can display long multi-hundred-line diffs and full raw logs that would be illegible on additive AR optics. |
+| **CodeCity / 3D Software Cities** | Desktop / VR Software Architecture Visualization | https://www.sciencedirect.com/science/article/pii/S0950584922001732 | Represents software packages as districts and modules/classes as 3D buildings. | Connects the static city to **live and recorded AI coding-agent lifecycle events**, test failure fractures, and human-in-the-loop approval tokens at desk scale. | Desktop CodeCity tools parse thousands of classes from large enterprise repos; BUILD ALIVE caps visible nodes (`<= 18` pooled meshes) to fit SPECS FOV and frame budgets. |
+| **JetBrains "Code in Space" (XR Research)** | Conceptual / Prototype XR Software Engineering | https://blog.jetbrains.com/research/2026/07/ai-and-xr-future/ | Explores spatial code comprehension combined with AI coding assistance in XR. | Ships a working, LEAF-verified Snap SPECS Lens project with a concrete local Node.js redaction + WebSocket bridge and 1,500+ deterministic model checks. | JetBrains controls a full desktop IDE ecosystem and language server (IntelliJ Platform). |
+| **Past Spectacles Winners (Bubbles, ASYM, HandymanAI, Decisionator)** | Snap Spectacles Community Lenses | https://blog.lenslist.co/ | Share world-anchored desk/room placement, SIK pinch mechanics, and concise card feedback. | Focuses specifically on **AI coding-agent supervision, spatial dependency debugging, and interactive cause-and-effect code learning**. | Past winners were tested on physical Spectacles (2024) hardware; BUILD ALIVE is verified in Lens Studio Preview (`feel unproven` on physical glasses). |
+| **EarthProof Rover (`core-rover-v1` in this repo)** | Spatial Physics Trial on Snap SPECS | Local git tag `core-rover-v1` | Shares the deterministic state-machine architecture, UIKit `BackPlate`/`FlexLayout` cards, and SIK pinch discipline. | Expands from a single mechanical ramp simulation into a multi-project Spatial AI Engineering Observatory while preserving EarthProof Rover as **Project Island #3** and an instant fallback. | EarthProof Rover has a simpler 4-control mechanical loop for non-coders. |
 
-## What it does not have (so a reader is not misled)
+## 2. Why Not a Flat Chatbot or Terminal? (Must-Pass Criterion #1)
 
-- No hardware run. Real-glasses comfort, hand-tracking dropouts and true latency are **unproven**.
-- No recognition of a real table or a real robot kit; the course is virtual and labelled "Simulated in preview".
-- No voice, no network, no cloud AI, no live camera, no saved history across sessions.
-- One trial only (the ramp). It is a teaching model, not a motor datasheet.
+| Task | In a Terminal / Flat Chatbot | In BUILD ALIVE (Spatial SPECS Workbench) |
+|---|---|---|
+| **Seeing blast radius of an agent edit** | Scroll through `git diff` and grep imports across files manually. | Amber pulse travels physically from `Module_Lobby` across parser-known bridges to `Module_SharedState` and `Module_TestSuite` within 1 frame. |
+| **Understanding why a test broke** | Read stack trace text, switch tabs to source file, mentally map state flow. | Coral-red fracture beam links `Module_TestSuite` (`test-room-03`) to `Module_Lobby`; pinching opens the exact 4-line guard diff and before/after Rewind Crystal side-by-side in 3D space. |
+| **Active learning vs passive reading** | Read LLM prose explanation ("I fixed the bug"). | **Learning Atelier** pauses before reveal and asks you to physically pinch the downstream module you predict will fail, building verified mental models of the architecture. |
+| **Supervising multi-agent activity** | Interleaved stdout logs from parent and subagents. | **Execution Theater** separates `AgentVessel_Primary` and `AgentVessel_Sub01` in spatial lanes over the exact modules they touch. |
 
-## Where a judge might compare it
-
-The four Devpost criteria the entrant asked to be scored against are Design, Technical Implementation, Innovation and Presentation. Honest self-scores, with evidence and gaps, are in `review.md`. They are the author's own persona reviews, not an independent evaluation.
+## 3. Live Hackathon Gallery Status
+As documented in `devpost/SOURCE_INVENTORY.md`, the *Learn AR with SPECS* Devpost submission gallery is unpublished prior to the submission deadline (9 Nov 2026, 22:00 GMT). Therefore, no claims are made about other entrants' unsubmitted projects.

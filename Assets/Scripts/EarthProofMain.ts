@@ -6,6 +6,7 @@ import {Interactable} from "SpectaclesInteractionKit.lspkg/Components/Interactio
 import {InteractableManipulation} from "SpectaclesInteractionKit.lspkg/Components/Interaction/InteractableManipulation/InteractableManipulation"
 import {EarthProofControlsUI} from "./EarthProofControlsUI"
 import {EarthProofCardsUI} from "./EarthProofCardsUI"
+import {BuildAliveSceneUI} from "./BuildAliveSceneUI"
 import {Flow, FlowEvent, RunState} from "./EarthProofFlow"
 import {MOTORS, MotorId, snapsToMount} from "./EarthProofSim"
 import {BLOCK_SIZE_CM, SLOT_GEARED, SLOT_SMALL, roverWorld} from "./EarthProofLayout"
@@ -63,6 +64,8 @@ export class EarthProofMain extends BaseScriptComponent {
   readonly latencyLog: PressRecord[] = []
   /** What the last block release looked like (read by the LEAF drag scenario to calibrate a simulated hand). */
   lastDrop: {block: MotorId; movedCm: number; toSeatCm: number; tap: boolean} | null = null
+  /** BUILD ALIVE desk-scale spatial AI engineering workbench mounted alongside the preserved Rover fallback. */
+  readonly buildAlive = new BuildAliveSceneUI()
 
   private flow = new Flow()
   private wheelAngle = 0
@@ -86,10 +89,18 @@ export class EarthProofMain extends BaseScriptComponent {
       this.audio = this.rover.createComponent("Component.AudioComponent") as AudioComponent
       this.audio.audioTrack = this.chime
     }
+    this.buildAlive.init(this, this.blockSmall, this.stallMarker, () => this.handleReset())
 
     this.createEvent("OnStartEvent").bind(() => this.start())
-    this.createEvent("UpdateEvent").bind(() => this.onFlowEvent(this.flow.step(getDeltaTime())))
-    this.createEvent("LateUpdateEvent").bind(() => this.flushLatency())
+    this.createEvent("UpdateEvent").bind(() => {
+      const dt = getDeltaTime()
+      this.onFlowEvent(this.flow.step(dt))
+      this.buildAlive.tick(dt)
+    })
+    this.createEvent("LateUpdateEvent").bind(() => {
+      this.flushLatency()
+      this.buildAlive.flushLatency()
+    })
   }
 
   // ---- public API (UI events, LEAF scenarios) -------------------------------------------------
