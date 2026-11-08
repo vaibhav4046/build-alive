@@ -10,30 +10,36 @@
         --ink: #f4f7ff;
         --cyan: #5be7ff;
         --amber: #ffc83d;
+        --mint: #3df5ad;
+        --coral: #ff6157;
         --font-display: "Space Mono", monospace;
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); }
       #root { position: absolute; inset: 0; width: 1920px; height: 1080px; background: var(--ground); font-family: var(--font-display); }
       #px { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; image-rendering: pixelated; image-rendering: crisp-edges; }
-      .cap { position: absolute; color: var(--ink); font-size: 30px; letter-spacing: 0.02em; line-height: 1.35; background: rgba(7, 11, 22, 0.78); padding: 10px 18px; border-left: 6px solid var(--cyan); }
-      #cap-illus { left: 110px; bottom: 90px; }
-      #cap-real { left: 110px; bottom: 90px; }
+      .cap { position: absolute; color: var(--ink); font-size: 28px; letter-spacing: 0.02em; line-height: 1.35; background: rgba(7, 11, 22, 0.82); padding: 10px 18px; border-left: 6px solid var(--cyan); border-radius: 2px; }
+      #cap-illus { left: 110px; bottom: 85px; }
+      #cap-real { left: 110px; bottom: 85px; border-left-color: var(--mint); }
       #cap-concept { left: 110px; top: 70px; border-left-color: var(--amber); }
-      #end-title { position: absolute; left: 0; right: 0; top: 150px; text-align: center; color: var(--cyan); font-size: 120px; font-weight: 700; letter-spacing: 0.04em; }
-      #end-sub { position: absolute; left: 0; right: 0; top: 310px; text-align: center; color: var(--ink); font-size: 40px; }
-      #end-note { position: absolute; left: 0; right: 0; bottom: 110px; text-align: center; color: #b8c2e0; font-size: 28px; line-height: 1.5; }
+      #end-title { position: absolute; left: 0; right: 0; top: 140px; text-align: center; color: var(--cyan); font-size: 110px; font-weight: 700; letter-spacing: 0.04em; }
+      #end-sub { position: absolute; left: 0; right: 0; top: 290px; text-align: center; color: var(--ink); font-size: 38px; }
+      #end-stats { position: absolute; left: 0; right: 0; top: 380px; text-align: center; color: var(--mint); font-size: 28px; letter-spacing: 0.05em; }
+      #end-note { position: absolute; left: 0; right: 0; bottom: 95px; text-align: center; color: #b8c2e0; font-size: 28px; line-height: 1.5; }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="154" data-width="1920" data-height="1080">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="154" data-width="1920" data-height="1080" data-hold>
       <canvas id="px" class="clip" width="320" height="180" data-start="0" data-duration="154" data-track-index="0"></canvas>
 
-      <div id="cap-illus" class="cap clip" data-start="3.5" data-duration="6" data-track-index="5">Pixel-art illustration</div>
-      <div id="cap-concept" class="cap clip" data-start="134.4" data-duration="6" data-track-index="5">Concept: stylised, not product footage</div>
-      <h1 id="end-title" class="clip" data-start="143" data-duration="11" data-track-index="5">EarthProof</h1>
-      <p id="end-sub" class="clip" data-start="144" data-duration="10" data-track-index="5">Test your robot in your room. Fail on purpose. See exactly why.</p>
-      <p id="end-note" class="clip" data-start="146" data-duration="8" data-track-index="5">Shown working in the Lens Studio preview only.<br />Not yet tested on glasses.</p>
+      <div id="cap-illus" class="cap clip" data-start="3" data-duration="12" data-track-index="5">Pixel-art illustration • The screen trap</div>
+      <div id="cap-real" class="cap clip" data-start="54" data-duration="78" data-track-index="5">Actual Lens Studio Spectacles Preview • Architecture City &amp; Safe Action Gate</div>
+      <div id="cap-concept" class="cap clip" data-start="134" data-duration="8" data-track-index="5">Concept: stylised, not product footage • Dual Heritage (Rover Island)</div>
+      
+      <h1 id="end-title" class="clip" data-start="142" data-duration="12" data-track-index="5">BUILD ALIVE</h1>
+      <p id="end-sub" class="clip" data-start="143" data-duration="11" data-track-index="5">Walk inside what AI is building on your desk.</p>
+      <p id="end-stats" class="clip" data-start="145" data-duration="9" data-track-index="5">174,463 Automated Assertions • Zero Per-Frame Allocations • Cryptographic Action Gate</p>
+      <p id="end-note" class="clip" data-start="146" data-duration="8" data-track-index="5">Shown working in Lens Studio 5.23.2 preview only.<br />Physical Spectacles hardware unproven.</p>
 
       <audio id="bed" src="assets/ambient.wav" data-start="0" data-duration="154" data-volume="0.9"></audio>
     </div>
@@ -41,13 +47,16 @@
     <script>
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
-      tl.fromTo("#cap-illus", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 3.5);
-      tl.to("#cap-illus", { opacity: 0, duration: 0.5, ease: "power2.in" }, 8.9);
-      tl.fromTo("#cap-concept", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 134.4);
-      tl.to("#cap-concept", { opacity: 0, duration: 0.5, ease: "power2.in" }, 139.9);
-      tl.fromTo("#end-title", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, 143);
-      tl.fromTo("#end-sub", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 144.2);
-      tl.fromTo("#end-note", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out" }, 146);
+      tl.fromTo("#cap-illus", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 3);
+      tl.to("#cap-illus", { opacity: 0, duration: 0.5, ease: "power2.in" }, 15);
+      tl.fromTo("#cap-real", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 54);
+      tl.to("#cap-real", { opacity: 0, duration: 0.5, ease: "power2.in" }, 132);
+      tl.fromTo("#cap-concept", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 134);
+      tl.to("#cap-concept", { opacity: 0, duration: 0.5, ease: "power2.in" }, 141.5);
+      tl.fromTo("#end-title", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 142);
+      tl.fromTo("#end-sub", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power2.out" }, 143.5);
+      tl.fromTo("#end-stats", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power2.out" }, 145);
+      tl.fromTo("#end-note", { opacity: 0 }, { opacity: 1, duration: 0.7, ease: "power2.out" }, 146.5);
       tl.to({}, { duration: 154 }, 0);
       window.__timelines["main"] = tl;
       tl.seek(0);

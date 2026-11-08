@@ -1,0 +1,10 @@
+{
+  "name": "build-alive-demo-lobby-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone sanitized multiplayer lobby demo repository for BUILD ALIVE spatial engineering workbench",
+  "scripts": {
+    "test": "node tests/room-capacity.test.mjs"
+  }
+}

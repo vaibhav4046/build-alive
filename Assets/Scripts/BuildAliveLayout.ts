@@ -56,14 +56,17 @@ export const SEATED_GAZE_TARGET: Vec3Cm = {x: 0, y: -19, z: -66}
 export const MIN_TARGET_SIZE_CM = 5.0
 export const MIN_RAIL_SEPARATION_CM = 12.0
 
-// Front control rail (z = -48 cm, y = -24.5 cm): 5 buttons spaced exactly 12.0 cm apart (-24, -12, 0, +12, +24)
+// Front control rail, two staggered rows at z = -62 cm. The preview camera sees only about +-14 cm
+// sideways at this depth (36.6 deg vertical FOV, 0.875 aspect), so a single 5-button row 12 cm apart
+// (48 cm wide) cannot fit. Row 1 (y = -24.5): Step, Learn, Approve at x = -12, 0, +12.
+// Row 2 (y = -12.5): Inspect, Reset at x = -6, +6. Every pair is >= 12 cm apart in 3D (row to row 13.4 cm).
 export const RAIL_BUTTON_SIZE: BoxSizeCm = {w: 7.5, h: 5.0, d: 1.2}
 export const RAIL_CONTROLS: readonly ControlSpec[] = [
   {
     id: "step",
     sceneName: "BA_StepButton",
     label: "Step >",
-    center: {x: -24, y: -24.5, z: -48},
+    center: {x: -12, y: -24.5, z: -62},
     size: RAIL_BUTTON_SIZE,
     group: "rail",
   },
@@ -71,7 +74,7 @@ export const RAIL_CONTROLS: readonly ControlSpec[] = [
     id: "inspect",
     sceneName: "BA_InspectButton",
     label: "Inspect",
-    center: {x: -12, y: -24.5, z: -48},
+    center: {x: -6, y: -12.5, z: -62},
     size: RAIL_BUTTON_SIZE,
     group: "rail",
   },
@@ -79,7 +82,7 @@ export const RAIL_CONTROLS: readonly ControlSpec[] = [
     id: "learn",
     sceneName: "BA_LearnButton",
     label: "Learn ?",
-    center: {x: 0, y: -24.5, z: -48},
+    center: {x: 0, y: -24.5, z: -62},
     size: RAIL_BUTTON_SIZE,
     group: "rail",
   },
@@ -87,7 +90,7 @@ export const RAIL_CONTROLS: readonly ControlSpec[] = [
     id: "approve",
     sceneName: "BA_ApproveButton",
     label: "Approve",
-    center: {x: 12, y: -24.5, z: -48},
+    center: {x: 12, y: -24.5, z: -62},
     size: RAIL_BUTTON_SIZE,
     group: "rail",
   },
@@ -95,20 +98,20 @@ export const RAIL_CONTROLS: readonly ControlSpec[] = [
     id: "reset",
     sceneName: "BA_ResetButton",
     label: "Reset",
-    center: {x: 24, y: -24.5, z: -48},
+    center: {x: 6, y: -12.5, z: -62},
     size: RAIL_BUTTON_SIZE,
     group: "rail",
   },
 ]
 
-// Project Archipelago shelf (z = -58 cm, y = -24.5 cm): 3 islands spaced 12.0 cm apart (-24, -12, 0)
+// Project Archipelago shelf (z = -52 cm, y = -24.5 cm): 3 islands spaced 12.0 cm apart (-12, 0, +12)
 export const ISLAND_SIZE: BoxSizeCm = {w: 5.8, h: 2.4, d: 5.8}
 export const PROJECT_ISLANDS: readonly ControlSpec[] = [
   {
     id: "lobby-sync",
     sceneName: "Island_LobbySync",
     label: "LobbySync",
-    center: {x: -24, y: -24.5, z: -60},
+    center: {x: -12, y: -24.5, z: -52},
     size: ISLAND_SIZE,
     group: "island",
   },
@@ -116,7 +119,7 @@ export const PROJECT_ISLANDS: readonly ControlSpec[] = [
     id: "edge-guard",
     sceneName: "Island_EdgeGuard",
     label: "EdgeGuard",
-    center: {x: -12, y: -24.5, z: -60},
+    center: {x: 0, y: -24.5, z: -52},
     size: ISLAND_SIZE,
     group: "island",
   },
@@ -124,7 +127,7 @@ export const PROJECT_ISLANDS: readonly ControlSpec[] = [
     id: "earthproof-rover",
     sceneName: "Island_EarthProof",
     label: "EarthProof",
-    center: {x: 0, y: -24.5, z: -60},
+    center: {x: 12, y: -24.5, z: -52},
     size: ISLAND_SIZE,
     group: "island",
   },
@@ -238,9 +241,11 @@ export const AGENT_PRIMARY_HOME: Vec3Cm = {x: -4, y: -9.5, z: -70}
 export const AGENT_SUB_HOME: Vec3Cm = {x: 16, y: -9.5, z: -68}
 export const AGENT_VESSEL_SIZE: BoxSizeCm = {w: 3.6, h: 2.2, d: 3.6}
 
-// Right-side collapsible UIKit evidence/learning/approval card anchor
-export const BUILD_ALIVE_CARD_POS: Vec3Cm = {x: 15, y: -10, z: -66}
-export const BUILD_ALIVE_CARD_WIDTH_CM = 25
+// Evidence / learning / approval card: centred above the city so its whole footprint stays inside the preview FOV
+// (a 25 cm card at x = +15 was cut off by the camera). Height is the FlexLayout estimate for the six text rows.
+export const BUILD_ALIVE_CARD_POS: Vec3Cm = {x: 0, y: -4, z: -68}
+export const BUILD_ALIVE_CARD_WIDTH_CM = 22
+export const BUILD_ALIVE_CARD_HEIGHT_CM = 12.5
 
 // Provenance banner on desk front-left edge
 export const PROVENANCE_BANNER_POS: Vec3Cm = {x: -22, y: DESK_TOP_Y + 0.4, z: -51}
@@ -304,6 +309,8 @@ export function auditControlErgonomics(): {
   minWidthCm: number
   minRailSpacingCm: number
   minIslandSpacingCm: number
+  minCrossGroupGapCm: number
+  cardInView: boolean
   allInView: boolean
   details: string[]
 } {
@@ -311,7 +318,29 @@ export function auditControlErgonomics(): {
   let minWidthCm = Infinity
   let minRailSpacingCm = Infinity
   let minIslandSpacingCm = Infinity
+  let minCrossGroupGapCm = Infinity
   let allInView = true
+
+  // The evidence card must be fully visible: test its four corners, not just its centre.
+  const hw = BUILD_ALIVE_CARD_WIDTH_CM / 2
+  const hh = BUILD_ALIVE_CARD_HEIGHT_CM / 2
+  let cardInView = true
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    const corner = {x: BUILD_ALIVE_CARD_POS.x + sx * hw, y: BUILD_ALIVE_CARD_POS.y + sy * hh, z: BUILD_ALIVE_CARD_POS.z}
+    if (!angularOffsetFromGazeDeg(corner).inView) {
+      cardInView = false
+      details.push(`card_corner_out_of_view:(${corner.x},${corner.y})`)
+    }
+  }
+  if (!cardInView) allInView = false
+
+  // Rail buttons and islands are different groups: centres must not sit on top of each other.
+  for (const a of RAIL_CONTROLS) {
+    for (const b of PROJECT_ISLANDS) {
+      const d = dist3D(a.center, b.center)
+      if (d < minCrossGroupGapCm) minCrossGroupGapCm = d
+    }
+  }
 
   for (const c of [...RAIL_CONTROLS, ...PROJECT_ISLANDS, REWIND_CRYSTAL]) {
     const span = Math.max(c.size.w, c.size.d)
@@ -351,6 +380,7 @@ export function auditControlErgonomics(): {
     minWidthCm >= MIN_TARGET_SIZE_CM &&
     minRailSpacingCm >= MIN_RAIL_SEPARATION_CM - 0.01 &&
     minIslandSpacingCm >= MIN_RAIL_SEPARATION_CM - 0.01 &&
+    minCrossGroupGapCm >= 8 &&
     allInView
 
   return {
@@ -358,6 +388,8 @@ export function auditControlErgonomics(): {
     minWidthCm,
     minRailSpacingCm,
     minIslandSpacingCm,
+    minCrossGroupGapCm,
+    cardInView,
     allInView,
     details,
   }

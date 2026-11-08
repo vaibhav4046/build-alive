@@ -11,7 +11,7 @@
   // ---- timeline (seconds). index.html uses the same numbers for the video layers and audio. -----------------
   const T = window.FILM_T = {
     intro: [0, 3], A: [3, 20], B: [20, 37], C: [37, 54],
-    real: [54, 134], concept: [134, 141], end: [141, 154], total: 154,
+    real: [54, 134], concept: [134, 146], end: [146, 165], total: 165,
   }
   const VIG = 17 // vignette length
 

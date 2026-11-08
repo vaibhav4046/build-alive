@@ -1,0 +1,18 @@
+{
+  "suite": "BuildAliveCore+Layout",
+  "node": "v24.12.0",
+  "namedTestsPassed": 61,
+  "namedTestsFailed": 1,
+  "generatedCases": 2400,
+  "failures": [
+    "pin/search/sort/metadata: Expected values to be strictly equal:"
+  ],
+  "latency": {
+    "samples": 20000,
+    "unit": "microseconds",
+    "p50": 1.1,
+    "p95": 10.1,
+    "p99": 18.3,
+    "max": 8241.3
+  }
+}

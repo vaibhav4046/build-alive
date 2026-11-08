@@ -279,6 +279,8 @@ const SECRET_PATTERNS: readonly RegExp[] = [
   /Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi,
   /\b(?:sk|rk|pk)-[A-Za-z0-9_\-]{12,}\b/g,
   /\bgh[pousr]_[A-Za-z0-9]{16,}\b/g,
+  /\bgithub_pat_[A-Za-z0-9_]{20,}\b/g,
+  /\bxox[baprs]-[A-Za-z0-9_\-]{10,}\b/g,
   /\bAIza[0-9A-Za-z\-_]{20,}\b/g,
   /\bAKIA[0-9A-Z]{16}\b/g,
   /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
@@ -1061,7 +1063,9 @@ export function migratePersistedState(raw: unknown): PersistedStateV1 {
       ? r.lastProjectId
       : typeof r.project === "string" && DEMO_PROJECTS.some((p) => p.projectId === r.project)
         ? r.project
-        : base.lastProjectId
+        : typeof r.selectedProject === "string" && DEMO_PROJECTS.some((p) => p.projectId === r.selectedProject)
+          ? r.selectedProject
+          : base.lastProjectId
 
   const pinnedProjects = Array.isArray(r.pinnedProjects)
     ? r.pinnedProjects.filter((x): x is string => typeof x === "string")
@@ -1416,7 +1420,12 @@ export class BuildAliveEngine {
       this.droppedEvents++
       return {accepted: false, reason: res.error || "validation_failed"}
     }
-    const ev = res.event
+    // A payload cannot self-declare live provenance: only a transport that actually connected
+    // (handleReconnect(true)) may put the engine in LIVE state. Otherwise the claim is downgraded.
+    const ev: AgentEvent =
+      res.event.provenance === "LIVE_VERIFIED" && this.connectionState !== "LIVE"
+        ? {...res.event, provenance: "UNVERIFIED"}
+        : res.event
     if (this.seenEventIds.has(ev.eventId)) {
       return {accepted: false, reason: "duplicate_eventId", seq: ev.seq}
     }
@@ -1427,10 +1436,6 @@ export class BuildAliveEngine {
     if (this.eventBuffer.length > MAX_EVENTS) {
       const removed = this.eventBuffer.shift()
       if (removed) this.seenEventIds.delete(removed.eventId)
-    }
-    if (ev.provenance === "LIVE_VERIFIED") {
-      this.connectionState = "LIVE"
-      this.provenance = "LIVE_VERIFIED"
     }
     return {accepted: true, seq: ev.seq}
   }

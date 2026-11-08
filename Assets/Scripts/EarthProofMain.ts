@@ -162,6 +162,13 @@ export class EarthProofMain extends BaseScriptComponent {
     this.pending.length = 0
   }
 
+  setRoverActive(active: boolean): void {
+    if (this.rover) this.rover.enabled = active
+    if (this.tray) this.tray.enabled = active
+    if (this.mount) this.mount.enabled = active
+    if (this.mountLabel) this.mountLabel.enabled = active
+  }
+
   // ---- setup ------------------------------------------------------------------------------------
 
   private start(): void {

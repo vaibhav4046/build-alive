@@ -92,6 +92,7 @@ export class BuildAliveSceneUI {
   private pulseClock = 0
   private lastRequestId: string | null = null
   private lastNonce: string | null = null
+  private scratchScale: vec3 = new vec3(1, 1, 1)
 
   init(
     host: BaseScriptComponent,
@@ -230,9 +231,10 @@ export class BuildAliveSceneUI {
     const snap = this.engine.snapshot()
     if (!snap.reducedMotion && this.faultMarker && this.faultMarker.enabled) {
       const pulse = 1 + 0.08 * Math.sin(this.pulseClock * 5)
-      this.faultMarker.getTransform().setLocalScale(
-        new vec3(FAULT_MARKER_SIZE.w * pulse, FAULT_MARKER_SIZE.h, FAULT_MARKER_SIZE.d * pulse),
-      )
+      this.scratchScale.x = FAULT_MARKER_SIZE.w * pulse
+      this.scratchScale.y = FAULT_MARKER_SIZE.h
+      this.scratchScale.z = FAULT_MARKER_SIZE.d * pulse
+      this.faultMarker.getTransform().setLocalScale(this.scratchScale)
     }
   }
 
@@ -300,7 +302,14 @@ export class BuildAliveSceneUI {
       badgeObj.getTransform().setLocalPosition(new vec3(0, 0.85, 0))
       const badgeText = this.addText(badgeObj, "[PASS] " + m.label, 34, COLOR_WHITE)
 
-      this.makeInteractable(obj, () => this.handleInspect(m.moduleId, Date.now()))
+      this.makeInteractable(obj, () => {
+        const snap = this.engine.snapshot()
+        if (snap.sceneMode === "LEARN") {
+          this.handleLearn(m.moduleId, Date.now())
+        } else {
+          this.handleInspect(m.moduleId, Date.now())
+        }
+      })
       this.moduleVisuals[m.moduleId] = {
         moduleId: m.moduleId,
         root: obj,
@@ -509,7 +518,7 @@ export class BuildAliveSceneUI {
         : CITY_MODULES.find((m) => m.moduleId === "server-lobby")) ||
       CITY_MODULES[0]
     this.primaryVessel.getTransform().setLocalPosition(
-      new vec3(targetMod.center.x, targetMod.center.y + targetMod.size.h / 2 + 2.8, targetMod.center.z),
+      new vec3(targetMod.center.x, targetMod.center.y + targetMod.size.h / 2 + 2.0, targetMod.center.z),
     )
     this.subVessel.enabled = snap.glyph.lane === "subagent" || snap.cursorSeq >= 4
     this.faultMarker.enabled = hasFailures

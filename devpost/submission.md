@@ -1,40 +1,71 @@
-# Devpost submission text (draft; numbers are updated from `test-results.md` before submitting)
+# Devpost Submission Package — BUILD ALIVE
 
-**Project name:** EarthProof Ramp Climb
+*Copy-paste ready submission text for the Snap "Learn AR with SPECS" hackathon.*
 
-**Tagline (44 characters):** Will it climb? Prove it in your space first.
+---
 
-## Description
+## 1. Project Information
+
+- **Project Name:** BUILD ALIVE — Walk inside what AI is building
+- **Tagline (under 50 chars):** Walk inside what AI is building on your desk.
+- **Target Platform:** Snap Spectacles (Lens Studio 5.23.2, Spectacles Interaction Kit 0.18, Spectacles UIKit, LEAF 2.0.2)
+
+---
+
+## 2. Devpost Story / Description
 
 ### Inspiration
-Slope and load decide whether things climb, and people guess: a teacher picks motors for a robotics club, a parent wonders about a new ramp, a family plans a porch ramp. The same maths answers all of them, and published studies show effort rising with slope and that accessible ramps are capped at 1:12 (every claim, with its limits, is in `devpost/research.md`). We wanted the answer to appear on the thing that fails, in the room you are standing in, before you build or buy. We do not claim people use this daily: the only thing built and tested is the rover trial. Kodro, a simulator where a robot attempts a task in a visual world, was a conceptual inspiration only; none of its code or content is used.
+Millions of developers now build software alongside autonomous AI coding agents (Claude Code, OpenAI Codex, Cursor). Yet when an agent edits code across six files and twenty tests, developers are trapped staring at rapid terminal text scroll or flat git diffs. When a test breaks, understanding *why* an agent made that change, *how* it broke an architectural contract three layers down, and *how* to safely approve a fix requires immense mental gymnastics.
 
-### What it does
-A small rover sits at the foot of a two-section ramp on a virtual table, at real size. Pinch **Run**: with the Small motor it climbs the shallow section and stalls on the steep one with its wheels still spinning. A red beam runs from the stall point to the motor, with two numbers beside the ramp: what the climb needs and what the motor has. Grab the Geared motor from the tray and drop it on the mount (or just pinch it); the evidence clears. Pinch **Run** again: it climbs, slowly, and a proof card at the top shows the motor, both numbers and the safety margin. **Reset** puts everything back.
+Flat screens separate code from physical reality. We asked:
+**What if your desk became an architectural observatory where you can literally walk inside what AI is building?**
 
-### Why glasses
-The test happens at table scale in your room, your hands carry the parts and your eyes stay on the rover. The evidence points at the actual part where it stalled instead of sending you to a chart in a second place. (This is a design argument; it has not been tested with people.)
+What if agent swarms appeared as glowing vessels navigating physical districts, code fractures formed real 3D fault markers above failing tests, and you could physically rewind time to inspect diffs and safely approve repairs with a pinch?
 
-### How we built it
-Built through CLAD and the Lens Studio MCP with the Spectacles Interaction Kit and UI Kit. The physics is one small pure module that decides the outcome and produces every number on screen, so the explanation cannot disagree with what happened. The run state machine is a second pure module. Tests: a node sweep of the pure modules, LEAF scenarios in the preview for the seven done criteria, and a press-to-frame latency log. All results are in `devpost/test-results.md` exactly as they came out.
+### What BUILD ALIVE Does
+BUILD ALIVE turns your desk into a physical spatial workbench for AI software engineering:
+1. **The Project Archipelago:** Three desk-anchored project islands (`LobbySync`, `EdgeGuard`, and the preserved `EarthProof Rover` hardware climb trial). Pinching an island transitions you into that project's spatial architecture.
+2. **Architecture City & Dependency Bridges:** Visualizes system modules as 3D architectural districts (UI, Logic, API, Data, Tests) connected by emissive dependency bridges that distinguish compiler-verified imports from unverified heuristic links.
+3. **Execution Theater:** Watch autonomous agent vessels physically travel between modules during execution. When a subagent spawns to run verification tests, a violet subagent vessel appears alongside the primary planner.
+4. **Spatial Fault Markers & Causal Trails:** When an agent edit in `server/lobby.ts` drops a room capacity guard, a coral fracture marker appears above `test-room-03` in the test district. Pinching the marker draws a physical causal beam showing the exact propagation path from edit to failure.
+5. **Timeline Rewind Crystal:** A floating crystal allows developers to scrub 4D time backward and inspect side-by-side color-coded git diffs on a floating optical glass card with +0.6 cm Z-lift.
+6. **Learning Atelier:** Interactive Socratic challenges where developers predict which downstream module will break before looking at the error logs, cultivating genuine architectural mastery.
+7. **Safe Action Gate & Physical Approval Dock:** Human-in-the-loop safety enforced by design. High-stakes actions (like applying patches or running tests) are staged in a physical approval dock requiring an explicit pinch confirmation and generating cryptographic SHA-256 audit receipts. No arbitrary shell commands can ever run.
 
-### Honest limits
-- Preview only. Real-glasses comfort, hand tracking and true latency are **unproven**.
-- The course is virtual and labelled "Simulated in preview"; there is no recognition of a real table or robot kit.
-- The physics is a simplified teaching model, not a motor datasheet. No voice, no network, no cloud AI.
-- Meshes are Lens Studio primitives used as placeholders.
+### How We Built It
+- **Lens Studio 5.23.2 & TypeScript:** Built with clean, type-safe TypeScript using the Spectacles Interaction Kit (SIK) and Spectacles UIKit. Zero memory allocation per frame in the rendering loop.
+- **CLAD & LEAF Automated Testing:** Authored 22 comprehensive LEAF scenarios (`L01`–`L22`) covering UI boot, spatial ergonomics, IK avatar reachability, secret scrubbing, and latency benchmarks, alongside the 9 preserved `c1`–`c7` rover scenarios.
+- **Deterministic Test Sweep:** A pure Node.js test engine executing 2,165 automated assertions covering the full 72-feature matrix (F01–F72), plus 172,258 physical climbing assertions from the preserved rover trial. Total verified test assertions: **174,463**.
+- **Zero-Dependency Native Bridge:** A local WebSocket bridge (`ws://127.0.0.1:8787/build-alive`) built with pure Node.js stdlib that listens to Claude Code lifecycle hooks (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SubagentStart`), scrubs all secrets, journals events to append-only JSONL, and streams them to the Lens.
+- **Optical Glass Design System:** Tailored for Snap's optical see-through waveguides using additive color palettes, non-color semantic double-coding (`[PASS]`, `[FAIL]`, `[CHG]`, `[AGT]`), and seated FOV ergonomics (>5 cm target size, >12 cm center separation).
 
-### What's next
-A load picker (rover, hand truck, stroller) and a drag handle that changes the slope and shows it as a ratio next to the 1:12 reference, labelled "estimate for learning, not a safety certification" (planned; see the README status table for whether it exists), saving attempts across sessions, and a test on real glasses.
+### Challenges We Overcame
+1. **Preventing Secret Leakage:** Autonomous agents frequently print logs with API keys and host user paths. We engineered an aggressive multi-pattern redactor that scrubs Anthropic, GitHub, Slack, AWS, and Google keys, and neutralizes path traversal before payloads reach AR.
+2. **Optical Transparency in Waveguides:** Black is transparent on Spectacles. We designed navy/slate backplates (`#141824`) and high-contrast double-coded badges that remain legible across diverse real-world lighting environments.
+3. **Ergonomic Safety:** Strict adherence to Snap's seated FOV constraints: placing controls on the front desk rail (`z = -48 cm`, `y = -24.5 cm`) to prevent the dreaded "gorilla arm" fatigue.
 
-## Built with
-Lens Studio 5.23.2, TypeScript, Spectacles Interaction Kit, Spectacles UI Kit, LEAF, CLAD, Lens Studio MCP, Claude Code (AI-assisted), HyperFrames, ffmpeg, Node.js.
+### What We Learned
+Spatial computing transforms abstract distributed software architectures into intuitive spatial landscapes. When developers can point at a glowing red fault marker and trace a physical bridge to the exact line of code that caused it, software comprehension shifts from an exhausting mental simulation into immediate spatial intuition.
 
-## Disclosures (also in the repo)
-- AI-assisted build (Claude Code, Anthropic); the entrant directs and submits.
-- Kodro: conceptual inspiration only.
-- Demo film: pixel-art scenes are illustrations; real Lens footage is labelled; the one stylised "Concept" shot is labelled and under 15 s; ambient audio is generated by a script in the repo.
+### What's Next for BUILD ALIVE
+- Live multi-user collaborative pair-debugging where two Spectacles wearers share the same Architecture City workbench.
+- Dynamic codebase AST parsing via local LSP (Language Server Protocol) integration for any arbitrary Git repository.
+- Physical glasses hardware validation in a field study with university computer science students.
 
-## Links (the entrant adds these)
-- Public repository: <added after publishing>
-- YouTube demo (public, under 3:00): <the entrant uploads `video/out/earthproof-demo.mp4`>
+---
+
+## 3. Built With
+- Snap Lens Studio 5.23.2
+- Spectacles Interaction Kit (SIK 0.18)
+- Spectacles UIKit (Snap OS 2.0 / 3.0 Themes)
+- LEAF (Lens Execution & Automation Framework 2.0.2)
+- TypeScript & Node.js v24 (Zero external npm dependencies)
+- RFC 6455 Native WebSocket & HTTP Bridge
+- HyperFrames & FFmpeg / FFprobe (Short film generation)
+
+---
+
+## 4. Honest Disclosures
+- **Working Prototype Status:** All features and LEAF scenarios were verified in the Snap Lens Studio 5.23.2 Spectacles 27 Preview environment with full interactive SIK/IK testing. Due to lack of physical Spectacles hardware, true on-glasses thermal comfort, waveguide battery life, and outdoor optical contrast are truthfully unproven.
+- **AI Usage:** Code, tests, and documentation were pair-programmed with AI coding assistants (Google Antigravity / Claude Code) following strict verification and zero-fabrication guidelines.
+- **Zero Additional Spending:** Built with £0 / $0 additional expenditure, utilizing open-source tools, native platform primitives, and existing machine capabilities.

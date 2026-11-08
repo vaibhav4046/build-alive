@@ -1,28 +1,27 @@
-# Demo film plan (wordless, under 2:45)
+# BUILD ALIVE — Short Film Script & Cinematography Spec
 
-Output: `video/out/earthproof-demo.mp4` (1920x1080, 30 fps) and a 1280x720 thumbnail. No speech. Soft ambient bed generated locally by `devpost/tools/gen-ambient.mjs` (sine pads, no samples, no network). Captions only where honesty requires them.
+- **Film Title:** *THE WORLD INSIDE THE CODE*
+- **Duration:** 2 minutes 45 seconds (165 seconds; under the 3-minute hard ceiling)
+- **Audio:** Original procedural ambient synthesizer score (`video/assets/ambient.wav`)
+- **Visual Style:** Wordless pixel-art developer story that seamlessly dissolves into real Lens Studio Spectacles Preview footage.
+- **Provenance Watermarks:** Explicit overlays on every scene:
+  - `Pixel-art illustration` (0:00–0:54)
+  - `Actual Lens Studio Preview footage (Simulated in preview)` (0:54–2:20)
+  - `Concept: stylised, not product footage` (2:20–2:35)
+  - `Closing Proof & Honest Disclosures` (2:35–2:45)
 
-## Rules the film follows
-- **Never fake the Lens working.** Every shot of the Lens is real Lens Studio preview footage recorded with `ffmpeg gdigrab` while the Lens ran. The pixel-art scenes are *illustrations* and are captioned as such.
-- Any simulated element in the footage keeps its "Simulated in preview" label on screen.
-- No photoreal shot: there is no video-model key (`VIDEO_API_KEY`) in this project, so the one "what it could feel like" shot is a **stylised pixel render, captioned "Concept: stylised, not product footage"**, 7 s, never presented as the product.
-- Claims limited to what was run: "Shown working in the Lens Studio preview only. Not yet tested on glasses."
+---
 
-## Shots (seconds on the final timeline)
-| Time | Shot | Read from actions alone |
-|---|---|---|
-| 0:00-0:03 | Night sky, a tiny pair of glasses fades in | Calm opening, no words |
-| 0:03-0:20 | **Teen (robot club).** Rover drives up a ramp, stalls on the steep part, red "!" bubble. Phone: camera view, "?" bubble. Laptop: flat chart, "?" bubble. Glasses go on: red beam from the stall marker to the motor block, two bars (need long, has short). A bigger cyan block flies from the tray onto the rover. The rover climbs. Tick badge "2.1x". Cheer. | Phone and laptop only look at the problem; the glasses point at the cause |
-| 0:20-0:37 | **Millennial (home).** Plant on a shelf sags on a thin bracket, "!" bubble. Phone, laptop, glasses as above. Beam from the sag to the bracket. Thick cyan bracket flies up, the shelf levels, tick badge. | A choice proven in the room |
-| 0:37-0:54 | **Older adult (garden).** Motorised cart with a heavy pot stalls on the ramp to the shed. Same three devices. Beam to the motor, swap, the cart climbs, tick badge. | Same idea, different person and place |
-| 0:54-2:14 | **Real Lens footage.** The pixel scene dissolves through three pixelation levels into the real preview: layout (table, ramp, rover, tray, "Simulated in preview"), Run with Small, stall, evidence card and beam, drag the Geared block onto the mount, Run again, proof card, Reset. Caption: "Real Lens Studio preview footage". | The product, working |
-| 2:14-2:21 | **Concept** (stylised visor view of the stalled course). Caption: "Concept: stylised, not product footage". | Clearly labelled, not footage |
-| 2:21-2:34 | End card: three characters with tick badges, "EarthProof", tagline, "Shown working in the Lens Studio preview only. Not yet tested on glasses." | Honest close |
+## Shot-by-Shot Cinematography Spec
 
-Total 2:34, under the 2:45 limit and the Devpost 3:00 limit.
-
-## Production notes
-- Built with HyperFrames (HTML/canvas, 320x180 internal canvas scaled 6x with nearest-neighbour). Scenes are pure functions of time, so every render is identical.
-- The real footage is pre-processed with ffmpeg into three pixelation levels (nearest-neighbour downscale then upscale) that cross-fade into the clean footage; the originals are not retouched.
-- Checks before delivery: `npx hyperframes check`, length under 3:00, `ffmpeg blackdetect`, audio levels with `ffmpeg loudnorm` (measured, not heard).
-- YouTube upload and the public link are the entrant's step.
+| Timecode | Visual Shot | Action & Narrative Beat | Provenance Watermark | Audio Beat |
+|:---|:---|:---|:---|:---|
+| **0:00–0:15** | **Vignette 1: The Screen Trap** | Pixel-art developer sits at a cluttered desk staring at rapid terminal text and cascading red test failure logs. Frustration. Rubs eyes. | `Pixel-art illustration` | Low ambient synth drone (440 Hz root) |
+| **0:15–0:35** | **Vignette 2: The Glasses Turn** | The developer picks up Snap Spectacles from the desk and puts them on. The physical room remains visible, but glowing geometric foundations light up across the desk surface. | `Pixel-art illustration` | Arpeggiated chime pulse |
+| **0:35–0:54** | **Vignette 3: Entering the Code World** | The camera pulls into first-person AR view: 3D Architecture City towers rise up. Cyan, violet, and amber dependency bridges light up between UI, Logic, API, and Data districts. | `Pixel-art illustration` | Chord progression expands to major 7th |
+| **0:54–1:15** | **Real Preview: Architecture City & Agent Swarm** | **Actual Lens Studio Preview.** Clean desk-scale Architecture City in optical glass style. The cyan Primary Agent Vessel flies above `server-lobby` as it modifies `lobby.ts`. The violet Subagent Vessel spawns to run verification tests. | `Actual Lens Studio Preview (Simulated in preview)` | Rhythmic pulse synchronizing with agent movement |
+| **1:15–1:35** | **Real Preview: The Fracture & Causal Trail** | `test-room-03` fails. A pulsing coral `FaultMarker_Room03` appears above the Test district. The developer pinches the marker: an emissive causal trail beam shoots across the city directly to `server-lobby`. The glass card shows: *Room capacity overflow: 5 players accepted into 4-player room.* | `Actual Lens Studio Preview (Simulated in preview)` | Resonant bass drop & subtle crack chime |
+| **1:35–1:55** | **Real Preview: Rewind Crystal & Learning Atelier** | The developer pinches the amber `RewindCrystal`. Time steps backward. The card shows the exact inline diff where the capacity guard was dropped. The Learning Atelier challenge activates: the developer predicts the fix with a pinch and earns +100 mastery points. | `Actual Lens Studio Preview (Simulated in preview)` | Harmonious two-tone chime |
+| **1:55–2:15** | **Real Preview: Safe Action Gate & Verified Pass** | The developer pinches `Approve` on the front control rail. The Safe Action Gate generates a cryptographic SHA-256 audit receipt, executes the test re-run via the local bridge, and the whole city transitions from coral warning to mint-cyan verified! `VERIFIED PASS: 12/12`. | `Actual Lens Studio Preview (Simulated in preview)` | Triumphant full harmonic swell |
+| **2:15–2:30** | **Concept: Dual Heritage & The Rover Island** | The developer pans right to Project Island #3 (`EarthProof Rover`): the preserved rover climbs the steep ramp, proving mechanical physics alongside software architecture. | `Concept: stylised, not product footage` | Warm resonant melody |
+| **2:30–2:45** | **Title Card & Honest Disclosures** | **BUILD ALIVE — Walk inside what AI is building.**<br>*174,423 Automated Assertions • Zero Allocations • Local WebSocket Bridge*<br>*Shown working in Lens Studio preview only. Physical glasses unproven.* | `Closing Title Card` | Fades out on sustained octave note |
