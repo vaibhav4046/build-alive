@@ -14,6 +14,13 @@ You stand at a table with a small rover at the foot of a ramp, at real size. You
 - Uses: draws in the world (the whole test happens at real size on your table), leaves your body free (hands carry the parts, eyes stay on the rover).
 - Why it's better than the phone or laptop version: the evidence points at the actual part on the actual rover in the actual place where it stalled. On a screen it is a chart; here it is a pointing finger in the world. You never look away from the thing that failed.
 
+## Why people would use it (framing, added 2026-11-08 after research)
+Slope and load decide whether things climb, and people guess. A teacher picks motors for a robotics club. A parent wonders if a stroller will manage the new ramp. A family plans a porch ramp for a grandparent. All of them ask the same question: will it climb, and if not, why? EarthProof answers it in your own space at real size, before you build or buy, and shows the reason pointing at the part that fails.
+- Core (must ship, criteria 1-7): the rover Ramp Climb trial.
+- Phase 2 (only if the core is green and tested): a load picker that reuses the same pure function with different numbers: Rover (motor), Hand truck or cart (person pushes), Stroller (parent pushes). A drag handle on the ramp top changes the slope, and the card shows the slope as a ratio with the 1:12 reference. Teaching-only wording: "estimate for learning, not a safety certification".
+- Honest limits: no cross-session history (cannot be shown in the preview), no claim that it replaces engineering or accessibility code review.
+- Sources are in devpost/research.md.
+
 ## Product or overlay
 - Type: product. The virtual rover, ramp and motors are the experience.
 - What the real version would sense: your real table and your real robot kit.

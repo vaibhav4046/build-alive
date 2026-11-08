@@ -21,6 +21,25 @@ How the model uses them: wheel torque needed on a slope = m x g x (sin a + Crr x
 
 The on-screen cards say "simplified teaching model, not a datasheet". It is not a motor datasheet and makes no claim about any real product.
 
+## The everyday problem (why the same maths matters outside a robotics club)
+
+| Claim | Source |
+|---|---|
+| Steeper ramps raise the effort to push or propel a wheelchair, for users and caregivers. A 2018 bus-ramp study reported peak pushrim force rising from 107 N at 3.5 degrees to 230 N at 15 degrees. Small samples, lab settings. | https://informahealthcare.com/doi/full/10.1080/17483107.2018.1465602 |
+| A Korean study of healthy adults found pulse rate and push time rose as slope went from 1:12 to 1:6. Samples of 7 to 30, mostly healthy adults. | https://pmc.ncbi.nlm.nih.gov/articles/PMC4305601 |
+| The 2010 ADA Standards cap an accessible ramp's running slope at 1:12 (8.33%), with limited exceptions for existing facilities. Third-party copies were read; verify against the official text. | https://www.access-board.gov/ada/guides/chapter-4-ramps-and-curb-ramps/ |
+
+Our model's numbers are not those studies' numbers: it is a simplified teaching model, and the pushrim figures above include dynamic effects ours does not. We use these sources only for the direction (effort rises steeply with slope) and the 1:12 reference. Phase 2 wording on screen: "estimate for learning, not a safety certification".
+
+## What exists already (so we claim no novelty we lack)
+
+| Claim | Source |
+|---|---|
+| PianoVision (Meta Quest) and Simply Piano (Apple Vision Pro) already overlay guidance on real pianos in headsets, so a piano-coach Lens would not be new. | https://www.uploadvr.com/pianovision-app-lab-release/ , https://apps.apple.com/us/app/6503691129 |
+| A survey of AR and VR piano systems reports key-highlight guidance was hard for learners who must anticipate notes. | https://www.frontiersin.org/articles/10.3389/frvir.2023.1207397/pdf |
+| Reported past Spectacles community winners include skill-teaching Lenses (an EpiPen training Lens, a barcode nutrition app). Search summaries; verify before quoting. | https://developers.snap.com/spectacles/spectacles-community/hackathon-showcase , https://voicesofvr.com/1675-2nd-place-spectacles-lensathon-team-cartdb-barcode-scanning-nutrition-app |
+| Evidence that sports overlays on glasses improve outcomes is mostly vendor marketing; one December 2025 preprint (not peer-reviewed) supports usability value across training, sport, accessibility and consumer domains. | https://www.preprints.org/manuscript/202512.2306/v1 |
+
 ## Platform facts
 
 | Claim | Source |
@@ -37,6 +56,7 @@ Why the field of view matters here: it is why the whole course is laid out side-
 Kodro, as described on its Product Hunt listing, is a free, offline-first place to design a robot, write Python and watch it attempt a task in a visual world, with guided lessons, from a University of Liverpool MSc project: https://www.producthunt.com/products/kodro . EarthProof takes only the broad idea that a failed attempt in a simulated world teaches more than a diagram. It copies none of its code, assets, lessons or design, and I found no official Kodro site, so the listing above is the only source I read.
 
 ## What I could not verify
-- The Devpost pages for the hackathon (learn-specs.devpost.com and /resources) returned HTTP 403 to automated fetches on 2026-11-08, so the judging criteria used in `review.md` (Design, Technical Implementation, Innovation, Presentation) are taken from the entrant's own brief, not from a page I read.
+- The Devpost pages returned HTTP 403 to plain fetches on 2026-11-08, but the overview, Resources and Project gallery pages were read in a browser pane the same day. The four judging criteria (Design, Technical Implementation, Innovation/Idea, Presentation) are as printed on https://learn-specs.devpost.com/ . The project gallery was unpublished that day, so there is no comparison with live entries. The concept video (https://youtu.be/S6w4aRVGQxs) was not watched or transcribed; its design rules are mirrored in the plan-lens skill references.
+- No list of CLAD-built winning Lenses was found.
 - No claim is made about other entries (see `competition.md`).
 - No real-glasses behaviour (comfort, hand tracking, true latency) is claimed anywhere.

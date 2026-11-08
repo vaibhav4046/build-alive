@@ -2,6 +2,14 @@
 
 Start a Claude session with its working folder set to `D:\earthproof\lens\EarthProof` (desktop app: New, pick the folder). Lens Studio must be open on EarthProof and responding. Then say: "Read devpost/FINAL_BRIEF.md and do it."
 
+## UPDATE 2026-11-08 (from the user, after research; wins over anything below it)
+The user asked whether people would really use this daily. Honest answer: the rover alone is a niche demo, so the pitch is reframed in devpost/design-brief.md under "Why people would use it": "Will it climb? Prove it in your space before you build or buy." Slope and load decide whether a robot, a stroller, a hand truck or a porch ramp works, and people guess. Sources are in devpost/research.md (do not add claims without a link).
+- Priority is unchanged: criteria 1 to 7 (the rover Ramp Climb core) must be built, tested and green first. Do not start anything else until they are.
+- Phase 2, only after the core is green and committed: a load picker reusing the same pure function (Rover/motor, Hand truck or cart, Stroller; person-push cases use a push-effort number labelled as an assumption), a drag handle on the ramp top that changes the slope, the slope shown as a ratio next to the 1:12 reference, wording "estimate for learning, not a safety certification". Add LEAF and node scenarios for it. If it threatens the deadline, cut it and say so.
+- FILM: keep it wordless, calm, pixel art, three generations, phone/laptop/glasses. Frame the three vignettes as one story: each person has a real slope-and-load question (teen: robot for the club; millennial: stroller or hand truck on a new ramp; older adult: planning a porch ramp for the family), checks it first on phone or laptop and still guesses, then puts on the glasses and sees it proven in the room. Then cut to real preview footage. The 'photoreal' shot stays optional and labelled 'Concept' (no video-model key, so a stylised render only).
+- Do not overwrite files another session has written: read before write; research.md and competition.md already exist and were extended, not replaced.
+- Be honest in every doc: no claim of daily use that data does not show, no claim of winning, no real-glasses claims.
+
 Work linearly yourself (no sub-agents). Do not stop until the work below is done, or you hit a login, a payment, or something that would delete files. Read in order: devpost/HANDOVER.md (world layout in cm, node names, state machine, latency method, LEAF plan), devpost/design-brief.md (approved scope, wins over everything), devpost/PROGRESS.md, devpost/MASTER_BRIEF.md (rules). The pure sim module `Assets/Scripts/EarthProofSim.ts` and `devpost/tests/sim.check.mjs` already exist and pass.
 
 ## STEP 0 (gate)
