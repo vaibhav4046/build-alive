@@ -1,6 +1,6 @@
-# EarthProof Ramp Climb: progress
+﻿# EarthProof Ramp Climb: progress
 
-**Next action:** confirm the `lens-studio` MCP tools load (ToolSearch "lens-studio" must return `mcp__lens-studio__*`), then build the scene (phase 3). Lens Studio 17708 is responsive and owns port 50040. Root cause of the latest miss: the retry session started with cwd `D:\`, so the project-scoped `.mcp.json` in this folder was never read (the server was not even listed as failed). The session was moved to this folder with the directory tool; the new cwd takes effect on the next turn. A session must start with cwd = `D:\earthproof\lens\EarthProof`.
+**Next action (2026-11-08 01:30):** the user must click Allow on the small modal **Loading LEAF Plugin** window in the EarthProof Lens Studio (it asks for filesystem, asset_library, push_to_device access and freezes all scene edits and compiles until answered). Then: `RecompileTypeScriptTool`; delete the AiPreviewAgent demo objects (Guide, ExampleCarousel, AgentInspectDemo, AgentInteractDemo); add the scripts to the scene and wire inputs (two-phase VirtualScene); preview screenshot and logs; flow walk-through; LEAF scenarios c1 to c7 and the 200-press latency loop; judge passes; record preview footage; render the film. See `build-log.md`.
 
 Scope: `design-brief.md` wins (no voice, no network, no cross-session memory, no Circuit Coach). Repo and honesty rules: `MASTER_BRIEF.md`.
 
@@ -26,3 +26,4 @@ Scope: `design-brief.md` wins (no voice, no network, no cross-session memory, no
 | 7 | 200 presses, p50/p95/p99 latency | no | no | not run |
 
 Simulation numbers (node check, real output): needs 7.9 N.cm on the steep section, Small has 4.0, Geared has 17.0, margin 2.1x, flat speeds 47.1 and 9.4 cm/s.
+
