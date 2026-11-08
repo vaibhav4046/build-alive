@@ -28,8 +28,13 @@ export const RUN_BUTTON = {x: -10, y: -26, z: -49}
 export const RESET_BUTTON = {x: 10, y: -26, z: -49}
 export const BUTTON_SIZE = {w: 8, h: 5}
 
-export const EVIDENCE_CARD = {x: 16, y: -6, z: -82}
-export const PROOF_CARD = {x: 24, y: -3, z: -82}
+// Cards stand in front of the ramp, below eye level (y < 0) and clear of the rover; centres in cm.
+// *_H are the approximate laid-out heights from EarthProofCardsUI (row heights + gaps + padding), used by the checks.
+export const EVIDENCE_CARD = {x: 14, y: -7.5, z: -82}
+export const PROOF_CARD = {x: 4, y: -8.5, z: -82}
+export const EVIDENCE_CARD_H = 12.7
+export const PROOF_CARD_H = 15.9
+export const CARD_W = 18
 export const STALL_MARKER_Z = RAMP_FRONT_Z + 1
 
 export interface WorldPose {

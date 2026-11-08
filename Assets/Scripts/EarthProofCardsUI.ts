@@ -7,7 +7,7 @@ import {FlexLayout} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex
 import {FlexItem} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexItem"
 import {FlexAlign, FlexDirection, FlexJustify} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexTypes"
 import {ClimbResult, MOTORS, fmtMargin, fmtNcm} from "./EarthProofSim"
-import {EVIDENCE_CARD, PROOF_CARD} from "./EarthProofLayout"
+import {CARD_W, EVIDENCE_CARD, PROOF_CARD} from "./EarthProofLayout"
 
 const CYAN = new vec4(0.45, 0.95, 1, 1)
 const WHITE = new vec4(1, 1, 1, 1)
@@ -15,9 +15,9 @@ const AMBER = new vec4(1, 0.78, 0.2, 1)
 const RED = new vec4(1, 0.42, 0.36, 1) // red is reserved for evidence
 const DIM = new vec4(1, 1, 1, 0.7)
 
-const CARD_WIDTH_CM = 18
-const PAD_CM = 1.4
-const ROW_GAP_CM = 0.5
+const CARD_WIDTH_CM = CARD_W
+const PAD_CM = 1.0
+const ROW_GAP_CM = 0.3
 const CONTENT_Z_CM = 0.6
 const INIT_SETTLE_S = 0.8 // cards stay alive (scale 0) this long so UIKit lays them out, then they hide
 
@@ -39,19 +39,19 @@ export class EarthProofCardsUI extends BaseScriptComponent {
 
   onAwake() {
     this.evidence = this.buildCard("EvidenceCard", EVIDENCE_CARD, [
-      {text: "STALLED", size: TITLE, color: RED, h: 2.6},
-      {text: "needs ? N.cm", size: BODY, color: WHITE, h: 2.2},
-      {text: "has ? N.cm", size: BODY, color: WHITE, h: 2.2},
-      {text: "short by ? N.cm", size: BODY, color: AMBER, h: 2.2},
-      {text: "steep section, simplified teaching model", size: CAPTION, color: DIM, h: 2.4, wrap: true},
+      {text: "STALLED", size: TITLE, color: RED, h: 2.2},
+      {text: "needs ? N.cm", size: BODY, color: WHITE, h: 1.7},
+      {text: "has ? N.cm", size: BODY, color: WHITE, h: 1.7},
+      {text: "short by ? N.cm", size: BODY, color: AMBER, h: 1.7},
+      {text: "steep section, simplified teaching model", size: CAPTION, color: DIM, h: 2.2, wrap: true},
     ])
     this.proof = this.buildCard("ProofCard", PROOF_CARD, [
-      {text: "EARTHPROOF", size: TITLE, color: CYAN, h: 2.6},
-      {text: "Motor: ?", size: BODY, color: WHITE, h: 2.2},
-      {text: "needs ? N.cm", size: BODY, color: WHITE, h: 2.2},
-      {text: "has ? N.cm", size: BODY, color: WHITE, h: 2.2},
-      {text: "margin ?", size: TITLE, color: CYAN, h: 2.6},
-      {text: "? cm/s on the flat. Simplified teaching model, not a datasheet.", size: CAPTION, color: DIM, h: 3.2, wrap: true},
+      {text: "EARTHPROOF", size: TITLE, color: CYAN, h: 2.2},
+      {text: "Motor: ?", size: BODY, color: WHITE, h: 1.7},
+      {text: "needs ? N.cm", size: BODY, color: WHITE, h: 1.7},
+      {text: "has ? N.cm", size: BODY, color: WHITE, h: 1.7},
+      {text: "margin ?", size: TITLE, color: CYAN, h: 2.2},
+      {text: "? cm/s on the flat. Simplified teaching model, not a datasheet.", size: CAPTION, color: DIM, h: 2.6, wrap: true},
     ])
   }
 

@@ -48,8 +48,16 @@ ok(L.ROVER_BODY.w === 18 && L.ROVER_BODY.d === 12 && L.ROVER_BODY.h === 8, "rove
 const stallX = L.RAMP_BASE_X + surfaceXCm(RAMP[0].lengthCm)
 ok(Math.abs(L.EVIDENCE_CARD.x - stallX) > 5 && Math.abs(L.EVIDENCE_CARD.x - stallX) < 25, "evidence card is beside the stall point, not on it")
 ok(Math.abs(L.EVIDENCE_CARD.x) > 5, "evidence card is not centred in the view")
-ok(Math.abs(L.PROOF_CARD.x - top.x) < 15, "proof card is near the top of the ramp")
+ok(Math.abs(L.PROOF_CARD.x - top.x) < 30, "proof card is beside the top of the ramp, left of the rover's resting place")
 ok(L.EVIDENCE_CARD.z > L.RAMP_Z && L.PROOF_CARD.z > L.RAMP_Z, "cards stand in front of the ramp, facing the user")
+// cards stay below eye level (eye at y = 0) and clear of the rover resting on the landing
+const evTop = L.EVIDENCE_CARD.y + L.EVIDENCE_CARD_H / 2, prTop = L.PROOF_CARD.y + L.PROOF_CARD_H / 2
+ok(evTop < 0 && prTop < 0, `cards are below eye level (tops ${evTop.toFixed(1)} and ${prTop.toFixed(1)})`)
+const roverTopLeft = L.RAMP_BASE_X + roverPose(50).x - L.ROVER_BODY.w / 2
+ok(L.PROOF_CARD.x + L.CARD_W / 2 < roverTopLeft, `proof card right edge ${(L.PROOF_CARD.x + L.CARD_W / 2).toFixed(1)} is left of the rover at the top (${roverTopLeft.toFixed(1)})`)
+// the proof card must also clear the steep ramp surface under it
+const rampUnderCardRight = L.TABLE_TOP_Y + surfaceHeightCm(Math.min(50, 20 + (L.PROOF_CARD.x + L.CARD_W / 2 - stallX) / Math.cos(25 * Math.PI / 180)))
+ok(L.PROOF_CARD.y - L.PROOF_CARD_H / 2 > rampUnderCardRight, `proof card bottom ${(L.PROOF_CARD.y - L.PROOF_CARD_H / 2).toFixed(1)} clears the ramp surface ${rampUnderCardRight.toFixed(1)}`)
 
 console.log("layout.check: all " + n + " assertions passed")
 console.log(rows.join("\n"))

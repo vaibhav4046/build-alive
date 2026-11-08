@@ -1,6 +1,6 @@
 ﻿# EarthProof Ramp Climb: progress
 
-**Next action (2026-11-08 01:30):** the user must click Allow on the small modal **Loading LEAF Plugin** window in the EarthProof Lens Studio (it asks for filesystem, asset_library, push_to_device access and freezes all scene edits and compiles until answered). Then: `RecompileTypeScriptTool`; delete the AiPreviewAgent demo objects (Guide, ExampleCarousel, AgentInspectDemo, AgentInteractDemo); add the scripts to the scene and wire inputs (two-phase VirtualScene); preview screenshot and logs; flow walk-through; LEAF scenarios c1 to c7 and the 200-press latency loop; judge passes; record preview footage; render the film. See `build-log.md`.
+**Next action (2026-11-08 01:55):** Lens Studio was closed gracefully at 01:48 (both instances; not by this session) and was relaunched on EarthProof (pid 21296). Core flow already verified in the preview earlier: Run -> stall -> evidence card + beam -> swap -> Run -> proof card -> Reset (commit a10e400). Do next, in order: (1) `mcp__lens-studio__*` tools may need the user to reconnect via /mcp after the restart; if ListAllPanels fails, stop and say so. (2) `RecompileTypeScriptTool`; set TableLabel text to exactly `Simulated in preview` (VirtualScene modify on @sceneObject:TableLabel components.Text.text). (3) Add a `LeafIndex` scene object with `Assets/Scripts/Leaf/LeafIndex.ts` (scripts C1..C7 already written, not yet compiled or run). (4) `run_leaf_scenario` each id (c1-layout ... c7-latency), paste real output into `devpost/test-results.md`. (5) Judge passes -> `devpost/review.md`. (6) Reframe film vignettes B (stroller/hand truck) and C (porch ramp) per `FINAL_BRIEF.md` UPDATE block, record real preview footage, render. (7) Publish repo with gh after `git grep` for secrets. Phase 2 (load picker, slope handle) only if core is green and time allows; otherwise say it was cut. Do not click or send keys into other apps: the user works on this PC (an earlier synthetic drag landed in their browser and Claude app).
 
 Scope: `design-brief.md` wins (no voice, no network, no cross-session memory, no Circuit Coach). Repo and honesty rules: `MASTER_BRIEF.md`.
 
@@ -26,4 +26,5 @@ Scope: `design-brief.md` wins (no voice, no network, no cross-session memory, no
 | 7 | 200 presses, p50/p95/p99 latency | no | no | not run |
 
 Simulation numbers (node check, real output): needs 7.9 N.cm on the steep section, Small has 4.0, Geared has 17.0, margin 2.1x, flat speeds 47.1 and 9.4 cm/s.
+
 

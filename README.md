@@ -1,6 +1,8 @@
 # EarthProof: Ramp Climb
 
-**Test your robot in your room. Fail on purpose. See exactly why.**
+**Will it climb? Prove it in your space before you build or buy.**
+
+Slope and load decide whether a robot, a stroller, a hand truck or a porch ramp works, and people mostly guess ([sources and limits](devpost/research.md)). EarthProof puts the test in your own space at real size and points at the part that fails. **What is built and tested here is one trial, the rover Ramp Climb.** The stroller, hand-truck and porch-ramp cases are the same maths with different numbers, planned as a stretch ("Phase 2"); see the status table for whether they exist. Nothing here claims daily use, hardware testing or a competition result.
 
 A Lens for SPECS (built for the Devpost "Learn AR with SPECS" challenge). A small rover sits at the foot of a two-section ramp at real size on a virtual table. You pinch **Run**. With the Small motor it climbs the shallow section and stalls on the steep one, wheels still spinning. A red beam runs from the stall point to the motor, with two numbers beside the ramp: what the climb **needs** and what the motor **has**. You grab the Geared motor from the parts tray and drop it on the rover's mount. You pinch **Run** again. It climbs, slowly, and a proof card appears at the top with your motor, both numbers and the safety margin.
 
@@ -15,6 +17,7 @@ This repository is an honest work in progress snapshot. The detailed, current nu
 | Pure simulation (`EarthProofSim.ts`) and run state machine (`EarthProofFlow.ts`) | Logic proven by node tests: 5582 distinct scenarios, 172258 assertions, 0 failed (not LEAF tests, not run in Lens Studio) |
 | Layout geometry (done criteria 1 and 6, from the numbers the scene is generated from) | Node check passes (34 assertions) |
 | Scene, UI, flow running in the Lens Studio preview, LEAF scenarios, latency percentiles | See `devpost/test-results.md` for what has actually been run |
+| Phase 2 stretch (load picker for hand truck / stroller, drag handle that changes the slope, ratio next to the 1:12 reference) | **Not built** unless `devpost/test-results.md` says otherwise. Any such estimate would be "for learning, not a safety certification" |
 | Real SPECS glasses (comfort, hand tracking, true latency) | **Unproven.** No hardware was available |
 
 ## Run it

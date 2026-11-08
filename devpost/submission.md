@@ -2,12 +2,12 @@
 
 **Project name:** EarthProof Ramp Climb
 
-**Tagline (33 characters):** Fail on purpose. See exactly why.
+**Tagline (44 characters):** Will it climb? Prove it in your space first.
 
 ## Description
 
 ### Inspiration
-Building a robot usually means guessing why it did not work, then looking at a chart on another screen. We wanted the explanation to appear on the thing that failed, in the room you are standing in. Kodro, a simulator where a robot attempts a task in a visual world, was a conceptual inspiration only; none of its code or content is used.
+Slope and load decide whether things climb, and people guess: a teacher picks motors for a robotics club, a parent wonders about a new ramp, a family plans a porch ramp. The same maths answers all of them, and published studies show effort rising with slope and that accessible ramps are capped at 1:12 (every claim, with its limits, is in `devpost/research.md`). We wanted the answer to appear on the thing that fails, in the room you are standing in, before you build or buy. We do not claim people use this daily: the only thing built and tested is the rover trial. Kodro, a simulator where a robot attempts a task in a visual world, was a conceptual inspiration only; none of its code or content is used.
 
 ### What it does
 A small rover sits at the foot of a two-section ramp on a virtual table, at real size. Pinch **Run**: with the Small motor it climbs the shallow section and stalls on the steep one with its wheels still spinning. A red beam runs from the stall point to the motor, with two numbers beside the ramp: what the climb needs and what the motor has. Grab the Geared motor from the tray and drop it on the mount (or just pinch it); the evidence clears. Pinch **Run** again: it climbs, slowly, and a proof card at the top shows the motor, both numbers and the safety margin. **Reset** puts everything back.
@@ -25,7 +25,7 @@ Built through CLAD and the Lens Studio MCP with the Spectacles Interaction Kit a
 - Meshes are Lens Studio primitives used as placeholders.
 
 ### What's next
-Other trials (an obstacle, a payload), saving attempts across sessions, and a test on real glasses.
+A load picker (rover, hand truck, stroller) and a drag handle that changes the slope and shows it as a ratio next to the 1:12 reference, labelled "estimate for learning, not a safety certification" (planned; see the README status table for whether it exists), saving attempts across sessions, and a test on real glasses.
 
 ## Built with
 Lens Studio 5.23.2, TypeScript, Spectacles Interaction Kit, Spectacles UI Kit, LEAF, CLAD, Lens Studio MCP, Claude Code (AI-assisted), HyperFrames, ffmpeg, Node.js.
