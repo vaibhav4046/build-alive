@@ -1,6 +1,6 @@
 # EarthProof Ramp Climb: progress
 
-**Next action:** re-dial the `lens-studio` MCP server (press Reconnect in /mcp, or start a fresh session with this folder as working directory while Lens Studio is responsive), then build the scene (phase 3). Lens Studio is responsive again; the session's MCP server stayed in `failed` after the first-connect timeout.
+**Next action:** confirm the `lens-studio` MCP tools load (ToolSearch "lens-studio" must return `mcp__lens-studio__*`), then build the scene (phase 3). Lens Studio 17708 is responsive and owns port 50040. Root cause of the latest miss: the retry session started with cwd `D:\`, so the project-scoped `.mcp.json` in this folder was never read (the server was not even listed as failed). The session was moved to this folder with the directory tool; the new cwd takes effect on the next turn. A session must start with cwd = `D:\earthproof\lens\EarthProof`.
 
 Scope: `design-brief.md` wins (no voice, no network, no cross-session memory, no Circuit Coach). Repo and honesty rules: `MASTER_BRIEF.md`.
 
