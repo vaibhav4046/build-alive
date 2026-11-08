@@ -99,6 +99,7 @@ export class BuildAliveSceneUI {
     boxSource: SceneObject,
     cylSource: SceneObject,
     onSelectEarthProofFallback?: () => void,
+    internetModule: InternetModule | null = null,
   ): void {
     this.host = host
     const boxRmv = boxSource.getComponent("Component.RenderMeshVisual") as RenderMeshVisual | null
@@ -111,12 +112,17 @@ export class BuildAliveSceneUI {
     this.rootObj.setParent(host.getSceneObject())
     this.rootObj.getTransform().setLocalPosition(vec3.zero())
 
+    this.transport.onStateChanged = () => this.syncVisuals()
+
     this.buildShelfAndProvenance()
     this.buildIslands(onSelectEarthProofFallback)
     this.buildArchitectureCity()
     this.buildVesselsAndMarkers()
     this.buildControlRail()
     this.buildGlassCard()
+    if (internetModule) {
+      this.transport.connect(internetModule)
+    }
     this.syncVisuals()
   }
 

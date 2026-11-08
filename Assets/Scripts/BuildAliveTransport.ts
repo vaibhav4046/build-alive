@@ -13,6 +13,7 @@ export class BuildAliveTransport {
   private socket: WebSocket | null = null
   private connected = false
   private lastError: string | null = null
+  onStateChanged: (() => void) | null = null
 
   constructor(engine: BuildAliveEngine, url: string = DEFAULT_BRIDGE_WS_URL) {
     this.engine = engine
@@ -40,19 +41,26 @@ export class BuildAliveTransport {
         this.connected = true
         this.lastError = null
         this.engine.handleReconnect(true)
+        if (this.onStateChanged) this.onStateChanged()
       }
       ws.onmessage = (event: WebSocketMessageEvent) => {
         const raw = typeof event.data === "string" ? event.data : ""
-        this.handleRawMessage(raw)
+        const res = this.handleRawMessage(raw)
+        if (res.accepted && typeof res.seq === "number") {
+          this.engine.scrubToSeq(res.seq)
+          if (this.onStateChanged) this.onStateChanged()
+        }
       }
       ws.onerror = () => {
         this.lastError = "bridge websocket error; falling back to LOCAL_RECORDED_REPLAY"
         this.connected = false
         this.engine.handleDisconnect()
+        if (this.onStateChanged) this.onStateChanged()
       }
       ws.onclose = () => {
         this.connected = false
         this.engine.handleDisconnect()
+        if (this.onStateChanged) this.onStateChanged()
       }
       return true
     } catch (e) {

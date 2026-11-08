@@ -33,6 +33,11 @@ import {normalizeClaudeHookEvent} from "../../bridge/claude-hook.mjs"
 import {normalizeCodexEvent} from "../../bridge/codex-adapter.mjs"
 import {EventJournal} from "../../bridge/journal.mjs"
 import {createBridgeServer} from "../../bridge/ws-server.mjs"
+import {
+  discoverWindowsSessions,
+  extractRecentWindowsEvents,
+  normalizeAntigravityStep,
+} from "../../bridge/antigravity-adapter.mjs"
 
 let passedChecks = 0
 function check(cond, msg) {
@@ -268,6 +273,62 @@ console.log("-> 7. Live Bridge WebSocket Round-Trip & Latency Profiling")
 
   ws.close()
   await bridge.close()
+}
+
+// 8. Live Windows Antigravity, Claude Code & Codex Session Integration
+console.log("-> 8. Live Windows Antigravity, Claude Code & Codex Session Integration")
+{
+  const discovered = discoverWindowsSessions()
+  check(Array.isArray(discovered.antigravitySessions), "Antigravity sessions array returned")
+  check(Array.isArray(discovered.claudeSessions), "Claude sessions array returned")
+  check(Array.isArray(discovered.codexSessions), "Codex sessions array returned")
+
+  const recentEvents = extractRecentWindowsEvents({maxEvents: 16})
+  check(Array.isArray(recentEvents), "Extracted recent Windows events")
+
+  const liveEngine = new BuildAliveEngine()
+  for (const ev of recentEvents) {
+    const val = validateEventEnvelope(ev)
+    check(val.valid, `Extracted Windows event ${ev.eventId} passes v1 envelope schema`)
+    const ing = liveEngine.ingestEvent(ev)
+    check(ing.accepted, `Live engine ingested Windows event ${ev.eventId}`)
+    check(!JSON.stringify(ev).includes("lalwa"), "Personal Windows username scrubbed from event")
+  }
+
+  // Verify live bridge with watchWindowsSessions: true and /sessions + /antigravity endpoints
+  const liveBridge = createBridgeServer({port: 8991, watchWindowsSessions: true})
+  await liveBridge.listen()
+
+  const sessRes = await fetch("http://127.0.0.1:8991/sessions")
+  check(sessRes.status === 200, "GET /sessions returns 200 OK")
+  const sessJson = await sessRes.json()
+  check(sessJson.status === "connected" && sessJson.watchingLive === true, "GET /sessions reports live watcher active")
+
+  const postRes = await fetch("http://127.0.0.1:8991/antigravity", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      sessionId: "ebc49ffb-1ff7-47ff-b06f-fe425801a26f",
+      step: {
+        step_index: 9999,
+        type: "PLANNER_RESPONSE",
+        status: "DONE",
+        created_at: new Date().toISOString(),
+        thinking: "Confidential internal reasoning that must NEVER leak",
+        tool_calls: [{name: "edit_file", args: {Path: "C:\\Users\\lalwa\\project\\BuildAliveCore.ts"}}],
+      },
+    }),
+  })
+  check(postRes.status === 200, "POST /antigravity accepts live step")
+  const postJson = await postRes.json()
+  check(postJson.accepted === true, "POST /antigravity normalized and journaled step")
+
+  const allJournal = liveBridge.journal.getAllEvents()
+  const lastJournalEv = allJournal[allJournal.length - 1]
+  check(!JSON.stringify(lastJournalEv).includes("Confidential internal reasoning"), "Thinking field never leaked (F33)")
+  check(!JSON.stringify(lastJournalEv).includes("lalwa"), "Host path scrubbed on /antigravity endpoint")
+
+  await liveBridge.close()
 }
 
 console.log(`\n=== SWEEP COMPLETED SUCCESSFULLY: ${passedChecks} assertions verified, 0 failures ===`)

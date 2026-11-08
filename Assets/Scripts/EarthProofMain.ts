@@ -59,6 +59,9 @@ export class EarthProofMain extends BaseScriptComponent {
   @input
   @allowUndefined
   chime: AudioTrackAsset | null = null
+  @input
+  @allowUndefined
+  internetModule: InternetModule | null = null
 
   /** Press-to-first-frame log for done criterion 7. Read by the LEAF scenario. */
   readonly latencyLog: PressRecord[] = []
@@ -89,7 +92,7 @@ export class EarthProofMain extends BaseScriptComponent {
       this.audio = this.rover.createComponent("Component.AudioComponent") as AudioComponent
       this.audio.audioTrack = this.chime
     }
-    this.buildAlive.init(this, this.blockSmall, this.stallMarker, () => this.handleReset())
+    this.buildAlive.init(this, this.blockSmall, this.stallMarker, () => this.handleReset(), this.internetModule)
 
     this.createEvent("OnStartEvent").bind(() => this.start())
     this.createEvent("UpdateEvent").bind(() => {

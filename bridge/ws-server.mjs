@@ -8,6 +8,12 @@ import crypto from "node:crypto"
 import {EventJournal} from "./journal.mjs"
 import {ActionGate, ALLOWLISTED_ACTIONS} from "./action-gate.mjs"
 import {normalizeClaudeHookEvent} from "./claude-hook.mjs"
+import {
+  discoverWindowsSessions,
+  extractRecentWindowsEvents,
+  normalizeAntigravityStep,
+  watchLiveAntigravitySessions,
+} from "./antigravity-adapter.mjs"
 import {runDemoRepoSuite} from "../demo-repo/tests/room-capacity.test.mjs"
 
 const WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -67,7 +73,7 @@ function decodeFrame(buf) {
   return {opcode, payload, totalLen: offset + payloadLen}
 }
 
-export function createBridgeServer({port = 8787, journalPath = null} = {}) {
+export function createBridgeServer({port = 8787, journalPath = null, watchWindowsSessions = false} = {}) {
   const journal = new EventJournal(journalPath)
 
   const actionGate = new ActionGate({
@@ -82,12 +88,95 @@ export function createBridgeServer({port = 8787, journalPath = null} = {}) {
   })
 
   const clients = new Set()
+  let watcher = null
+
+  if (watchWindowsSessions) {
+    const initialEvents = extractRecentWindowsEvents({maxEvents: 24})
+    for (const ev of initialEvents) {
+      journal.append(ev)
+    }
+    watcher = watchLiveAntigravitySessions({
+      onEvent: (ev) => {
+        const saved = journal.append(ev)
+        broadcast(saved)
+      },
+    })
+  }
 
   const server = http.createServer((req, res) => {
     // Health probe endpoint
     if (req.url === "/health") {
       res.writeHead(200, {"Content-Type": "application/json"})
-      res.end(JSON.stringify({status: "ok", journalLength: journal.getAllEvents().length}))
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          journalLength: journal.getAllEvents().length,
+          watchingWindowsSessions: Boolean(watcher),
+          watchedPathsCount: watcher ? watcher.watchedPaths.length : 0,
+        }),
+      )
+      return
+    }
+
+    // Active Windows LLM & Agent sessions discovery endpoint
+    if (req.method === "GET" && req.url === "/sessions") {
+      const discovered = discoverWindowsSessions()
+      res.writeHead(200, {"Content-Type": "application/json"})
+      res.end(
+        JSON.stringify({
+          status: "connected",
+          watchingLive: Boolean(watcher),
+          watchedPaths: watcher ? watcher.watchedPaths : [],
+          antigravityCount: discovered.antigravitySessions.length,
+          claudeCount: discovered.claudeSessions.length,
+          codexCount: discovered.codexSessions.length,
+          activeAntigravitySessions: discovered.antigravitySessions.slice(0, 4).map((s) => ({
+            sessionId: s.sessionId,
+            role: s.role,
+            stepCount: s.stepCount,
+            lastModified: s.lastModified,
+          })),
+          activeClaudeSessions: discovered.claudeSessions.slice(0, 3).map((s) => ({
+            sessionId: s.sessionId,
+            sizeBytes: s.sizeBytes,
+            lastModified: s.lastModified,
+          })),
+          activeCodexSessions: discovered.codexSessions.slice(0, 3).map((s) => ({
+            sessionId: s.sessionId,
+            lastModified: s.lastModified,
+          })),
+          recentEvents: journal.getAllEvents().slice(-10),
+        }),
+      )
+      return
+    }
+
+    // Direct Antigravity step ingestion endpoint
+    if (req.method === "POST" && req.url === "/antigravity") {
+      let body = ""
+      req.on("data", (chunk) => (body += chunk))
+      req.on("end", () => {
+        try {
+          const payload = JSON.parse(body)
+          const normalized = normalizeAntigravityStep(payload.step || payload, {
+            sessionId: payload.sessionId || "ses_antigravity_live",
+            seq: journal.getAllEvents().length + 1,
+            isSubagent: Boolean(payload.isSubagent),
+          })
+          if (normalized) {
+            const saved = journal.append(normalized)
+            broadcast(saved)
+            res.writeHead(200, {"Content-Type": "application/json"})
+            res.end(JSON.stringify({accepted: true, seq: saved.seq, eventId: saved.eventId}))
+            return
+          }
+          res.writeHead(400, {"Content-Type": "application/json"})
+          res.end(JSON.stringify({accepted: false, reason: "invalid_antigravity_step"}))
+        } catch (e) {
+          res.writeHead(400, {"Content-Type": "application/json"})
+          res.end(JSON.stringify({accepted: false, error: e.message}))
+        }
+      })
       return
     }
 
@@ -278,6 +367,7 @@ export function createBridgeServer({port = 8787, journalPath = null} = {}) {
       }),
     close: () =>
       new Promise((resolve) => {
+        if (watcher) watcher.stop()
         for (const s of clients) s.destroy()
         clients.clear()
         server.close(resolve)
