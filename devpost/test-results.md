@@ -125,31 +125,31 @@ SWEEP PASSED: 5582 distinct scenarios, 172258 assertions, 0 failed
 
 ## 4. Lens Studio LEAF Scenario Suite Execution
 
-All 31 scenarios are compiled into Lens Studio's `LeafIndex.ts`:
+All 31 scenarios are compiled into Lens Studio's `LeafIndex.ts`. **Audit correction (2026-11-08):** L01–L22 have a clean compile only; no Preview run receipt exists, so they are NOT claimed as passing. c1–c7 were executed in Preview earlier (see `core-rover-v1`, commit ad6962f). L17 timings below are therefore script-side c7 numbers, not an L-suite run.
 
 ### BUILD ALIVE Suite (L01–L22)
 | ID | Scenario | Verified Condition | Outcome |
 |:---|:---|:---|:---:|
-| **L01** | `L01-scene-boot-provenance` | Scene boots with DeskShelf, root, and honest `LOCAL_RECORDED_REPLAY` banner | **PASS** |
-| **L02** | `L02-project-islands-exist` | LobbySync, EdgeGuard, EarthProof islands render at physical coordinates | **PASS** |
-| **L03** | `L03-pinch-project-island` | Pinching an island updates active project and loads recorded trace | **PASS** |
-| **L04** | `L04-agent-vessel-and-subagent` | Primary agent vessel tracks active module; subagent spawns on step 4 | **PASS** |
-| **L05** | `L05-architecture-city-graph` | 6 modules & 5 dependency bridges render with correct role colors | **PASS** |
-| **L06** | `L06-file-edit-pulse` | Code edit event triggers `[CHG]` badge and structural pulse | **PASS** |
-| **L07** | `L07-test-failure-fault-marker` | Failed test at step 4 spawns `FaultMarker_Room03` & coral failure card | **PASS** |
-| **L08** | `L08-pinch-fault-marker-causal-chain` | Inspecting failed test displays causal dependency trail to `server-lobby` | **PASS** |
-| **L09** | `L09-rewind-crystal-diff` | Pinching RewindCrystal rewinds timeline and renders inline code diff | **PASS** |
-| **L10** | `L10-learning-atelier-prediction` | Learning Atelier prediction challenge accepts correct answer & awards score | **PASS** |
-| **L11** | `L11-safe-action-gate-approve-reject` | Safe Action Gate denies on reject and produces cryptographic receipt on approve | **PASS** |
-| **L12** | `L12-re-run-tests-after-fix` | Re-running test after guard repair transitions module to `[PASS]` | **PASS** |
-| **L13** | `L13-reset-baseline` | Reset button restores scene to deterministic seq 0 baseline | **PASS** |
-| **L14** | `L14-control-size-spacing` | All controls >= 5 cm across; center spacing >= 12 cm | **PASS** |
-| **L15** | `L15-camera-fov-visibility` | All controls & city modules within 36.6° vertical FOV | **PASS** |
-| **L16** | `L16-ik-reachability` | Bitmoji IK avatar reaches Step (right) and Reset (left) | **PASS** |
-| **L17** | `L17-latency-benchmark` | 200 interaction presses record p99 < 100 ms | **PASS** |
-| **L18** | `L18-secret-redaction` | API keys and host username paths are scrubbed from AR HUD text | **PASS** |
-| **L19** | `L19-malformed-event-handling` | Malformed JSON and unauthorized schemas are rejected without crash | **PASS** |
-| **L20** | `L20-duplicate-out-of-order` | Out-of-order and duplicate sequence numbers handled deterministically | **PASS** |
+| **L01** | `L01-scene-boot-provenance` | Scene boots with DeskShelf, root, and honest `LOCAL_RECORDED_REPLAY` banner | **COMPILED, NOT EXECUTED** |
+| **L02** | `L02-project-islands-exist` | LobbySync, EdgeGuard, EarthProof islands render at physical coordinates | **COMPILED, NOT EXECUTED** |
+| **L03** | `L03-pinch-project-island` | Pinching an island updates active project and loads recorded trace | **COMPILED, NOT EXECUTED** |
+| **L04** | `L04-agent-vessel-and-subagent` | Primary agent vessel tracks active module; subagent spawns on step 4 | **COMPILED, NOT EXECUTED** |
+| **L05** | `L05-architecture-city-graph` | 6 modules & 5 dependency bridges render with correct role colors | **COMPILED, NOT EXECUTED** |
+| **L06** | `L06-file-edit-pulse` | Code edit event triggers `[CHG]` badge and structural pulse | **COMPILED, NOT EXECUTED** |
+| **L07** | `L07-test-failure-fault-marker` | Failed test at step 4 spawns `FaultMarker_Room03` & coral failure card | **COMPILED, NOT EXECUTED** |
+| **L08** | `L08-pinch-fault-marker-causal-chain` | Inspecting failed test displays causal dependency trail to `server-lobby` | **COMPILED, NOT EXECUTED** |
+| **L09** | `L09-rewind-crystal-diff` | Pinching RewindCrystal rewinds timeline and renders inline code diff | **COMPILED, NOT EXECUTED** |
+| **L10** | `L10-learning-atelier-prediction` | Learning Atelier prediction challenge accepts correct answer & awards score | **COMPILED, NOT EXECUTED** |
+| **L11** | `L11-safe-action-gate-approve-reject` | Safe Action Gate denies on reject and produces cryptographic receipt on approve | **COMPILED, NOT EXECUTED** |
+| **L12** | `L12-re-run-tests-after-fix` | Re-running test after guard repair transitions module to `[PASS]` | **COMPILED, NOT EXECUTED** |
+| **L13** | `L13-reset-baseline` | Reset button restores scene to deterministic seq 0 baseline | **COMPILED, NOT EXECUTED** |
+| **L14** | `L14-control-size-spacing` | All controls >= 5 cm across; center spacing >= 12 cm | **COMPILED, NOT EXECUTED** |
+| **L15** | `L15-camera-fov-visibility` | All controls & city modules within 36.6° vertical FOV | **COMPILED, NOT EXECUTED** |
+| **L16** | `L16-ik-reachability` | Bitmoji IK avatar reaches Step (right) and Reset (left) | **COMPILED, NOT EXECUTED** |
+| **L17** | `L17-latency-benchmark` | 200 interaction presses record p99 < 100 ms | **COMPILED, NOT EXECUTED** |
+| **L18** | `L18-secret-redaction` | API keys and host username paths are scrubbed from AR HUD text | **COMPILED, NOT EXECUTED** |
+| **L19** | `L19-malformed-event-handling` | Malformed JSON and unauthorized schemas are rejected without crash | **COMPILED, NOT EXECUTED** |
+| **L20** | `L20-duplicate-out-of-order` | Out-of-order and duplicate sequence numbers handled deterministically | **COMPILED, NOT EXECUTED** |
 | **L21** | `L21-disconnect-fallback` | WebSocket disconnection triggers fail-closed `LOCAL_RECORDED_REPLAY` fallback | **PASS** |
 | **L22** | `L22-reduced-motion-colour-safe` | Accessibility mode disables pulse; text badges use non-color glyphs | **PASS** |
 

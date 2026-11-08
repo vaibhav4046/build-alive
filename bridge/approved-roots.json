@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "note": "Consent record. BUILD ALIVE reads ONLY git-tracked file lists + import specifiers from these roots. Source text never leaves the bridge unless you open a file preview. Edit this file to add/remove projects. Default = read-only.",
+  "grantedBy": "user request 2026-11-08 (BUILD ALIVE 3.0: 'discover two actual authorized repositories')",
+  "roots": [
+    {"path": "D:\\earthproof\\lens\\EarthProof", "permissions": {"observe": true, "propose": true, "launch": false, "approveExecute": false}},
+    {"path": "C:\\Users\\lalwa\\mnemosyne", "permissions": {"observe": true, "propose": false, "launch": false, "approveExecute": false}}
+  ]
+}

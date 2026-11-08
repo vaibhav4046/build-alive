@@ -3,7 +3,7 @@
 // Connects via Snap's InternetModule when configured; fails closed to LOCAL_RECORDED_REPLAY
 // without throwing or blocking if the local bridge is offline or InternetModule is absent.
 
-import {AgentEvent, AllowlistedActionId, BuildAliveEngine} from "./BuildAliveCore"
+import {AgentEvent, AllowlistedActionId, BuildAliveEngine, validateWorkspaceWorlds, WorkspaceWorldPayload} from "./BuildAliveCore"
 
 export const DEFAULT_BRIDGE_WS_URL = "ws://127.0.0.1:8787/build-alive"
 
@@ -14,6 +14,7 @@ export class BuildAliveTransport {
   private connected = false
   private lastError: string | null = null
   onStateChanged: (() => void) | null = null
+  onWorkspace: ((worlds: WorkspaceWorldPayload[]) => void) | null = null
 
   constructor(engine: BuildAliveEngine, url: string = DEFAULT_BRIDGE_WS_URL) {
     this.engine = engine
@@ -72,11 +73,18 @@ export class BuildAliveTransport {
   }
 
   handleRawMessage(rawJson: string): {accepted: boolean; reason?: string; seq?: number} {
-    if (!rawJson || rawJson.length > 16384) {
-      return {accepted: false, reason: "payload empty or exceeds 16 KB safety cap"}
+    const isWorkspace = typeof rawJson === "string" && rawJson.slice(0, 32).indexOf('"workspace"') >= 0
+    if (!rawJson || rawJson.length > (isWorkspace ? 65536 : 16384)) {
+      return {accepted: false, reason: "payload empty or exceeds safety cap"}
     }
     try {
       const parsed = JSON.parse(rawJson) as unknown
+      if (isWorkspace) {
+        const v = validateWorkspaceWorlds(parsed)
+        if (!v.ok) return {accepted: false, reason: "workspace_" + (v.error || "invalid")}
+        if (this.onWorkspace) this.onWorkspace(v.worlds)
+        return {accepted: true, reason: "workspace_loaded"}
+      }
       return this.engine.ingestEvent(parsed)
     } catch (_err) {
       return {accepted: false, reason: "invalid JSON payload"}

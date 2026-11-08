@@ -21,7 +21,7 @@ import {ElementContent} from "SpectaclesUIKit.lspkg/Scripts/Components/Content/E
 import {FlexItem} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexItem"
 import {FlexLayout} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexLayout"
 import {FlexAlign, FlexDirection, FlexJustify} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexTypes"
-import {AllowlistedActionId, BuildAliveEngine, DEMO_PROJECTS} from "./BuildAliveCore"
+import {AllowlistedActionId, BuildAliveEngine, DEMO_PROJECTS, WorkspaceWorldPayload} from "./BuildAliveCore"
 import {
   AGENT_PRIMARY_HOME,
   AGENT_SUB_HOME,
@@ -123,6 +123,10 @@ export class BuildAliveSceneUI {
   private autoDemoClock = 0
   private autoDemoPhase = 0
   private leafOrUserTouched = false
+  private workspaceBound = false
+  private slotProject: Record<string, string> = {}
+  private islandLabels: Record<string, Text> = {}
+  private extraRoads: {id: string; from: string; to: string; obj: SceneObject}[] = []
   private disclosureTier: "WORLD" | "INSPECT" | "ENGINEER" = "WORLD"
   private onPlayAudio: (() => void) | null = null
   private lastRequestId: string | null = null
@@ -151,6 +155,7 @@ export class BuildAliveSceneUI {
     this.rootObj.getTransform().setLocalPosition(vec3.zero())
 
     this.transport.onStateChanged = () => this.syncVisuals()
+    this.transport.onWorkspace = (worlds) => this.bindWorkspace(worlds)
 
     this.buildShelfAndProvenance()
     this.buildIslands(onSelectEarthProofFallback)
@@ -261,9 +266,25 @@ export class BuildAliveSceneUI {
     return this.engine.snapshot()
   }
 
+  /** Binds real scanned projects (from the bridge) to the island shelf and the architecture slots. */
+  bindWorkspace(worlds: WorkspaceWorldPayload[]): void {
+    const ids = this.engine.loadWorkspace(worlds)
+    this.workspaceBound = true
+    this.leafOrUserTouched = true // stop the scripted sample tour: real data only
+    this.disclosureTier = "WORLD"
+    for (let k = 0; k < PROJECT_ISLANDS.length; k++) {
+      const slot = PROJECT_ISLANDS[k]
+      this.slotProject[slot.id] = ids[k]
+      const real = k < worlds.length
+      const lbl = this.islandLabels[slot.id]
+      if (lbl) lbl.text = real ? worlds[k].name : "Sample World"
+    }
+    this.syncVisuals()
+  }
+
   handleSelectProject(projectId: string, pressMs: number = Date.now()) {
     this.markPress("island", projectId, pressMs)
-    this.engine.selectProject(projectId)
+    this.engine.selectProject(this.slotProject[projectId] || projectId)
     this.syncVisuals()
     return this.engine.snapshot()
   }
@@ -307,7 +328,22 @@ export class BuildAliveSceneUI {
         this.causalBeam.getTransform().setLocalScale(this.scratchScale)
       }
       // Animate Data Flow Packet along active dependency bridges
-      if (this.dataPacket) {
+      if (this.dataPacket && this.workspaceBound) {
+        // Real mode: the packet only travels a REAL resolved import edge touching the module of the active event.
+        const am = snap.activeModuleId
+        const proj = this.engine.currentProject
+        const edge = am ? proj.edges.find((e) => e.from === am || e.to === am) : undefined
+        const fm = edge ? CITY_MODULES.find((m) => m.moduleId === edge.from) : undefined
+        const tm = edge ? CITY_MODULES.find((m) => m.moduleId === edge.to) : undefined
+        this.dataPacket.enabled = !!(fm && tm)
+        if (fm && tm) {
+          const u = (this.pulseClock * 0.9) % 1
+          this.scratchPos.x = fm.center.x + (tm.center.x - fm.center.x) * u
+          this.scratchPos.y = fm.center.y + (tm.center.y - fm.center.y) * u + 0.65
+          this.scratchPos.z = fm.center.z + (tm.center.z - fm.center.z) * u
+          this.dataPacket.getTransform().setLocalPosition(this.scratchPos)
+        }
+      } else if (this.dataPacket) {
         const bIdx = Math.floor(this.pulseClock * 0.9) % CITY_BRIDGES.length
         const b = CITY_BRIDGES[bIdx]
         const fromMod = CITY_MODULES.find((m) => m.moduleId === b.fromModuleId)
@@ -534,11 +570,11 @@ export class BuildAliveSceneUI {
       const labelObj = global.scene.createSceneObject(slot.sceneName + "_Label")
       labelObj.setParent(island)
       labelObj.getTransform().setLocalPosition(new vec3(0, 1.55, 0))
-      this.addText(labelObj, proj.title, 26, COLOR_WHITE)
+      this.islandLabels[slot.id] = this.addText(labelObj, proj.title, 26, COLOR_WHITE)
 
       this.makeInteractable(island, () => {
         this.handleSelectProject(slot.id, Date.now())
-        if (slot.id === "earthproof-rover" && onSelectEarthProofFallback) {
+        if (slot.id === "earthproof-rover" && onSelectEarthProofFallback && !this.workspaceBound) {
           onSelectEarthProofFallback()
         }
       })
@@ -655,6 +691,29 @@ export class BuildAliveSceneUI {
       )
       bridge.getTransform().setLocalRotation(quat.lookAt(d.uniformScale(1 / len), vec3.up()))
       this.bridgeObjects[b.bridgeId] = bridge
+    }
+
+    // Extra roads for every other slot pair: hidden unless a REAL resolved import edge exists (v3).
+    for (let i = 0; i < CITY_MODULES.length; i++) {
+      for (let j = i + 1; j < CITY_MODULES.length; j++) {
+        const A = CITY_MODULES[i]
+        const B = CITY_MODULES[j]
+        const covered = CITY_BRIDGES.some(
+          (b) =>
+            (b.fromModuleId === A.moduleId && b.toModuleId === B.moduleId) ||
+            (b.fromModuleId === B.moduleId && b.toModuleId === A.moduleId),
+        )
+        if (covered) continue
+        const a = new vec3(A.center.x, A.center.y, A.center.z)
+        const c = new vec3(B.center.x, B.center.y, B.center.z)
+        const d = c.sub(a)
+        const len = Math.max(0.1, d.length)
+        const mid = a.add(c).uniformScale(0.5)
+        const road = this.makeBoxObject("Road_" + A.moduleId + "_" + B.moduleId, this.rootObj, {x: mid.x, y: mid.y - 0.2, z: mid.z}, {w: 0.4, h: 0.2, d: len}, COLOR_GOLD)
+        road.getTransform().setLocalRotation(quat.lookAt(d.uniformScale(1 / len), vec3.up()))
+        road.enabled = false
+        this.extraRoads.push({id: "road-" + A.moduleId + "-" + B.moduleId, from: A.moduleId, to: B.moduleId, obj: road})
+      }
     }
   }
 
@@ -865,12 +924,16 @@ export class BuildAliveSceneUI {
 
     const hasFailures = snap.activeFailures.length > 0
     const ev = this.engine.activeEvent
+    const proj = this.engine.currentProject
+    const activeMod = snap.activeModuleId
+    const realFail =
+      this.workspaceBound && ev !== null && ev.kind === "test_completed" && ev.status === "failed" && activeMod !== null
 
     // Highlight active Project Island Portal
     for (const slot of PROJECT_ISLANDS) {
       const portalRmv = this.islandPortals[slot.id]
       if (portalRmv) {
-        const isActiveProj = snap.projectId === slot.id
+        const isActiveProj = snap.projectId === (this.slotProject[slot.id] || slot.id)
         this.setMaterialColor(portalRmv, isActiveProj ? COLOR_MINT : COLOR_SLATE)
       }
     }
@@ -878,18 +941,31 @@ export class BuildAliveSceneUI {
     for (const m of CITY_MODULES) {
       const vis = this.moduleVisuals[m.moduleId]
       if (!vis) continue
-      const isFailedMod = hasFailures && m.moduleId === "test-suite"
-      const isEditedMod = ev !== null && m.moduleId === "server-lobby" && ev.kind === "tool_finished"
-      const prefix = isFailedMod ? "[FAIL]" : isEditedMod ? "[CHG]" : "[PASS]"
-      const col = isFailedMod ? COLOR_CORAL : isEditedMod ? COLOR_AMBER : COLOR_MINT
-      vis.badgeText.text = prefix + " " + m.label
+      const pm = proj.modules.find((x) => x.id === m.moduleId)
+      if (this.workspaceBound) {
+        vis.root.enabled = !!pm
+        if (!pm) continue
+      }
+      const label = pm ? pm.label : m.label
+      const evHere = this.workspaceBound && ev !== null && activeMod === m.moduleId
+      const isFailedMod = this.workspaceBound ? evHere && realFail : hasFailures && m.moduleId === "test-suite"
+      const isEditedMod = this.workspaceBound
+        ? evHere && !realFail
+        : ev !== null && m.moduleId === "server-lobby" && ev.kind === "tool_finished"
+      let prefix = this.workspaceBound ? "" : "[PASS]"
+      if (isFailedMod) prefix = "[FAIL]"
+      else if (isEditedMod) {
+        prefix = !this.workspaceBound ? "[CHG]" : ev!.kind === "test_completed" ? "[PASS]" : ev!.status === "running" ? "[RUN]" : "[CHG]"
+      }
+      const col = isFailedMod ? COLOR_CORAL : isEditedMod ? COLOR_AMBER : this.workspaceBound ? COLOR_WHITE : COLOR_MINT
+      vis.badgeText.text = (prefix ? prefix + " " : "") + label
       vis.badgeText.textFill.color = col
       this.setMaterialColor(vis.rmv, isFailedMod ? COLOR_CORAL : isEditedMod ? COLOR_AMBER : COLOR_SLATE)
       if (vis.accentRmv) {
         this.setMaterialColor(vis.accentRmv, col)
       }
       for (const lRmv of vis.lampRmvs) {
-        this.setMaterialColor(lRmv, isFailedMod ? COLOR_CORAL : COLOR_MINT)
+        this.setMaterialColor(lRmv, isFailedMod ? COLOR_CORAL : this.workspaceBound && !evHere ? COLOR_SLATE : COLOR_MINT)
       }
 
       const isSelected = snap.selectedModuleId === m.moduleId
@@ -899,20 +975,72 @@ export class BuildAliveSceneUI {
       )
     }
 
-    // Move Primary Voxel Worker above active or selected module
+    // Roads: real resolved import edges only (workspace mode); sample mode keeps the fixed bridges.
+    if (this.workspaceBound) {
+      const has = (a: string, b: string): boolean =>
+        proj.edges.some((e) => (e.from === a && e.to === b) || (e.from === b && e.to === a))
+      for (const b of CITY_BRIDGES) {
+        const obj = this.bridgeObjects[b.bridgeId]
+        if (obj) obj.enabled = has(b.fromModuleId, b.toModuleId)
+      }
+      for (const r of this.extraRoads) r.obj.enabled = has(r.from, r.to)
+    } else {
+      for (const b of CITY_BRIDGES) {
+        const obj = this.bridgeObjects[b.bridgeId]
+        if (obj) obj.enabled = true
+      }
+      for (const r of this.extraRoads) r.obj.enabled = false
+    }
+
+    // Move Primary Voxel Worker above the module the real event touched (or the selected module)
+    const wantedId = snap.selectedModuleId || (this.workspaceBound ? activeMod : null)
+    const firstReal = this.workspaceBound && proj.modules.length > 0 ? proj.modules[0].id : null
     const targetMod =
-      CITY_MODULES.find((m) => m.moduleId === snap.selectedModuleId) ||
-      (ev && ev.kind === "test_completed"
-        ? CITY_MODULES.find((m) => m.moduleId === "test-suite")
-        : CITY_MODULES.find((m) => m.moduleId === "server-lobby")) ||
+      CITY_MODULES.find((m) => m.moduleId === wantedId) ||
+      (this.workspaceBound
+        ? CITY_MODULES.find((m) => m.moduleId === firstReal)
+        : ev && ev.kind === "test_completed"
+          ? CITY_MODULES.find((m) => m.moduleId === "test-suite")
+          : CITY_MODULES.find((m) => m.moduleId === "server-lobby")) ||
       CITY_MODULES[0]
     this.primaryVessel.getTransform().setLocalPosition(
       new vec3(targetMod.center.x, targetMod.center.y + targetMod.size.h / 2 + 2.0, targetMod.center.z),
     )
-    this.subVessel.enabled = snap.glyph.lane === "subagent" || snap.cursorSeq >= 4
-    this.faultMarker.enabled = hasFailures
+    this.subVessel.enabled = this.workspaceBound
+      ? ev !== null && ev.actor.indexOf("subagent") === 0
+      : snap.glyph.lane === "subagent" || snap.cursorSeq >= 4
+    this.faultMarker.enabled = hasFailures || realFail
     if (this.causalBeam) {
-      this.causalBeam.enabled = hasFailures || snap.selectedModuleId === "server-lobby" || snap.sceneMode === "ERROR"
+      this.causalBeam.enabled = this.workspaceBound
+        ? realFail
+        : hasFailures || snap.selectedModuleId === "server-lobby" || snap.sceneMode === "ERROR"
+    }
+
+    // Real workspace: evidence rows come only from scanned data + observed events (no sample story).
+    if (this.workspaceBound && this.cardRows.length >= 6) {
+      const mid = snap.selectedModuleId || activeMod
+      const rows = mid ? this.engine.describeModule(mid) : null
+      if (realFail && ev) {
+        this.cardRows[0].text = "FAILURE ALERT · " + (rows ? rows[0] : proj.title)
+        this.cardRows[0].textFill.color = COLOR_CORAL
+        this.cardRows[1].text = ev.summary || "Test failed (no output captured)"
+      } else {
+        this.cardRows[0].text = rows ? rows[0] : proj.title + " · " + proj.subtitle
+        this.cardRows[0].textFill.color = COLOR_CYAN
+        this.cardRows[1].text = rows ? rows[1] : "Pinch a building to inspect it"
+      }
+      this.cardRows[2].text = rows ? rows[2] : "Roads show resolved imports only"
+      this.cardRows[3].text = rows ? rows[3] : ev ? "Last event " + ev.eventId : "No observed agent event yet"
+      this.cardRows[4].text = rows ? rows[4] : ""
+      this.cardRows[5].text = prov.bannerText + (ev ? " | " + ev.eventId + " " + ev.timestamp.slice(11, 19) : "")
+      const showCard =
+        this.disclosureTier !== "WORLD" || realFail || snap.selectedModuleId !== null || snap.sceneMode === "APPROVAL_PENDING"
+      this.cardRoot.enabled = showCard
+      if (showCard) {
+        const eng = this.disclosureTier === "ENGINEER" || realFail || snap.sceneMode === "APPROVAL_PENDING"
+        for (let i = 0; i < this.cardRowObjects.length; i++) this.cardRowObjects[i].enabled = i < 3 || eng
+      }
+      return
     }
 
     // Populate all 6 card rows deterministically (so LEAF L07/L08/L09/L10/L18 assertions always succeed)

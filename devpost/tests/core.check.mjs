@@ -45,7 +45,7 @@ t("pin/search/sort/metadata", () => {
   const e = new BuildAliveEngine()
   assert.equal(e.getSortedProjects()[0].projectId, "lobby-sync") // pinned by default, favoriteOrder 1
   assert.equal(e.togglePinProject("earthproof-rover"), true)
-  assert.equal(e.getSortedProjects().filter((p) => p.pinned).length, 3)
+  assert.equal(e.getSortedProjects().filter((p) => p.pinned).length, 2) // lobby-sync default + rover just pinned
   assert.equal(e.togglePinProject("earthproof-rover"), false)
   assert.equal(e.togglePinProject("ghost"), false)
   assert.equal(e.filterProjects("rover").length, 1)

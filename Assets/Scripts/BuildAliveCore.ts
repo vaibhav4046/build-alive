@@ -2,6 +2,7 @@
 // Zero Lens Studio global dependencies so this exact file runs in Lens Studio (lensifyts) AND Node.js tests.
 
 export type ProvenanceMode =
+  | "REAL_SCAN"
   | "LIVE_VERIFIED"
   | "LOCAL_RECORDED_REPLAY"
   | "PREVIEW_SIMULATION"
@@ -202,6 +203,165 @@ export interface PersistedStateV1 {
   readonly highContrast: boolean
   readonly textScale: number
   readonly evidenceDensity: EvidenceDensity
+}
+
+// ---- Real workspace payload (v3): produced by bridge/project-discovery.mjs from approved git roots ----
+
+export const ROOT_CLUSTER_ID = "_root_"
+export const SLOT_IDS: readonly string[] = ["client-ui", "server-lobby", "ws-gateway", "shared-state", "db-mock", "test-suite"]
+export const SLOT_ROLES: readonly DistrictRole[] = ["UI", "Logic", "API", "Data", "Assets", "Tests"]
+
+export interface WorkspaceClusterPayload {
+  readonly id: string
+  readonly label: string
+  readonly role: DistrictRole
+  readonly fileCount: number
+  readonly loc: number
+  readonly files: readonly string[]
+}
+
+export interface WorkspaceWorldPayload {
+  readonly projectId: string
+  readonly name: string
+  readonly branch: string
+  readonly head: string
+  readonly dirtyFiles: number
+  readonly fileCount: number
+  readonly unresolvedImports: number
+  readonly totalClusters: number
+  readonly clusters: readonly WorkspaceClusterPayload[]
+  readonly edges: readonly {readonly from: string; readonly to: string; readonly weight: number}[]
+}
+
+const SAFE_ID = /^[A-Za-z0-9._\-\/]{1,80}$/
+const VALID_ROLES: ReadonlySet<string> = new Set(["UI", "Logic", "API", "Data", "Tests", "Assets"])
+
+/** Validates + sanitizes an untrusted workspace message from the bridge (injection-safe, bounded). */
+export function validateWorkspaceWorlds(raw: unknown): {ok: boolean; worlds: WorkspaceWorldPayload[]; error?: string} {
+  if (!raw || typeof raw !== "object") return {ok: false, worlds: [], error: "not_object"}
+  const r = raw as Record<string, unknown>
+  if (r.type !== "workspace" || !Array.isArray(r.worlds) || r.worlds.length === 0 || r.worlds.length > 3) {
+    return {ok: false, worlds: [], error: "bad_workspace_envelope"}
+  }
+  const out: WorkspaceWorldPayload[] = []
+  for (const wr of r.worlds as unknown[]) {
+    if (!wr || typeof wr !== "object") return {ok: false, worlds: [], error: "bad_world"}
+    const w = wr as Record<string, unknown>
+    if (typeof w.projectId !== "string" || !SAFE_ID.test(w.projectId)) return {ok: false, worlds: [], error: "bad_projectId"}
+    if (!Array.isArray(w.clusters) || w.clusters.length === 0 || w.clusters.length > 16) return {ok: false, worlds: [], error: "bad_clusters"}
+    const clusters: WorkspaceClusterPayload[] = []
+    for (const cr of w.clusters as unknown[]) {
+      const c = cr as Record<string, unknown>
+      if (!c || typeof c.id !== "string" || !SAFE_ID.test(c.id) || typeof c.role !== "string" || !VALID_ROLES.has(c.role)) {
+        return {ok: false, worlds: [], error: "bad_cluster"}
+      }
+      const files: string[] = []
+      if (Array.isArray(c.files)) {
+        for (const f of c.files.slice(0, 12)) {
+          const s = sanitizeFileAlias(String(f))
+          if (s.ok) files.push(s.alias)
+        }
+      }
+      clusters.push({
+        id: c.id,
+        label: sanitizeDisplayText(String(c.label || c.id), 18),
+        role: c.role as DistrictRole,
+        fileCount: Math.max(0, Math.floor(Number(c.fileCount) || 0)),
+        loc: Math.max(0, Math.floor(Number(c.loc) || 0)),
+        files,
+      })
+    }
+    const edges: {from: string; to: string; weight: number}[] = []
+    if (Array.isArray(w.edges)) {
+      for (const er of w.edges.slice(0, 64) as unknown[]) {
+        const e = er as Record<string, unknown>
+        if (e && typeof e.from === "string" && typeof e.to === "string" && SAFE_ID.test(e.from) && SAFE_ID.test(e.to)) {
+          edges.push({from: e.from, to: e.to, weight: Math.max(1, Math.floor(Number(e.weight) || 1))})
+        }
+      }
+    }
+    out.push({
+      projectId: w.projectId,
+      name: sanitizeDisplayText(String(w.name || w.projectId), 24),
+      branch: sanitizeDisplayText(String(w.branch || "unknown"), 40),
+      head: sanitizeDisplayText(String(w.head || ""), 12),
+      dirtyFiles: Math.max(0, Math.floor(Number(w.dirtyFiles) || 0)),
+      fileCount: Math.max(0, Math.floor(Number(w.fileCount) || 0)),
+      unresolvedImports: Math.max(0, Math.floor(Number(w.unresolvedImports) || 0)),
+      totalClusters: Math.max(clusters.length, Math.floor(Number(w.totalClusters) || clusters.length)),
+      clusters,
+      edges,
+    })
+  }
+  return {ok: true, worlds: out}
+}
+
+/** Binds real clusters to the 6 stable scene slots: role match first (largest), then largest remaining. */
+export function assignClustersToSlots(clusters: readonly WorkspaceClusterPayload[]): (WorkspaceClusterPayload | null)[] {
+  const used = new Set<string>()
+  const sorted = [...clusters].sort((a, b) => b.fileCount - a.fileCount || (a.id < b.id ? -1 : 1))
+  const result: (WorkspaceClusterPayload | null)[] = SLOT_ROLES.map(() => null)
+  for (let s = 0; s < SLOT_ROLES.length; s++) {
+    const hit = sorted.find((c) => !used.has(c.id) && c.role === SLOT_ROLES[s])
+    if (hit) {
+      result[s] = hit
+      used.add(hit.id)
+    }
+  }
+  for (let s = 0; s < SLOT_ROLES.length; s++) {
+    if (result[s]) continue
+    const hit = sorted.find((c) => !used.has(c.id))
+    if (hit) {
+      result[s] = hit
+      used.add(hit.id)
+    }
+  }
+  return result
+}
+
+export function buildProjectFromWorld(w: WorkspaceWorldPayload, order: number): ProjectDescriptor {
+  const assigned = assignClustersToSlots(w.clusters)
+  const idMap: Record<string, string> = {}
+  const modules: ModuleNode[] = []
+  assigned.forEach((c, si) => {
+    if (!c) return
+    idMap[c.id] = SLOT_IDS[si]
+    modules.push({
+      id: SLOT_IDS[si],
+      label: c.label,
+      role: c.role,
+      clusterId: c.id,
+      files: c.files,
+      summary: c.fileCount + " files, " + c.loc + " lines" + (c.role !== SLOT_ROLES[si] ? " (role " + c.role + ")" : ""),
+      status: "healthy",
+    })
+  })
+  const seen = new Set<string>()
+  const edges: DependencyEdge[] = []
+  for (const e of w.edges) {
+    const a = idMap[e.from]
+    const b = idMap[e.to]
+    if (!a || !b || a === b) continue
+    const key = a + ">" + b
+    if (seen.has(key)) continue
+    seen.add(key)
+    edges.push({id: "road-" + a + "-" + b, from: a, to: b, kind: "imports", verified: true, dataFlowLabel: e.weight + " resolved imports"})
+  }
+  return {
+    projectId: w.projectId,
+    title: w.name,
+    subtitle: w.branch + (w.head ? "@" + w.head : "") + " | " + w.fileCount + " files",
+    sourcePathAlias: w.name,
+    lastEventTimestamp: "",
+    provenance: "REAL_SCAN",
+    pinned: true,
+    favoriteOrder: order,
+    modules,
+    edges,
+    diffs: [],
+    failures: [],
+    recordedEvents: [],
+  }
 }
 
 export const MAX_EVENTS = 128
@@ -1208,6 +1368,81 @@ export class BuildAliveEngine {
     return true
   }
 
+  // ---- Real workspace (v3) -----------------------------------------------------------------------
+
+  private workspaceLoaded = false
+  private otherProjectEventCount: Record<string, number> = {}
+  private lastWorkspaceSlotIds: string[] = []
+
+  get isWorkspaceLoaded(): boolean {
+    return this.workspaceLoaded
+  }
+
+  /** Replaces sample islands with real scanned projects. Returns the project id bound to each of the 3 island slots. */
+  loadWorkspace(worlds: readonly WorkspaceWorldPayload[]): string[] {
+    const real = worlds.slice(0, 3).map((w, i) => buildProjectFromWorld(w, i + 1))
+    const samples = DEMO_PROJECTS.map((p) => ({...p, pinned: false, favoriteOrder: 100 + p.favoriteOrder}))
+    this.projects = [...real, ...samples]
+    this.workspaceLoaded = true
+    this.sessionTraces.clear()
+    this.otherProjectEventCount = {}
+    const slotIds: string[] = []
+    for (let k = 0; k < 3; k++) slotIds.push(real[k] ? real[k].projectId : samples[k].projectId)
+    this.lastWorkspaceSlotIds = slotIds
+    this.selectProject(real[0].projectId)
+    return slotIds
+  }
+
+  get workspaceSlotProjectIds(): readonly string[] {
+    return this.lastWorkspaceSlotIds
+  }
+
+  /** Maps an event to the module (scene slot) it touched, from real file aliases. Null = unresolved. */
+  moduleIdForEvent(ev: AgentEvent | null, project: ProjectDescriptor = this.currentProject): string | null {
+    if (!ev) return null
+    for (const alias of ev.fileAliases) {
+      for (const m of project.modules) {
+        if (m.files.indexOf(alias) >= 0) return m.id
+        if (project.provenance === "REAL_SCAN") {
+          const c = m.clusterId
+          const hit = c === ROOT_CLUSTER_ID ? alias.indexOf("/") < 0 : alias.indexOf(c + "/") === 0
+          if (hit) return m.id
+        }
+      }
+    }
+    return null
+  }
+
+  /** Evidence rows for a real module (no invented data; unresolved facts are labelled). */
+  describeModule(moduleId: string): string[] | null {
+    const p = this.currentProject
+    const m = p.modules.find((x) => x.id === moduleId)
+    if (!m) return null
+    const label = (id: string): string => {
+      const o = p.modules.find((x) => x.id === id)
+      return o ? o.label : id
+    }
+    const imports = p.edges.filter((e) => e.from === moduleId).map((e) => label(e.to))
+    const usedBy = p.edges.filter((e) => e.to === moduleId).map((e) => label(e.from))
+    let last: AgentEvent | null = null
+    for (let i = this.eventBuffer.length - 1; i >= 0; i--) {
+      const e = this.eventBuffer[i]
+      if (e.seq <= this.cursorSeq && this.moduleIdForEvent(e, p) === moduleId) {
+        last = e
+        break
+      }
+    }
+    return [
+      m.label + " [" + m.role + "] in " + p.title,
+      m.summary,
+      "Imports: " + (imports.length ? imports.join(", ") : "none resolved") + " | Used by: " + (usedBy.length ? usedBy.join(", ") : "none resolved"),
+      last
+        ? "Last event " + last.eventId + " " + last.kind + " " + last.status + " [" + last.provenance + "] " + last.timestamp.slice(11, 19)
+        : "No observed agent event on this module yet",
+      "Top files: " + (m.files.slice(0, 3).join(", ") || "unresolved"),
+    ]
+  }
+
   returnToHubPreservingState(): SceneMode {
     this.sessionTraces.set(this.currentProjectId, [...this.eventBuffer])
     this.sceneMode = "PROJECT_HUB"
@@ -1426,6 +1661,20 @@ export class BuildAliveEngine {
       res.event.provenance === "LIVE_VERIFIED" && this.connectionState !== "LIVE"
         ? {...res.event, provenance: "UNVERIFIED"}
         : res.event
+    if (this.workspaceLoaded && ev.projectId !== this.currentProjectId) {
+      // Real-workspace mode: events for other projects are kept in that project's trace, never mixed in.
+      if (!this.projects.some((p) => p.projectId === ev.projectId)) {
+        this.droppedEvents++
+        return {accepted: false, reason: "unknown_project"}
+      }
+      const trace = this.sessionTraces.get(ev.projectId) || []
+      if (trace.some((t) => t.eventId === ev.eventId)) return {accepted: false, reason: "duplicate_eventId"}
+      trace.push(ev)
+      if (trace.length > MAX_EVENTS) trace.shift()
+      this.sessionTraces.set(ev.projectId, trace)
+      this.otherProjectEventCount[ev.projectId] = (this.otherProjectEventCount[ev.projectId] || 0) + 1
+      return {accepted: true, reason: "stored_for_other_project"}
+    }
     if (this.seenEventIds.has(ev.eventId)) {
       return {accepted: false, reason: "duplicate_eventId", seq: ev.seq}
     }
@@ -1996,6 +2245,8 @@ export class BuildAliveEngine {
       cursorSeq: this.cursorSeq,
       totalEvents: this.eventBuffer.length,
       selectedModuleId: this.selectedModuleId,
+      activeModuleId: this.moduleIdForEvent(this.activeEvent),
+      pendingOtherProjectEvents: this.otherProjectEventCount,
       activeFailures: this.getActiveFailures(),
       testRepaired: this.isTestRepaired(),
       explanation: this.explainCurrentState(),

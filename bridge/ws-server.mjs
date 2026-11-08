@@ -18,6 +18,9 @@ import {
   watchLiveAntigravitySessions,
 } from "./antigravity-adapter.mjs"
 import {runDemoRepoSuite} from "../demo-repo/tests/room-capacity.test.mjs"
+import {discoverWorlds, makeResolver, toLensWorld} from "./project-discovery.mjs"
+import {watchAntigravity} from "./session-coordinator.mjs"
+import {detectProviders} from "./provider-registry.mjs"
 
 const WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -76,8 +79,21 @@ function decodeFrame(buf) {
   return {opcode, payload, totalLen: offset + payloadLen}
 }
 
-export function createBridgeServer({port = 8787, journalPath = null, watchWindowsSessions = false} = {}) {
+export function createBridgeServer({port = 8787, journalPath = null, watchWindowsSessions = false, workspaceConfigPath = null} = {}) {
   const journal = new EventJournal(journalPath)
+
+  // v3 real-workspace mode: approved roots -> real worlds; sessions resolved against them.
+  let workspace = null
+  let wsWatcher = null
+  let hookEvents = 0
+  if (workspaceConfigPath) {
+    const entries = discoverWorlds(workspaceConfigPath)
+    workspace = {
+      entries,
+      resolver: makeResolver(entries),
+      message: JSON.stringify({type: "workspace", worlds: entries.map((e) => toLensWorld(e.world))}),
+    }
+  }
 
   const actionGate = new ActionGate({
     journal,
@@ -106,7 +122,39 @@ export function createBridgeServer({port = 8787, journalPath = null, watchWindow
     })
   }
 
+  if (workspace) {
+    wsWatcher = watchAntigravity({
+      resolver: workspace.resolver,
+      onEvent: (ev) => {
+        const saved = journal.append(ev)
+        broadcast(saved)
+      },
+    })
+  }
+
   const server = http.createServer((req, res) => {
+    // DNS-rebinding guard: only loopback Host headers are served.
+    const hostHdr = String(req.headers.host || "").toLowerCase()
+    if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(hostHdr)) {
+      res.writeHead(403)
+      res.end()
+      return
+    }
+    if (workspace && req.method === "GET" && req.url === "/workspace") {
+      res.writeHead(200, {"Content-Type": "application/json"})
+      res.end(workspace.message)
+      return
+    }
+    if (workspace && req.method === "GET" && req.url === "/providers") {
+      res.writeHead(200, {"Content-Type": "application/json"})
+      res.end(JSON.stringify({providers: detectProviders({antigravityState: wsWatcher ? wsWatcher.state() : null, hookEvents}), mapping: workspace.resolver.stats}))
+      return
+    }
+    if (workspace && req.method === "GET" && req.url === "/journal") {
+      res.writeHead(200, {"Content-Type": "application/json"})
+      res.end(JSON.stringify(journal.getAllEvents().slice(-200)))
+      return
+    }
     // Serve Real Product Workbench UI at root (GET / or GET /workbench)
     if (req.method === "GET" && (req.url === "/" || req.url?.startsWith("/?") || req.url?.startsWith("/workbench"))) {
       try {
@@ -281,6 +329,9 @@ export function createBridgeServer({port = 8787, journalPath = null, watchWindow
     socket.write(headers.join("\r\n"))
     clients.add(socket)
 
+    // v3: the scanned real workspace is always sent first so events resolve against it
+    if (workspace) socket.write(encodeTextFrame(workspace.message))
+
     // Replay journal history so connected client gets current timeline
     for (const ev of journal.getAllEvents()) {
       socket.write(encodeTextFrame(JSON.stringify(ev)))
@@ -386,6 +437,7 @@ export function createBridgeServer({port = 8787, journalPath = null, watchWindow
     close: () =>
       new Promise((resolve) => {
         if (watcher) watcher.stop()
+        if (wsWatcher) wsWatcher.stop()
         for (const s of clients) s.destroy()
         clients.clear()
         server.close(resolve)
