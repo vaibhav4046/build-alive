@@ -3,751 +3,654 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1920, height=1080" />
-  <title>BUILD ALIVE — See & Learn How AI Builds Things (Simple Mode)</title>
+  <title>BUILD ALIVE — The Living 3D AI World</title>
   <style>
-    :root {
-      --bg: #070c18;
-      --bg-card: #0e1629;
-      --bg-hero: #112040;
-      --border: #283e6b;
-      --cyan: #3ae8ff;
-      --mint: #2ef2a6;
-      --amber: #ffca3a;
-      --coral: #ff6359;
-      --violet: #c28cff;
-      --text: #f8faff;
-      --muted: #b0c2e6;
-      --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      --font-mono: "Cascadia Code", "Consolas", monospace;
-    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-      width: 100vw;
-      height: 100vh;
+      width: 1920px;
+      height: 1080px;
       overflow: hidden;
-      background: radial-gradient(circle at 50% 0%, #15254a 0%, #070c18 72%);
-      color: var(--text);
-      font-family: var(--font-sans);
-      font-size: 15px;
-      line-height: 1.42;
+      background: #060b18;
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      user-select: none;
+    }
+    #world {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      display: block;
     }
 
-    /* Top Bar */
-    .topbar {
-      height: 64px;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(8, 13, 26, 0.96);
-      border-bottom: 2px solid var(--border);
+    /* Floating Hologram Sky Banner (Part of the 3D World Sky, not a dashboard) */
+    .sky-holo {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1120px;
+      background: linear-gradient(180deg, rgba(16, 36, 72, 0.92) 0%, rgba(10, 22, 46, 0.92) 100%);
+      border: 3px solid #3ae8ff;
+      border-radius: 22px;
+      padding: 14px 26px;
+      box-shadow: 0 0 50px rgba(58, 232, 255, 0.35), inset 0 0 24px rgba(58, 232, 255, 0.15);
+      color: #fff;
+      text-align: center;
+      pointer-events: auto;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .brand-badge {
-      background: linear-gradient(135deg, var(--cyan), var(--mint));
-      color: #04101c;
+    .sky-holo-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #3ae8ff, #2ef2a6);
+      color: #041220;
       font-weight: 900;
-      font-size: 14px;
-      padding: 6px 13px;
-      border-radius: 8px;
-      letter-spacing: 0.04em;
-    }
-    .brand-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .brand-sub {
-      font-size: 14px;
-      color: var(--amber);
-      font-weight: 700;
-      border-left: 2px solid var(--border);
-      padding-left: 12px;
-    }
-
-    .llm-pills {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-    }
-    .llm-pill {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 6px 13px;
+      font-size: 13px;
+      padding: 3px 14px;
       border-radius: 20px;
-      background: #121e38;
-      border: 1.5px solid var(--border);
-      font-size: 13px;
-      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 5px;
     }
-    .llm-pill.active {
-      border-color: var(--mint);
-      background: rgba(46, 242, 166, 0.14);
-    }
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--mint);
-      box-shadow: 0 0 8px var(--mint);
-    }
-    .dot.violet { background: var(--violet); box-shadow: 0 0 8px var(--violet); }
-    .dot.cyan { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
-    .dot.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
-
-    .pace-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #0d162b;
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-    }
-    .pace-label {
-      font-size: 12.5px;
-      font-weight: 800;
-      color: var(--amber);
-    }
-    .btn-sm {
-      background: #19294a;
-      color: var(--text);
-      border: 1px solid #324c80;
-      padding: 5px 11px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .btn-sm.on {
-      background: var(--cyan);
-      color: #05101e;
-      border-color: var(--cyan);
-    }
-
-    /* 3-Column Grid */
-    .workspace {
-      display: grid;
-      grid-template-columns: 405px 1fr 445px;
-      gap: 16px;
-      padding: 14px 20px;
-      height: calc(100vh - 64px);
-    }
-    .col {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      height: 100%;
-      overflow: hidden;
-    }
-    .panel {
-      background: var(--bg-card);
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 15px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 11px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-    }
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1.5px solid #1f3156;
-      padding-bottom: 9px;
-    }
-    .panel-title {
-      font-size: 18.5px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .panel-tag {
-      font-size: 11.5px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 6px;
-      letter-spacing: 0.04em;
-    }
-    .tag-cyan { background: rgba(58, 232, 255, 0.18); color: var(--cyan); border: 1px solid var(--cyan); }
-    .tag-mint { background: rgba(46, 242, 166, 0.18); color: var(--mint); border: 1px solid var(--mint); }
-    .tag-amber { background: rgba(255, 202, 58, 0.18); color: var(--amber); border: 1px solid var(--amber); }
-    .tag-violet { background: rgba(194, 140, 255, 0.2); color: var(--violet); border: 1px solid var(--violet); }
-
-    /* Column 1: Kid-Simple Setup Studio */
-    .setup-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .setup-label {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--amber);
-    }
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
-    .chip {
-      padding: 6px 11px;
-      border-radius: 8px;
-      background: #142240;
-      border: 1.5px solid #2b4373;
-      font-size: 13px;
-      font-weight: 700;
-      color: #d6e4ff;
-      cursor: pointer;
-    }
-    .chip.selected {
-      background: rgba(58, 232, 255, 0.18);
-      border-color: var(--cyan);
-      color: var(--text);
-    }
-    .chip.selected-mint {
-      background: rgba(46, 242, 166, 0.18);
-      border-color: var(--mint);
-      color: var(--text);
-    }
-    .chip.selected-violet {
-      background: rgba(194, 140, 255, 0.2);
-      border-color: var(--violet);
-      color: var(--text);
-    }
-
-    .prompt-story-box {
-      background: #081020;
-      border: 2px solid var(--cyan);
-      border-radius: 10px;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 13.5px;
-    }
-    .story-line {
-      background: #101c36;
-      padding: 7px 10px;
-      border-radius: 6px;
-      border-left: 4px solid var(--mint);
-    }
-
-    /* Column 2: Giant Hero Block + 6 Big Story Blocks + Simple Line-by-Line List */
-    .hero-block {
-      background: linear-gradient(180deg, #16284c 0%, #0e1932 100%);
-      border: 3px solid var(--cyan);
-      border-radius: 16px;
-      padding: 18px 22px;
-      box-shadow: 0 0 36px rgba(58, 232, 255, 0.18);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .hero-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .hero-step-badge {
-      background: var(--cyan);
-      color: #04101e;
+    .sky-holo-title {
+      font-size: 27px;
       font-weight: 900;
-      font-size: 13.5px;
-      padding: 4px 12px;
-      border-radius: 6px;
+      color: #ffffff;
+      text-shadow: 0 2px 12px rgba(58, 232, 255, 0.4);
     }
-    .hero-headline {
-      font-size: 26px;
-      font-weight: 900;
-      color: var(--text);
-      line-height: 1.22;
-    }
-    .hero-sub {
+    .sky-holo-sub {
       font-size: 16px;
-      color: #dce8ff;
-      line-height: 1.42;
+      color: #d8ebff;
+      margin-top: 4px;
+      font-weight: 600;
     }
-    .hero-live-cmd {
-      background: #070d19;
-      border: 1.5px solid var(--mint);
-      border-left: 6px solid var(--mint);
-      padding: 10px 14px;
-      border-radius: 8px;
-      display: flex;
+    .sky-holo-cmd {
+      margin-top: 8px;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 16px;
+      background: rgba(5, 11, 24, 0.9);
+      border: 1.5px solid #2ef2a6;
+      padding: 6px 18px;
+      border-radius: 14px;
       font-size: 14px;
     }
 
-    /* 6 Big Clickable Story Blocks */
-    .blocks-grid {
+    /* World Speech Bubbles & Interactive 3D Building Callouts */
+    .world-tag {
+      position: absolute;
+      background: rgba(10, 20, 42, 0.92);
+      border: 2.5px solid #3ae8ff;
+      border-radius: 16px;
+      padding: 10px 14px;
+      color: #fff;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .world-tag:hover { transform: scale(1.04); }
+    .world-tag::after {
+      content: "";
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 12px 10px 0;
+      border-style: solid;
+      border-color: #3ae8ff transparent transparent;
+    }
+    .world-tag.amber { border-color: #ffca3a; }
+    .world-tag.amber::after { border-color: #ffca3a transparent transparent; }
+    .world-tag.mint { border-color: #2ef2a6; }
+    .world-tag.mint::after { border-color: #2ef2a6 transparent transparent; }
+    .world-tag.violet { border-color: #c28cff; }
+    .world-tag.violet::after { border-color: #c28cff transparent transparent; }
+    .world-tag.coral { border-color: #ff6359; }
+    .world-tag.coral::after { border-color: #ff6359 transparent transparent; }
+
+    .wt-num {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #ffca3a;
+    }
+    .wt-title {
+      font-size: 16px;
+      font-weight: 900;
+      margin-top: 1px;
+    }
+    .wt-desc {
+      font-size: 12.5px;
+      color: #c9dcff;
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    /* Cutaway Inside-the-Building Conveyor Belt (Bottom Center of the 3D World) */
+    .cutaway-room {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1180px;
+      background: linear-gradient(180deg, rgba(13, 25, 50, 0.95) 0%, rgba(7, 14, 30, 0.97) 100%);
+      border: 3px solid #ffca3a;
+      border-radius: 20px;
+      padding: 12px 20px 14px;
+      box-shadow: 0 0 40px rgba(255, 202, 58, 0.25);
+      color: #fff;
+    }
+    .cutaway-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .conveyor-belt {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 10px;
     }
-    .exec-block {
-      background: #101b33;
-      border: 2px solid #263c69;
+    .station {
+      background: rgba(18, 34, 68, 0.95);
+      border: 2px solid #2e4b82;
       border-radius: 12px;
-      padding: 11px 14px;
-      cursor: pointer;
+      padding: 9px 10px;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      position: relative;
     }
-    .exec-block.active-block {
-      background: rgba(58, 232, 255, 0.16);
-      border-color: var(--cyan);
-      box-shadow: 0 0 18px rgba(58, 232, 255, 0.24);
+    .station.done { border-color: #2ef2a6; }
+    .station.active {
+      border-color: #ffca3a;
+      background: rgba(255, 202, 58, 0.15);
+      box-shadow: 0 0 18px rgba(255, 202, 58, 0.3);
     }
-    .exec-block-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--cyan);
+    .st-step {
+      font-size: 11.5px;
+      font-weight: 900;
+      color: #ffca3a;
     }
-    .exec-block-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .exec-block-desc {
+    .st-plain {
       font-size: 13px;
-      color: var(--muted);
-    }
-
-    /* Inside the Block: Line-by-Line in Plain Everyday Language */
-    .line-inspector {
-      flex: 1;
-      background: #091122;
-      border: 2px solid #283e6b;
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow: hidden;
-    }
-    .line-row {
-      display: grid;
-      grid-template-columns: 115px 1fr 220px 95px;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 12px;
-      background: #101c36;
-      border-left: 5px solid var(--cyan);
-      border-radius: 8px;
-      font-size: 13.5px;
-    }
-    .line-row.edit { border-left-color: var(--amber); }
-    .line-row.bot { border-left-color: var(--violet); }
-    .line-row.cmd { border-left-color: var(--mint); }
-    .line-row.safe { border-left-color: var(--coral); }
-
-    .line-badge {
       font-weight: 800;
-      font-size: 12.5px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.07);
-      text-align: center;
+      color: #fff;
+      line-height: 1.28;
     }
-    .line-plain {
-      font-weight: 700;
-      color: var(--text);
-    }
-    .line-real-cmd {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--cyan);
-      background: #070d1a;
-      padding: 4px 8px;
+    .st-cmd {
+      margin-top: auto;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 11px;
+      color: #3ae8ff;
+      background: #060c18;
+      padding: 4px 6px;
       border-radius: 5px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .line-status {
-      text-align: right;
-      font-weight: 800;
-      font-size: 12.5px;
-      color: var(--mint);
-    }
 
-    /* Column 3: Kid & Beginner Learner Mode */
-    .learner-card {
-      background: linear-gradient(180deg, #1b1438 0%, #0e1326 100%);
-      border: 2px solid var(--violet);
-      border-radius: 14px;
-      padding: 15px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
+    /* Floating Learner Treehouse Guide Bubbles on the East Island */
+    .learner-island-bubble {
+      position: absolute;
+      right: 26px;
+      width: 340px;
+      background: rgba(24, 16, 52, 0.93);
+      border: 2.5px solid #c28cff;
+      border-radius: 16px;
+      padding: 11px 15px;
+      color: #fff;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
     }
-    .lesson-step {
-      background: rgba(10, 15, 30, 0.88);
-      border: 1.5px solid #382c66;
-      border-left: 5px solid var(--violet);
-      border-radius: 9px;
-      padding: 9px 12px;
-    }
-    .lesson-step.cyan { border-left-color: var(--cyan); }
-    .lesson-step.amber { border-left-color: var(--amber); }
-    .lesson-step.mint { border-left-color: var(--mint); }
-    .lesson-h {
+    .lib-title {
       font-size: 14px;
-      font-weight: 800;
-      color: var(--violet);
+      font-weight: 900;
+      color: #ffca3a;
       margin-bottom: 3px;
     }
-    .lesson-step.cyan .lesson-h { color: var(--cyan); }
-    .lesson-step.amber .lesson-h { color: var(--amber); }
-    .lesson-step.mint .lesson-h { color: var(--mint); }
-    .lesson-p {
-      font-size: 12.8px;
-      color: #e4ecff;
-      line-height: 1.38;
-    }
-
-    .desktop-live-box {
-      background: #091122;
-      border: 1.5px solid #283f6b;
-      border-radius: 9px;
-      padding: 9px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .lib-text {
       font-size: 12.5px;
-    }
-    .proc-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px 9px;
-      background: #111e38;
-      border-radius: 6px;
-      font-weight: 700;
+      color: #e8e0ff;
+      line-height: 1.35;
     }
   </style>
 </head>
 <body>
-  <!-- TOP HEADER -->
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-badge">BUILD ALIVE</span>
-      <span class="brand-title">See &amp; Learn How AI Builds Software</span>
-      <span class="brand-sub">✨ Super Simple Mode — Easy Enough for a 5-Year-Old, Deep Enough for an Engineer</span>
+  <!-- FULL-SCREEN 3D ISOMETRIC AI WORLD CANVAS -->
+  <canvas id="world" width="1920" height="1080"></canvas>
+
+  <!-- 1. FLOATING SKY HOLOGRAM ABOVE THE 3D WORLD (BIGGEST BLOCK: WHAT IS HAPPENING NOW) -->
+  <div class="sky-holo">
+    <div class="sky-holo-badge">🌍 BUILD ALIVE 3D AI WORLD • 🐢 SLOW &amp; EASY TO READ (10s / STEP) • 88 LIVE SESSIONS</div>
+    <div class="sky-holo-title" id="sky-title">
+      🌟 Happening Now in Building #2: Fixing the "4 Friends" Bug &amp; Testing It!
+    </div>
+    <div class="sky-holo-sub" id="sky-sub">
+      Follow the glowing road from left to right! Your Voice Wish entered the Setup Castle, the AI fixed <code>lobby.ts</code>, and Judge Bot is testing all 6 buildings!
+    </div>
+    <div class="sky-holo-cmd" id="sky-cmd">
+      <span style="color: #2ef2a6; font-weight: 800;">🟢 Kid Translation: "Checking 2,223 rules to make sure 4 friends can play!"</span>
+      <span style="font-family: Consolas, monospace; color: #3ae8ff;">💻 Real Command: node build-alive.sweep.mjs → 2,223 PASSED ✅</span>
+    </div>
+  </div>
+
+  <!-- 2. FLOATING 3D BUILDING CALLOUT BUBBLES (ANCHORED DIRECTLY ABOVE EACH 3D ISLAND/BUILDING) -->
+  <!-- West Island: Setup & Wish Castle -->
+  <div class="world-tag cyan" style="left: 48px; top: 195px; width: 310px;" onclick="focusBuilding(0)">
+    <div class="wt-num">🏰 ISLAND 1 • SETUP &amp; WISH CASTLE</div>
+    <div class="wt-title">🎤 Your Wish + AI Superpowers</div>
+    <div class="wt-desc">
+      <b>Brains:</b> 🤖 Claude + 🚀 Antigravity + ⚡ Codex<br/>
+      <b>Voice:</b> "Fix room so 4 friends can play!"<br/>
+      <b>Skills:</b> 🧭 Planner • 🔍 Detective • 🔁 Loop • 🌐 Browser
+    </div>
+  </div>
+
+  <!-- Building 1: Prompt Forge -->
+  <div class="world-tag mint" style="left: 410px; top: 270px; width: 235px;" onclick="focusBuilding(1)">
+    <div class="wt-num">🏛️ BUILDING 1 • PROMPT MILL</div>
+    <div class="wt-title">📜 LEGO Checklist Maker</div>
+    <div class="wt-desc">Turns your voice into 4 clear steps so the AI never guesses!</div>
+  </div>
+
+  <!-- Building 2: Command Powerhouse (Center Hero Building) -->
+  <div class="world-tag amber" style="left: 725px; top: 190px; width: 280px;" onclick="focusBuilding(2)">
+    <div class="wt-num">⚡ BUILDING 2 • COMMAND FACTORY (OPEN!)</div>
+    <div class="wt-title">💻 Commands Running Inside</div>
+    <div class="wt-desc">Roof is open! Look down at the conveyor belt to see every command line-by-line!</div>
+  </div>
+
+  <!-- Building 3: Helper Bot Hangar -->
+  <div class="world-tag violet" style="left: 1065px; top: 235px; width: 255px;" onclick="focusBuilding(3)">
+    <div class="wt-num">🛸 BUILDING 3 • BOT HANGAR</div>
+    <div class="wt-title">🤝 Helper Bots Flying Out</div>
+    <div class="wt-desc">🤖 Main AI builds code while purple <b>Judge Bot</b> checks for mistakes!</div>
+  </div>
+
+  <!-- Building 4: Loop Track -->
+  <div class="world-tag cyan" style="left: 455px; top: 535px; width: 245px;" onclick="focusBuilding(4)">
+    <div class="wt-num">🎡 BUILDING 4 • LOOP TRACK</div>
+    <div class="wt-title">🔁 Check-Homework Loop</div>
+    <div class="wt-desc">Rides in a circle: <b>Plan → Fix → Test</b> until every building turns green!</div>
+  </div>
+
+  <!-- Building 5: Code Workshop -->
+  <div class="world-tag amber" style="left: 765px; top: 525px; width: 255px;" onclick="focusBuilding(5)">
+    <div class="wt-num">🛠️ BUILDING 5 • CODE WORKSHOP</div>
+    <div class="wt-title">✏️ Changed &gt;= 4 to &gt; 4</div>
+    <div class="wt-desc">In <code>lobby.ts</code>: unlocked the door so Friend #4 can join the game!</div>
+  </div>
+
+  <!-- Building 6: Boss Drawbridge -->
+  <div class="world-tag mint" style="left: 1090px; top: 530px; width: 250px;" onclick="focusBuilding(6)">
+    <div class="wt-num">🛡️ BUILDING 6 • BOSS GATE</div>
+    <div class="wt-title">👍 Waits for Your Pinch!</div>
+    <div class="wt-desc">You are the Boss! Passwords are hidden &amp; the bridge waits for your Approve!</div>
+  </div>
+
+  <!-- 3. EAST FLOATING ISLAND: OWL PROFESSOR'S LEARNER MODE TREEHOUSE -->
+  <div class="learner-island-bubble" style="top: 185px;">
+    <div class="lib-title">🦉 LEARNER ISLAND #1: Why Use Skills?</div>
+    <div class="lib-text">
+      Building without instructions is messy! <b>Skills</b> (like <i>Bug Detective</i>) give the AI a LEGO instruction book before it types a single command.
+    </div>
+  </div>
+
+  <div class="learner-island-bubble" style="top: 315px; border-color: #3ae8ff;">
+    <div class="lib-title" style="color: #3ae8ff;">🤖 LEARNER ISLAND #2: Why Two Robots?</div>
+    <div class="lib-text">
+      If one robot reads 100 files, its memory gets full! Spawning a <b>Sub-Agent (Judge Bot)</b> keeps the main AI's brain clean and sharp.
+    </div>
+  </div>
+
+  <div class="learner-island-bubble" style="top: 445px; border-color: #ffca3a;">
+    <div class="lib-title" style="color: #ffca3a;">🔁 LEARNER ISLAND #3: What is Loop Engineering?</div>
+    <div class="lib-text">
+      Instead of stopping after 1 try, a <b>Harness Loop</b> automatically runs <b>2,223 tests</b>. If 1 test fails, the robot rides the loop back to fix it!
+    </div>
+  </div>
+
+  <div class="learner-island-bubble" style="top: 575px; border-color: #2ef2a6;">
+    <div class="lib-title" style="color: #2ef2a6;">🖥️ LIVE PC &amp; AR WORLD STATUS</div>
+    <div class="lib-text">
+      🟢 <b>Lens Studio 3D Preview:</b> Running (0 Errors)<br/>
+      🟢 <b>Connected LLMs:</b> 84 Antigravity + 4 Claude + Codex<br/>
+      🟢 <b>Safety Gate:</b> Passwords Hidden • Boss Pinch Ready
+    </div>
+  </div>
+
+  <!-- 4. BOTTOM CENTER CUTAWAY ROOM: INSIDE THE CLICKED BUILDING (CONVEYOR BELT OF COMMANDS LINE-BY-LINE) -->
+  <div class="cutaway-room">
+    <div class="cutaway-header">
+      <div style="font-size: 18px; font-weight: 900; color: #ffca3a;">
+        🏭 INSIDE THE BUILDING (X-RAY CUTAWAY VIEW): Watch Every Command Move Along the Conveyor Belt Line-by-Line!
+      </div>
+      <div style="font-size: 13px; font-weight: 800; color: #2ef2a6;">
+        🔒 Secret Passwords Scrubbed Automatically • Click Any Building Above to Inspect!
+      </div>
     </div>
 
-    <div class="llm-pills">
-      <div class="llm-pill active"><span class="dot"></span>Antigravity AI (On)</div>
-      <div class="llm-pill active"><span class="dot violet"></span>Claude Code (On)</div>
-      <div class="llm-pill active"><span class="dot cyan"></span>OpenAI Codex (On)</div>
-      <div class="llm-pill"><span class="dot amber"></span>3D Glasses View</div>
+    <div class="conveyor-belt">
+      <div class="station done">
+        <div class="st-step">STATION 1 • VOICE &amp; SKILL</div>
+        <div class="st-plain">🧭 Opened "Bug Detective" &amp; "Loop" rulebooks</div>
+        <div class="st-cmd">skill: systematic-debugging</div>
+      </div>
+
+      <div class="station done">
+        <div class="st-step">STATION 2 • READ CODE</div>
+        <div class="st-plain">👀 Looked inside <code>lobby.ts</code> to find why friend #4 failed</div>
+        <div class="st-cmd">read_file(server/lobby.ts)</div>
+      </div>
+
+      <div class="station active">
+        <div class="st-step">STATION 3 • FIX CODE</div>
+        <div class="st-plain">✏️ Changed <code>&gt;= 4</code> to <code>&gt; 4</code> so 4 friends fit!</div>
+        <div class="st-cmd">edit_file(server/lobby.ts)</div>
+      </div>
+
+      <div class="station done">
+        <div class="st-step">STATION 4 • HELPER BOT</div>
+        <div class="st-plain">🤝 Purple Judge Bot checked the whole city for bugs</div>
+        <div class="st-cmd">invoke_subagent(Judge)</div>
+      </div>
+
+      <div class="station done">
+        <div class="st-step">STATION 5 • RUN 2,223 TESTS</div>
+        <div class="st-plain">🧪 Ran the test machine — all 2,223 rules passed!</div>
+        <div class="st-cmd">node build-alive.sweep.mjs</div>
+      </div>
+
+      <div class="station done">
+        <div class="st-step">STATION 6 • BOSS APPROVE</div>
+        <div class="st-plain">👍 You pinched Approve to open the green drawbridge!</div>
+        <div class="st-cmd">CONFIRM_PINCH_APPROVE</div>
+      </div>
     </div>
-
-    <div class="pace-controls">
-      <span class="pace-label">🐢 SPEED:</span>
-      <button class="btn-sm on">Slow &amp; Easy (10s)</button>
-      <button class="btn-sm">⏸️ Pause</button>
-      <button class="btn-sm">Next Step ➡</button>
-    </div>
-  </header>
-
-  <!-- 3-COLUMN WORKSPACE -->
-  <main class="workspace">
-    <!-- COLUMN 1: STEP 1 — PICK YOUR AI & SUPERPOWERS (SETUP) -->
-    <section class="col">
-      <div class="panel" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">1. Pick Your AI &amp; Superpowers</span>
-          <span class="panel-tag tag-cyan">START HERE</span>
-        </div>
-
-        <div class="setup-group">
-          <div class="setup-label">🧠 Step A: Choose Which AI Brain Helps You</div>
-          <div class="chip-row">
-            <span class="chip selected">🤖 Claude Code</span>
-            <span class="chip selected">🚀 Antigravity</span>
-            <span class="chip selected">⚡ OpenAI Codex</span>
-          </div>
-        </div>
-
-        <div class="setup-group">
-          <div class="setup-label">🎤 Step B: How Do You Want to Talk to It?</div>
-          <div class="chip-row">
-            <span class="chip selected-mint">🎙️ Speak with Voice</span>
-            <span class="chip selected-mint">👓 Look &amp; Pinch in 3D</span>
-            <span class="chip selected-mint">🖱️ Click on Screen</span>
-          </div>
-        </div>
-
-        <div class="setup-group">
-          <div class="setup-label">🛠️ Step C: Give Your AI Superpowers (Skills)</div>
-          <div class="chip-row">
-            <span class="chip selected-violet">🧭 Smart Planner</span>
-            <span class="chip selected-violet">🔍 Bug Detective</span>
-            <span class="chip selected-violet">🔁 Keep-Trying Loop</span>
-            <span class="chip selected-violet">🤝 Team of Helper Bots</span>
-            <span class="chip selected-violet">✅ Double-Checker</span>
-            <span class="chip">🌐 Web Browser</span>
-          </div>
-        </div>
-
-        <div class="setup-group" style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
-          <div class="setup-label" style="color: var(--cyan);">✨ Step D: How Your Wish Turns Into an AI Plan</div>
-          <div class="prompt-story-box" style="flex: 1;">
-            <div style="color: var(--amber); font-weight: 800;">
-              🗣️ What You Said: "Fix the game room so 4 friends can play!"
-            </div>
-            <div class="story-line">
-              <b>1. Read First:</b> Open <code>lobby.ts</code> and look for the mistake.
-            </div>
-            <div class="story-line" style="border-left-color: var(--amber);">
-              <b>2. Fix the Number:</b> Change <code>&gt;= 4</code> to <code>&gt; 4</code> so Player #4 can come in.
-            </div>
-            <div class="story-line" style="border-left-color: var(--violet);">
-              <b>3. Call Helper Bot:</b> Ask the Checker Bot to test all 2,223 rules.
-            </div>
-            <div class="story-line" style="border-left-color: var(--cyan);">
-              <b>4. Ask You First:</b> Wait for your green thumbs-up before saving!
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- COLUMN 2: GIANT HERO BLOCK + 6 CLICKABLE STORY BLOCKS + PLAIN-ENGLISH LINE TRACE -->
-    <section class="col">
-      <!-- GIANT TOP HERO BLOCK -->
-      <div class="hero-block">
-        <div class="hero-top">
-          <span class="hero-step-badge" id="hero-badge">🌟 BIGGEST BLOCK: WHAT THE AI IS DOING RIGHT NOW (STEP 2 OF 6)</span>
-          <span class="panel-tag tag-mint">🐢 SLOW &amp; EASY TO READ</span>
-        </div>
-        <div class="hero-headline" id="hero-title">
-          Fixing the "4 Friends" Room Bug &amp; Testing If It Works!
-        </div>
-        <div class="hero-sub" id="hero-desc">
-          Your AI found why the 4th friend couldn't join the game room! It fixed that 1 line of code, and now it is running a check to make sure nothing else broke.
-        </div>
-        <div class="hero-live-cmd" id="hero-cmd">
-          <span>🟢 <b>Plain English:</b> "Testing all 2,223 rules right now..."</span>
-          <span style="font-family: var(--font-mono); color: var(--cyan); font-size: 12.5px;">Command: node build-alive.sweep.mjs → 2,223 PASSED ✅</span>
-        </div>
-      </div>
-
-      <!-- 6 BIG CLICKABLE BLOCKS -->
-      <div class="blocks-grid">
-        <div class="exec-block" onclick="selectBlock(0)">
-          <div class="exec-block-top"><span>BLOCK 1</span><span>✅ DONE</span></div>
-          <div class="exec-block-title">🎤 Hear Your Wish</div>
-          <div class="exec-block-desc">Turns your voice &amp; superpowers into a step-by-step checklist</div>
-        </div>
-        <div class="exec-block active-block" onclick="selectBlock(1)">
-          <div class="exec-block-top"><span>BLOCK 2</span><span style="color: var(--mint);">● HAPPENING NOW</span></div>
-          <div class="exec-block-title">💻 Run Commands</div>
-          <div class="exec-block-desc">Click to see every computer command explained simply</div>
-        </div>
-        <div class="exec-block" onclick="selectBlock(2)">
-          <div class="exec-block-top"><span>BLOCK 3</span><span style="color: var(--violet);">🤖 2 HELPERS</span></div>
-          <div class="exec-block-title">🤝 Helper Bots</div>
-          <div class="exec-block-desc">Main AI builds it + Judge Bot checks for any mistakes</div>
-        </div>
-        <div class="exec-block" onclick="selectBlock(3)">
-          <div class="exec-block-top"><span>BLOCK 4</span><span style="color: var(--amber);">🔁 LOOP</span></div>
-          <div class="exec-block-title">🔁 Try-Again Loop</div>
-          <div class="exec-block-desc">If a test fails, the AI loops back and fixes it automatically</div>
-        </div>
-        <div class="exec-block" onclick="selectBlock(4)">
-          <div class="exec-block-top"><span>BLOCK 5</span><span>✏️ CODE</span></div>
-          <div class="exec-block-title">✏️ Code Change</div>
-          <div class="exec-block-desc">Changed &gt;= 4 to &gt; 4 so all 4 friends fit in the room!</div>
-        </div>
-        <div class="exec-block" onclick="selectBlock(5)">
-          <div class="exec-block-top"><span>BLOCK 6</span><span style="color: var(--mint);">🛡️ SAFE</span></div>
-          <div class="exec-block-title">👍 Ask You First</div>
-          <div class="exec-block-desc">Waits for your Pinch or Click before finishing the job</div>
-        </div>
-      </div>
-
-      <!-- INSIDE THE BLOCK: LINE BY LINE IN SIMPLE WORDS -->
-      <div class="line-inspector">
-        <div class="panel-header" style="padding-bottom: 6px;">
-          <span class="panel-title" style="font-size: 16.5px;">🔍 Inside This Block — Line by Line (What Happened &amp; What Command Ran)</span>
-          <span class="panel-tag tag-amber">PASSWORDS HIDDEN FOR SAFETY 🔒</span>
-        </div>
-
-        <div class="line-row">
-          <span class="line-badge" style="color: var(--cyan);">1. 🧭 SKILL</span>
-          <span class="line-plain">Opened the "Bug Detective" rulebook so the AI doesn't guess</span>
-          <span class="line-real-cmd">skill: systematic-debugging</span>
-          <span class="line-status">DONE ✅</span>
-        </div>
-
-        <div class="line-row edit">
-          <span class="line-badge" style="color: var(--amber);">2. ✏️ EDIT</span>
-          <span class="line-plain">Fixed the room limit from "&gt;= 4" to "&gt; 4" so 4 friends can join</span>
-          <span class="line-real-cmd">edit_file(server/lobby.ts)</span>
-          <span class="line-status" style="color: var(--amber);">FIXED ✏️</span>
-        </div>
-
-        <div class="line-row bot">
-          <span class="line-badge" style="color: var(--violet);">3. 🤖 HELPER</span>
-          <span class="line-plain">Called "Judge Bot" to double-check the fix with fresh eyes</span>
-          <span class="line-real-cmd">invoke_subagent(Judge)</span>
-          <span class="line-status" style="color: var(--violet);">CHECKED 🤝</span>
-        </div>
-
-        <div class="line-row cmd">
-          <span class="line-badge" style="color: var(--mint);">4. 💻 BUILD</span>
-          <span class="line-plain">Built the 3D scene for Lens Studio with zero mistakes</span>
-          <span class="line-real-cmd">lensifyts.exe run</span>
-          <span class="line-status">0 ERRORS ✅</span>
-        </div>
-
-        <div class="line-row cmd">
-          <span class="line-badge" style="color: var(--mint);">5. 🧪 TEST</span>
-          <span class="line-plain">Tested 2,223 rules to prove the whole project works</span>
-          <span class="line-real-cmd">node build-alive.sweep.mjs</span>
-          <span class="line-status">2,223 PASS 🎉</span>
-        </div>
-
-        <div class="line-row safe">
-          <span class="line-badge" style="color: var(--coral);">6. 👍 YOU</span>
-          <span class="line-plain">Asked for your Pinch approval before running the final test</span>
-          <span class="line-real-cmd">CONFIRM_PINCH_APPROVE</span>
-          <span class="line-status">APPROVED 👍</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- COLUMN 3: KID & BEGINNER LEARNER MODE (HOW AI WORKS) -->
-    <section class="col">
-      <div class="learner-card" style="flex: 1;">
-        <div class="panel-header">
-          <span class="panel-title">3. Learner Mode: How AI Works!</span>
-          <span class="panel-tag tag-violet">🎓 EASY LEARNING</span>
-        </div>
-
-        <div style="font-size: 13.5px; color: #e2d9ff;">
-          Want to know <b>how AI &amp; Harness Engineering work inside</b>? Here is the simple secret behind what you see on screen:
-        </div>
-
-        <div class="lesson-step cyan">
-          <div class="lesson-h">① Why We Give AI a Checklist (Prompt &amp; Skills)</div>
-          <div class="lesson-p">
-            Imagine building a LEGO castle without instructions—you might put blocks in the wrong place! <b>Skills</b> are like LEGO instruction books that tell the AI the right steps before it starts.
-          </div>
-        </div>
-
-        <div class="lesson-step">
-          <div class="lesson-h">② Why AI Calls Helper Friends (Sub-Agents)</div>
-          <div class="lesson-p">
-            If one robot tries to read 100 books at once, its head gets messy! So the Main AI calls a <b>Helper Bot</b> to check one part and report back a short, clean answer.
-          </div>
-        </div>
-
-        <div class="lesson-step amber">
-          <div class="lesson-h">③ The "Check Your Homework" Loop (Loop Engineering)</div>
-          <div class="lesson-p">
-            Smart AI never says "I'm done!" right away. It runs a <b>Test Loop</b> (like checking your math homework). If 1 answer is wrong, the loop makes the AI fix it first!
-          </div>
-        </div>
-
-        <div class="lesson-step mint">
-          <div class="lesson-h">④ Why You Are Always the Boss (Safety Gate)</div>
-          <div class="lesson-p">
-            The AI is your helper, not the boss. Before it runs an important command, it shows a green <b>Approve</b> button and waits for your thumbs-up!
-          </div>
-        </div>
-
-        <!-- LIVE DESKTOP MONITOR IN SIMPLE WORDS -->
-        <div class="desktop-live-box">
-          <div style="display: flex; justify-content: space-between; color: var(--cyan); font-weight: 800;">
-            <span>🖥️ WHAT IS RUNNING ON YOUR WINDOWS PC</span>
-            <span style="color: var(--mint);">🟢 LIVE NOW</span>
-          </div>
-          <div class="proc-row">
-            <span>👓 Lens Studio 3D Preview</span>
-            <span style="color: var(--mint);">Running Smoothly (0 Errors)</span>
-          </div>
-          <div class="proc-row">
-            <span>🧠 Connected AI Brains (:8787)</span>
-            <span style="color: var(--cyan);">88 Live Sessions Connected</span>
-          </div>
-          <div class="proc-row">
-            <span>🏙️ 3D Toy City on Desk</span>
-            <span style="color: var(--amber);">6 Buildings + 2 AI Bots</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+  </div>
 
   <script>
-    const SIMPLE_BLOCKS = [
+    const cv = document.getElementById("world");
+    const ctx = cv.getContext("2d");
+
+    // Draw a rich, colorful, storybook 3D Isometric World on the 1920x1080 canvas
+    function drawIsoTile(cx, cy, w, h, depth, topColor, leftColor, rightColor, strokeColor) {
+      const hw = w / 2;
+      const hh = h / 2;
+
+      // Left face
+      ctx.beginPath();
+      ctx.moveTo(cx - hw, cy);
+      ctx.lineTo(cx, cy + hh);
+      ctx.lineTo(cx, cy + hh + depth);
+      ctx.lineTo(cx - hw, cy + depth);
+      ctx.closePath();
+      ctx.fillStyle = leftColor;
+      ctx.fill();
+      if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = 2; ctx.stroke(); }
+
+      // Right face
+      ctx.beginPath();
+      ctx.moveTo(cx + hw, cy);
+      ctx.lineTo(cx, cy + hh);
+      ctx.lineTo(cx, cy + hh + depth);
+      ctx.lineTo(cx + hw, cy + depth);
+      ctx.closePath();
+      ctx.fillStyle = rightColor;
+      ctx.fill();
+      if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = 2; ctx.stroke(); }
+
+      // Top diamond face
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - hh);
+      ctx.lineTo(cx + hw, cy);
+      ctx.lineTo(cx, cy + hh);
+      ctx.lineTo(cx - hw, cy);
+      ctx.closePath();
+      ctx.fillStyle = topColor;
+      ctx.fill();
+      if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = 2.5; ctx.stroke(); }
+    }
+
+    function drawIsoBuilding(cx, cy, w, h, height, roofCol, leftCol, rightCol, edgeCol, windows = true) {
+      // Draw building body from (cx, cy - height) with depth = height
+      drawIsoTile(cx, cy - height, w, h, height, roofCol, leftCol, rightCol, edgeCol);
+      if (windows) {
+        ctx.fillStyle = "rgba(255, 230, 120, 0.85)";
+        for (let row = 1; row <= 2; row++) {
+          const wy = cy - height + row * (height * 0.32);
+          ctx.fillRect(cx - w * 0.25, wy, 10, 12);
+          ctx.fillRect(cx - w * 0.10, wy + 7, 10, 12);
+          ctx.fillRect(cx + w * 0.08, wy + 7, 10, 12);
+          ctx.fillRect(cx + w * 0.22, wy, 10, 12);
+        }
+      }
+    }
+
+    function drawRobot(x, y, color, name, bubbleText) {
+      ctx.save();
+      // Glow shadow
+      ctx.fillStyle = "rgba(0,0,0,0.45)";
+      ctx.beginPath(); ctx.ellipse(x, y + 22, 18, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+      // Body
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(x - 16, y - 16, 32, 32, 10); ctx.fill(); ctx.stroke();
+
+      // Visor eyes
+      ctx.fillStyle = "#061020";
+      ctx.beginPath(); ctx.roundRect(x - 11, y - 9, 22, 11, 4); ctx.fill();
+      ctx.fillStyle = "#3ae8ff";
+      ctx.beginPath(); ctx.arc(x - 5, y - 3.5, 3, 0, Math.PI * 2); ctx.arc(x + 5, y - 3.5, 3, 0, Math.PI * 2); ctx.fill();
+
+      // Antenna
+      ctx.strokeStyle = color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x, y - 16); ctx.lineTo(x, y - 26); ctx.stroke();
+      ctx.fillStyle = "#ffca3a";
+      ctx.beginPath(); ctx.arc(x, y - 28, 4.5, 0, Math.PI * 2); ctx.fill();
+
+      // Name badge
+      ctx.fillStyle = "rgba(6, 12, 26, 0.9)";
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(x - 52, y + 20, 104, 20, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 11.5px Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(name, x, y + 34);
+
+      if (bubbleText) {
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(x - 78, y - 58, 156, 24, 10); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#061020";
+        ctx.font = "bold 11.5px Segoe UI, sans-serif";
+        ctx.fillText(bubbleText, x, y - 42);
+      }
+      ctx.restore();
+    }
+
+    function drawGlowingRoad(x0, y0, x1, y1, color, label) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 10;
+      ctx.lineCap = "round";
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 18;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+
+      // Inner bright core
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([10, 10]);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Energy orbs along the road
+      for (const u of [0.28, 0.68]) {
+        const px = x0 + (x1 - x0) * u;
+        const py = y0 + (y1 - y0) * u;
+        ctx.fillStyle = "#ffca3a";
+        ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
+      }
+
+      if (label) {
+        const mx = (x0 + x1) / 2;
+        const my = (y0 + y1) / 2;
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(7, 14, 30, 0.92)";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(mx - 68, my - 13, 136, 22, 8); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.font = "bold 11.5px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(label, mx, my + 2);
+      }
+      ctx.restore();
+    }
+
+    function renderWorld() {
+      // 1. Starry Night + Aurora Sky Gradient
+      const sky = ctx.createLinearGradient(0, 0, 0, 1080);
+      sky.addColorStop(0, "#050a18");
+      sky.addColorStop(0.45, "#0d1f42");
+      sky.addColorStop(1, "#071126");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, 1920, 1080);
+
+      // Subtle stars & perspective world grid
+      ctx.fillStyle = "rgba(255,255,255,0.65)";
+      for (let i = 0; i < 90; i++) {
+        const sx = (i * 197) % 1920;
+        const sy = (i * 89) % 420;
+        ctx.fillRect(sx, sy, (i % 3) + 1, (i % 3) + 1);
+      }
+
+      ctx.strokeStyle = "rgba(58, 232, 255, 0.07)";
+      ctx.lineWidth = 1;
+      for (let x = -400; x <= 2320; x += 90) {
+        ctx.beginPath(); ctx.moveTo(960 + (x - 960) * 0.25, 220); ctx.lineTo(x, 1080); ctx.stroke();
+      }
+      for (let y = 260; y < 1080; y += 52) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1920, y); ctx.stroke();
+      }
+
+      // 2. Three Giant Floating 3D Continents / Islands
+      // West Continent: Setup & Wish Island
+      drawIsoTile(210, 490, 340, 180, 36, "#17385c", "#0f243d", "#0a192b", "#3ae8ff");
+      // Center Continent: Main 6-Building AI City Island
+      drawIsoTile(880, 560, 1040, 470, 44, "#152c52", "#0d1d38", "#091428", "#3ae8ff");
+      // East Continent: Owl Professor's Learner Treehouse Island
+      drawIsoTile(1690, 490, 360, 220, 36, "#281b54", "#1b113b", "#120b29", "#c28cff");
+
+      // 3. Glowing Energy Roads & Conveyor Bridges Connecting the World
+      drawGlowingRoad(230, 445, 525, 455, "#3ae8ff", "📜 Prompt Scroll Road");
+      drawGlowingRoad(525, 455, 865, 410, "#ffca3a", "⚡ Command Highway");
+      drawGlowingRoad(865, 410, 1190, 440, "#c28cff", "🛸 Sub-Agent Bridge");
+      drawGlowingRoad(575, 725, 890, 720, "#3ae8ff", "🔁 Homework Loop");
+      drawGlowingRoad(890, 720, 1210, 715, "#2ef2a6", "👍 Boss Approval Road");
+      drawGlowingRoad(865, 410, 890, 720, "#ffca3a", "✏️ AST Code Link");
+      drawGlowingRoad(1190, 440, 1210, 715, "#2ef2a6", "✅ Verified 2,223 Rules");
+
+      // 4. Draw the 7 Iconic 3D Buildings on the Islands
+      // West Island: Setup Castle
+      drawIsoBuilding(205, 455, 165, 95, 95, "#246694", "#184769", "#10324a", "#3ae8ff");
+      // Building 1: Prompt Mill
+      drawIsoBuilding(525, 455, 145, 85, 80, "#1c6e5e", "#134d42", "#0d362e", "#2ef2a6");
+      // Building 2: Command Powerhouse (Giant Center Factory with Open Glowing Roof!)
+      drawIsoBuilding(865, 415, 200, 115, 105, "#6b4c14", "#4d360d", "#362508", "#ffca3a");
+      // Open glowing roof core on Building 2
+      drawIsoTile(865, 310, 130, 72, 10, "#ffca3a", "#d49b1a", "#9e7110", "#ffffff");
+
+      // Building 3: Helper Bot Hangar
+      drawIsoBuilding(1190, 440, 155, 90, 86, "#46297a", "#311c57", "#22133d", "#c28cff");
+
+      // Building 4: Loop Track Carousel (Front Left)
+      drawIsoBuilding(575, 725, 150, 88, 72, "#19537a", "#113a57", "#0b283d", "#3ae8ff");
+      // Glowing circular loop halo around Building 4
+      ctx.save();
+      ctx.strokeStyle = "#3ae8ff"; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.ellipse(575, 675, 82, 34, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+
+      // Building 5: Code Workshop (Front Center)
+      drawIsoBuilding(890, 720, 165, 95, 78, "#6e4816", "#4f330f", "#38240a", "#ffca3a");
+
+      // Building 6: Boss Drawbridge Gate (Front Right)
+      drawIsoBuilding(1210, 715, 155, 90, 76, "#19694c", "#114a35", "#0b3324", "#2ef2a6");
+
+      // 5. Draw Cute, Friendly AI Robots Working Across the World!
+      drawRobot(145, 465, "#3ae8ff", "🤖 Claude Bot", "I hear your wish!");
+      drawRobot(270, 480, "#2ef2a6", "🚀 Antigravity", "Skills loaded!");
+      drawRobot(790, 375, "#ffca3a", "⚡ Builder Bot", "Running commands!");
+      drawRobot(1140, 395, "#c28cff", "🤝 Judge Bot", "Checking 2,223 rules!");
+      drawRobot(1265, 700, "#2ef2a6", "👍 Boss Gate", "Pinch Approve!");
+
+      // Draw dashed laser beam from Cutaway Room up to Building #2 so kids see the cutaway is INSIDE Building #2
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 202, 58, 0.55)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath(); ctx.moveTo(865, 415); ctx.lineTo(540, 875); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(865, 415); ctx.lineTo(1380, 875); ctx.stroke();
+      ctx.restore();
+    }
+
+    renderWorld();
+
+    const WORLD_STORIES = [
       {
-        badge: "🌟 BIGGEST BLOCK: STEP 1 OF 6 • HEARING YOUR WISH",
-        title: "Turning Your Voice & Superpowers Into a Simple Checklist!",
-        desc: "You picked Claude Code + Antigravity and the 'Bug Detective' superpower. The computer turned your wish into a clear 4-step LEGO instruction plan!",
-        plain: "🟢 Plain English: 'Checklist ready! Step 1: Read code first.'",
-        cmd: "Skills: systematic-debugging + verification-loop ✅"
+        title: "🏰 Island 1 (Setup Castle): Picking Your AI Brain, Voice & Superpowers!",
+        sub: "You picked Claude Code + Antigravity + Codex, spoke your wish, and gave the AI 5 Superpower Backpacks (Skills)!",
+        plain: "🟢 Kid Translation: 'Turning your voice wish into a 4-step LEGO instruction book!'",
+        cmd: "💻 Real Command: claude --skills systematic-debugging,verification-loop --bridge :8787"
       },
       {
-        badge: "🌟 BIGGEST BLOCK: WHAT THE AI IS DOING RIGHT NOW (STEP 2 OF 6)",
-        title: "Fixing the '4 Friends' Room Bug & Testing If It Works!",
-        desc: "Your AI found why the 4th friend couldn't join the game room! It fixed that 1 line of code, and now it is running a check to make sure nothing else broke.",
-        plain: "🟢 Plain English: 'Testing all 2,223 rules right now...'",
-        cmd: "Command: node build-alive.sweep.mjs → 2,223 PASSED ✅"
+        title: "🏛️ Building #1 (Prompt Mill): Making the Step-by-Step Checklist!",
+        sub: "Instead of guessing, the Prompt Mill writes a neat checklist: 1. Read lobby.ts  2. Fix >= 4  3. Ask Judge Bot  4. Ask You!",
+        plain: "🟢 Kid Translation: 'Checklist ready! No messy guessing allowed.'",
+        cmd: "💻 Real Command: Loaded SKILL.md (agent-harness-construction + systematic-debugging)"
       },
       {
-        badge: "🌟 BIGGEST BLOCK: STEP 3 OF 6 • CALLING HELPER BOTS",
-        title: "Two AI Brains Working Together: Builder Bot + Judge Bot!",
-        desc: "While the Main AI writes the code, it calls a second AI friend ('Judge Bot') to check every single building in the 3D city for mistakes.",
-        plain: "🟢 Plain English: 'Judge Bot checked everything — 0 mistakes found!'",
-        cmd: "Sub-Agent [138ef673]: 174,521 checks passed 🤝"
+        title: "🌟 Happening Now in Building #2: Fixing the '4 Friends' Bug & Testing It!",
+        sub: "Follow the glowing road from left to right! Your Voice Wish entered the Setup Castle, the AI fixed lobby.ts, and Judge Bot is testing all 6 buildings!",
+        plain: "🟢 Kid Translation: 'Checking 2,223 rules to make sure 4 friends can play!'",
+        cmd: "💻 Real Command: node build-alive.sweep.mjs → 2,223 PASSED ✅"
       },
       {
-        badge: "🌟 BIGGEST BLOCK: STEP 4 OF 6 • THE TRY-AGAIN LOOP",
-        title: "The 'Check Your Homework' Loop: Plan → Fix → Test!",
-        desc: "Instead of guessing once and stopping, the Loop makes the AI test its own work. If a red laser beam appears on a building, the AI fixes it until every building turns green!",
-        plain: "🟢 Plain English: 'Homework checked! All 6 buildings are green.'",
-        cmd: "Loop Gate: 0 errors | Speed: 0.02 milliseconds ⚡"
+        title: "🛸 Building #3 (Bot Hangar): Main AI + Purple Judge Bot Team Up!",
+        sub: "One robot gets tired if it reads everything! So Main AI calls purple Judge Bot to fly over the city and check for mistakes.",
+        plain: "🟢 Kid Translation: 'Judge Bot checked 174,521 rules — 0 mistakes!'",
+        cmd: "💻 Real Command: invoke_subagent(role='Adversarial Hackathon Judge', id='138ef673')"
       },
       {
-        badge: "🌟 BIGGEST BLOCK: STEP 5 OF 6 • THE EXACT CODE CHANGE",
-        title: "Before & After: Changing 1 Symbol So 4 Friends Can Play!",
-        desc: "In server/lobby.ts, the old rule said 'if players >= 4, stop!' That locked out friend #4. The AI changed it to 'if players > 4' so 4 friends fit!",
-        plain: "🟢 Plain English: 'Changed >= 4 (broken) to > 4 (fixed!)'",
-        cmd: "- if (players.length >= 4)   + if (players.length > 4) ✏️"
+        title: "🎡 Building #4 (Loop Track): The 'Check Your Homework' Carousel!",
+        sub: "Smart AI rides the Loop Track: Plan → Fix → Test! If a test fails, it rides around again until every building glows green!",
+        plain: "🟢 Kid Translation: 'Homework checked! 0 errors in Lens Studio.'",
+        cmd: "💻 Real Command: lensifyts.exe run && node build-alive.sweep.mjs (p50 = 0.02ms)"
       },
       {
-        badge: "🌟 BIGGEST BLOCK: STEP 6 OF 6 • YOU ARE THE BOSS!",
-        title: "Waiting for Your Thumbs-Up Pinch & Hiding Secret Passwords!",
-        desc: "Before finishing, the Safety Gate hides any secret passwords on your computer and waits for you to pinch or click the green Approve button.",
-        plain: "🟢 Plain English: 'You clicked Approve! All 12/12 tests passed!'",
-        cmd: "Safety Gate: CONFIRM_PINCH_APPROVE | 12/12 PASS 🎉"
+        title: "🛠️ Building #5 (Code Workshop): Changing >= 4 to > 4 in lobby.ts!",
+        sub: "Look inside the Code Workshop: the old door sign said 'Stop at >= 4' (locking out Friend #4!). Now it says '> 4' so 4 friends fit!",
+        plain: "🟢 Kid Translation: 'Unlocked the door for Friend #4!'",
+        cmd: "💻 Real Command: edit_file(server/lobby.ts) [- if (len >= 4) / + if (len > 4)]"
+      },
+      {
+        title: "🛡️ Building #6 (Boss Gate): Waiting for Your Thumbs-Up Pinch!",
+        sub: "You are the Boss of the AI World! Secret passwords are hidden automatically, and the green bridge waits for your Approve pinch!",
+        plain: "🟢 Kid Translation: 'You pinched Approve! All 12/12 room tests passed!'",
+        cmd: "💻 Real Command: approveAction('run_known_test', 'CONFIRM_PINCH_APPROVE', nonce='8f4a9c02')"
       }
     ];
 
-    function selectBlock(idx) {
-      const b = SIMPLE_BLOCKS[idx] || SIMPLE_BLOCKS[1];
-      document.getElementById("hero-badge").textContent = b.badge;
-      document.getElementById("hero-title").textContent = b.title;
-      document.getElementById("hero-desc").textContent = b.desc;
-      document.getElementById("hero-cmd").innerHTML = `<span><b>${b.plain}</b></span><span style="font-family: var(--font-mono); color: var(--cyan); font-size: 12.5px;">${b.cmd}</span>`;
-      document.querySelectorAll(".exec-block").forEach((el, i) => {
-        el.classList.toggle("active-block", i === idx);
-      });
+    function focusBuilding(idx) {
+      const s = WORLD_STORIES[idx] || WORLD_STORIES[2];
+      document.getElementById("sky-title").textContent = s.title;
+      document.getElementById("sky-sub").textContent = s.sub;
+      document.getElementById("sky-cmd").innerHTML = `<span style="color: #2ef2a6; font-weight: 800;">${s.plain}</span><span style="font-family: Consolas, monospace; color: #3ae8ff;">${s.cmd}</span>`;
     }
   </script>
 </body>
