@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "purpose": "One shared translation layer for the Lens, the companion view and the film. Every line describes an OBSERVED operation only (a tool call, a file change, a test result). It never claims to know what a model thinks, wants or feels. The simple sentence is a translation; the exact evidence (path, command, exit code, diff, timestamp) is always one pinch away and is never replaced by it.",
+  "rules": [
+    "Sentences are at most 9 words, present tense, concrete nouns, no jargon in the kid line.",
+    "Never write that an agent 'thinks', 'knows', 'wants', 'feels' or 'decided'. Say what it did.",
+    "A failed or unknown result is said plainly. Never soften a failure into a success.",
+    "A line is only shown for an event that exists. No event, no sentence.",
+    "Provenance words are always shown with a motion or shape cue, not colour alone: live = moving dot, replay = rewind arrow, sample = dotted outline."
+  ],
+  "provenance": {
+    "LIVE_CONNECTED": { "kid": "Happening now.", "maker": "Live from your computer.", "engineer": "LIVE_CONNECTED" },
+    "RECORDED_REPLAY": { "kid": "A recording of before.", "maker": "Replay of a past session.", "engineer": "RECORDED_REPLAY" },
+    "SYNTHETIC_SAMPLE": { "kid": "A pretend example.", "maker": "Sample world, not your project.", "engineer": "SYNTHETIC_SAMPLE" }
+  },
+  "characters": {
+    "main-agent": { "name": "Pip", "role": "builder", "note": "one per real main session; the label shows the real provider name only in Maker and Engineer modes" },
+    "subagent": { "name": "Mo", "role": "helper", "note": "one per real subagent event; tied to Pip by a rope" },
+    "test-inspector": { "name": "Owl", "role": "checker", "note": "sits at the test lighthouse; reacts to real test results" },
+    "you": { "name": "Boss", "role": "approver", "note": "the lever and gate; nothing is written without the Boss" }
+  },
+  "kinds": {
+    "session.start": {
+      "kid": "Pip arrives to work.", "maker": "A coding session started.", "engineerTemplate": "session.start provider={provider} session={sessionId}",
+      "metaphor": "worker walks onto the island", "sound": "soft-step"
+    },
+    "session.end": {
+      "kid": "Pip finishes and waves.", "maker": "The session ended.", "engineerTemplate": "session.end session={sessionId}",
+      "metaphor": "worker waves and sits down", "sound": "chime-low"
+    },
+    "prompt.submitted": {
+      "kid": "Someone gave Pip a job.", "maker": "A new request was sent.", "engineerTemplate": "prompt.submitted ({chars} chars, content hidden by default)",
+      "metaphor": "a scroll lands on the start flag", "sound": "paper"
+    },
+    "tool.started": {
+      "kid": "Pip picks up a tool.", "maker": "The agent started using a tool.", "engineerTemplate": "tool.started tool={tool} subject={path}",
+      "metaphor": "worker lifts the matching tool", "sound": "click"
+    },
+    "tool.completed": {
+      "kid": "Pip puts the tool down.", "maker": "The tool call finished.", "engineerTemplate": "tool.completed tool={tool} status={status} {durationMs}ms",
+      "metaphor": "tool returns to the belt", "sound": "click-soft",
+      "byStatus": {
+        "FAILED": { "kid": "The tool did not work.", "maker": "The tool call failed.", "metaphor": "tool sparks and a small crack appears" }
+      }
+    },
+    "shell.started": {
+      "kid": "Pip starts a machine.", "maker": "A command started running.", "engineerTemplate": "shell.started cmd={command}",
+      "metaphor": "the command factory hums", "sound": "motor-start"
+    },
+    "shell.completed": {
+      "kid": "The machine stops.", "maker": "The command finished.", "engineerTemplate": "shell.completed exit={exitCode} {durationMs}ms",
+      "metaphor": "factory light turns off", "sound": "motor-stop",
+      "byStatus": {
+        "FAILED": { "kid": "The machine stopped with a problem.", "maker": "The command failed.", "metaphor": "factory light flashes and a crack shows" },
+        "SUCCEEDED": { "kid": "The machine finished its job.", "maker": "The command succeeded.", "metaphor": "factory light turns steady" }
+      }
+    },
+    "file.changed": {
+      "kid": "Pip changed a page.", "maker": "A file was changed.", "engineerTemplate": "file.changed path={path} +{added} -{removed}",
+      "metaphor": "the matching house gets a new brick that glows", "sound": "brick"
+    },
+    "diff.available": {
+      "kid": "Pip shows what changed.", "maker": "The exact change is ready to read.", "engineerTemplate": "diff.available path={path}",
+      "metaphor": "a before and after sign appears on the house", "sound": "ping"
+    },
+    "test.started": {
+      "kid": "The owl starts checking.", "maker": "Tests started.", "engineerTemplate": "test.started suite={suite}",
+      "metaphor": "lighthouse beam begins to turn", "sound": "scan"
+    },
+    "test.completed": {
+      "kid": "The owl finished checking.", "maker": "Tests finished.", "engineerTemplate": "test.completed passed={passed} failed={failed} exit={exitCode}",
+      "metaphor": "lighthouse holds one colour", "sound": "chime",
+      "byStatus": {
+        "SUCCEEDED": { "kid": "Every check passed.", "maker": "All tests passed.", "metaphor": "lighthouse glows mint with a star" },
+        "FAILED": { "kid": "A check did not pass.", "maker": "A test failed.", "metaphor": "lighthouse glows coral and one tile cracks" }
+      }
+    },
+    "subagent.spawned": {
+      "kid": "Pip calls a helper.", "maker": "The agent started a helper agent.", "engineerTemplate": "subagent.spawned agent={agentId} parent={parentAgentId}",
+      "metaphor": "Mo hops off a boat and a rope joins Pip", "sound": "pop"
+    },
+    "subagent.completed": {
+      "kid": "The helper is done.", "maker": "The helper agent finished.", "engineerTemplate": "subagent.completed agent={agentId} status={status}",
+      "metaphor": "Mo hands back a small box and leaves", "sound": "chime-soft"
+    },
+    "skill.loaded": {
+      "kid": "Pip reads a how-to book.", "maker": "The agent loaded a skill.", "engineerTemplate": "skill.loaded skill={skill} (only shown when the tool reports it)",
+      "metaphor": "a book opens on Pip's desk", "sound": "page"
+    },
+    "approval.requested": {
+      "kid": "Pip asks the Boss to say yes.", "maker": "Approval is needed before this runs.", "engineerTemplate": "approval.requested action={action} permissionRef={permissionRef}",
+      "metaphor": "the gate closes and the lever glows", "sound": "latch"
+    },
+    "approval.resolved": {
+      "kid": "The Boss answered.", "maker": "You answered the approval.", "engineerTemplate": "approval.resolved decision={decision}",
+      "metaphor": "gate opens or stays shut", "sound": "latch-open",
+      "byStatus": {
+        "BLOCKED": { "kid": "The gate stays shut.", "maker": "The action was denied.", "metaphor": "gate stays closed, lever dims" }
+      }
+    },
+    "error": {
+      "kid": "Something went wrong.", "maker": "An error was reported.", "engineerTemplate": "error {message}",
+      "metaphor": "a small crack in the ground with a red beam up", "sound": "thud-soft"
+    },
+    "heartbeat": {
+      "kid": "Pip is still here.", "maker": "Connection is alive.", "engineerTemplate": "heartbeat seq={sequence}",
+      "metaphor": "island lamp pulses once", "sound": null
+    }
+  },
+  "states": {
+    "DISCONNECTED": { "kid": "Nobody is working right now.", "maker": "No agent is connected.", "metaphor": "island asleep, lamps off" },
+    "DISCOVERING": { "kid": "Looking for workers.", "maker": "Looking for agent sessions.", "metaphor": "spyglass sweeps the water" },
+    "READY": { "kid": "The island is ready.", "maker": "Projects are loaded.", "metaphor": "lamps on, flag up" },
+    "REPLAYING": { "kid": "Watching a recording.", "maker": "Replaying a past session.", "metaphor": "rewind arrows around the island" },
+    "ERROR": { "kid": "The link broke.", "maker": "The connection failed.", "metaphor": "bridge gap and a crack" }
+  },
+  "unresolved": {
+    "kid": "I do not know this part yet.", "maker": "Not resolved from the real data.", "engineer": "UNRESOLVED (no fabricated detail)",
+    "metaphor": "a hollow dotted outline"
+  }
+}

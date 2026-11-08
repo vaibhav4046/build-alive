@@ -42,5 +42,12 @@ The user asked that any user can connect Claude, Codex, Hermes and OpenClaw by l
 - Read-only by default. Writes (launching a task) need a separate explicit confirmation in the Lens, an allowlisted command, and the result receipt shown. A SHA-256 nonce only prevents replay; it is not proof of consent.
 - For a physical headset 127.0.0.1 is the headset itself, so the local bridge is for the Preview only; hardware needs a separately secured transport and is out of scope; say so in the README.
 
+## Universal connector (anything without an official hook: Grok bots, ChatGPT Dots, scripts, other agents)
+No tool in this class publishes a documented session-event API, so none of them is claimed as connected. They can still appear honestly through one open door: `node bridge/emit.mjs <kind> [--path p] [--status s] [--session id]` (or an HTTP POST to the local bridge with a per-run token, same-origin checks) writes one AgentEvent with provenance `SELF_REPORTED`. Anything a tool reports about itself is shown as self-reported, with a distinct shape in the world, and never as LIVE_CONNECTED. The user gets a one-line example per tool in the README. Status values for unsupported tools stay UNSUPPORTED until a documented hook exists.
+
+## Art direction changed (user, 23:20 UTC): one pixel-art game world
+Read `devpost/ART_BIBLE.md`, `devpost/simple-language.json` (the shared five-year-old / maker / engineer wording, keyed to event kinds), `devpost/hallmark-audit.md` and `PRODUCT.md`. The Minecraft/voxel look and the dark neon panels are dropped: dark is invisible on an additive display. Scene owner applies the tokens (bright fills, shapes plus colour for every signal, no pure white, no glass, no gradients); film and thumbnail use the same tokens and real Preview frames only. `workbench-ui.html` fails Hallmark badly (see the audit): rebuild against the floor or leave it out of the submission.
+
 ## Lock log (append a line before and after any shared-file edit)
 - 2026-11-08 23:00 UTC Claude: created this file; no source edits.
+- 2026-11-08 23:25 UTC Claude: added ART_BIBLE.md, simple-language.json, hallmark-audit.md, PRODUCT.md; appended universal connector and art direction sections here; no source or scene edits.
