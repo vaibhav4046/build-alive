@@ -3,92 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1920, height=1080" />
-  <title>BUILD ALIVE — Spatial LLM & Harness Engineering Workbench</title>
+  <title>BUILD ALIVE — See & Learn How AI Builds Things (Simple Mode)</title>
   <style>
     :root {
-      --bg: #070b14;
-      --bg-card: #0d1424;
-      --bg-card-hover: #131d35;
-      --bg-hero: #0f1930;
-      --border: #233458;
-      --cyan: #38e8ff;
+      --bg: #070c18;
+      --bg-card: #0e1629;
+      --bg-hero: #112040;
+      --border: #283e6b;
+      --cyan: #3ae8ff;
       --mint: #2ef2a6;
-      --amber: #ffc43d;
-      --coral: #ff5d52;
-      --violet: #b983ff;
-      --text: #f5f8ff;
-      --muted: #9eb0d4;
+      --amber: #ffca3a;
+      --coral: #ff6359;
+      --violet: #c28cff;
+      --text: #f8faff;
+      --muted: #b0c2e6;
       --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      --font-mono: "Cascadia Code", "Consolas", "Courier New", monospace;
+      --font-mono: "Cascadia Code", "Consolas", monospace;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       width: 100vw;
       height: 100vh;
       overflow: hidden;
-      background: radial-gradient(circle at 50% 0%, #111d38 0%, #070b14 70%);
+      background: radial-gradient(circle at 50% 0%, #15254a 0%, #070c18 72%);
       color: var(--text);
       font-family: var(--font-sans);
-      font-size: 14.5px;
-      line-height: 1.4;
+      font-size: 15px;
+      line-height: 1.42;
     }
 
-    /* Top Product Header Bar */
+    /* Top Bar */
     .topbar {
-      height: 62px;
-      padding: 0 28px;
+      height: 64px;
+      padding: 0 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(9, 14, 26, 0.96);
+      background: rgba(8, 13, 26, 0.96);
       border-bottom: 2px solid var(--border);
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
     .brand-badge {
-      background: linear-gradient(135deg, var(--cyan), #1b9aaa);
+      background: linear-gradient(135deg, var(--cyan), var(--mint));
       color: #04101c;
-      font-weight: 800;
+      font-weight: 900;
       font-size: 14px;
-      padding: 5px 12px;
-      border-radius: 6px;
-      letter-spacing: 0.06em;
+      padding: 6px 13px;
+      border-radius: 8px;
+      letter-spacing: 0.04em;
     }
     .brand-title {
       font-size: 22px;
       font-weight: 800;
-      letter-spacing: 0.02em;
       color: var(--text);
     }
     .brand-sub {
       font-size: 14px;
-      color: var(--muted);
+      color: var(--amber);
+      font-weight: 700;
       border-left: 2px solid var(--border);
-      padding-left: 14px;
+      padding-left: 12px;
     }
+
     .llm-pills {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 9px;
     }
     .llm-pill {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
+      gap: 7px;
+      padding: 6px 13px;
       border-radius: 20px;
-      background: #111b30;
+      background: #121e38;
       border: 1.5px solid var(--border);
       font-size: 13px;
       font-weight: 700;
-      color: var(--text);
     }
     .llm-pill.active {
       border-color: var(--mint);
-      background: rgba(46, 242, 166, 0.12);
+      background: rgba(46, 242, 166, 0.14);
     }
     .dot {
       width: 9px;
@@ -105,24 +104,23 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #0d1528;
+      background: #0d162b;
       padding: 6px 12px;
       border-radius: 8px;
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border);
     }
     .pace-label {
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 12.5px;
+      font-weight: 800;
       color: var(--amber);
-      margin-right: 4px;
     }
     .btn-sm {
-      background: #182644;
+      background: #19294a;
       color: var(--text);
-      border: 1px solid #2e4575;
+      border: 1px solid #324c80;
       padding: 5px 11px;
-      border-radius: 5px;
-      font-size: 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
     }
@@ -132,15 +130,14 @@
       border-color: var(--cyan);
     }
 
-    /* Main 3-Column Product Grid */
+    /* 3-Column Grid */
     .workspace {
       display: grid;
       grid-template-columns: 405px 1fr 445px;
       gap: 16px;
       padding: 14px 20px;
-      height: calc(100vh - 62px);
+      height: calc(100vh - 64px);
     }
-
     .col {
       display: flex;
       flex-direction: column;
@@ -148,56 +145,50 @@
       height: 100%;
       overflow: hidden;
     }
-
     .panel {
       background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
+      border: 2px solid var(--border);
+      border-radius: 14px;
       padding: 15px 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 11px;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     }
     .panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #1e2d4d;
-      padding-bottom: 10px;
+      border-bottom: 1.5px solid #1f3156;
+      padding-bottom: 9px;
     }
-    .panel-tag {
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: 3px 9px;
-      border-radius: 4px;
-    }
-    .tag-cyan { background: rgba(56, 232, 255, 0.16); color: var(--cyan); border: 1px solid var(--cyan); }
-    .tag-mint { background: rgba(46, 242, 166, 0.16); color: var(--mint); border: 1px solid var(--mint); }
-    .tag-amber { background: rgba(255, 196, 61, 0.16); color: var(--amber); border: 1px solid var(--amber); }
-    .tag-violet { background: rgba(185, 131, 255, 0.18); color: var(--violet); border: 1px solid var(--violet); }
-    .tag-coral { background: rgba(255, 93, 82, 0.18); color: var(--coral); border: 1px solid var(--coral); }
-
     .panel-title {
-      font-size: 18px;
+      font-size: 18.5px;
       font-weight: 800;
       color: var(--text);
     }
+    .panel-tag {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
+    .tag-cyan { background: rgba(58, 232, 255, 0.18); color: var(--cyan); border: 1px solid var(--cyan); }
+    .tag-mint { background: rgba(46, 242, 166, 0.18); color: var(--mint); border: 1px solid var(--mint); }
+    .tag-amber { background: rgba(255, 202, 58, 0.18); color: var(--amber); border: 1px solid var(--amber); }
+    .tag-violet { background: rgba(194, 140, 255, 0.2); color: var(--violet); border: 1px solid var(--violet); }
 
-    /* Left Column: Setup & Prompt Forging Studio */
+    /* Column 1: Kid-Simple Setup Studio */
     .setup-group {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
     .setup-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--amber);
     }
     .chip-row {
       display: flex;
@@ -206,55 +197,57 @@
     }
     .chip {
       padding: 6px 11px;
-      border-radius: 6px;
-      background: #121d36;
-      border: 1.5px solid #253861;
-      font-size: 12.5px;
+      border-radius: 8px;
+      background: #142240;
+      border: 1.5px solid #2b4373;
+      font-size: 13px;
       font-weight: 700;
-      color: #c8d6f0;
+      color: #d6e4ff;
       cursor: pointer;
     }
     .chip.selected {
-      background: rgba(56, 232, 255, 0.16);
+      background: rgba(58, 232, 255, 0.18);
       border-color: var(--cyan);
       color: var(--text);
     }
-    .chip.selected-violet {
-      background: rgba(185, 131, 255, 0.18);
-      border-color: var(--violet);
-      color: var(--text);
-    }
     .chip.selected-mint {
-      background: rgba(46, 242, 166, 0.16);
+      background: rgba(46, 242, 166, 0.18);
       border-color: var(--mint);
       color: var(--text);
     }
-
-    .prompt-box {
-      background: #080d18;
-      border: 1.5px solid var(--cyan);
-      border-radius: 8px;
-      padding: 12px;
-      font-family: var(--font-mono);
-      font-size: 12.5px;
-      line-height: 1.55;
-      color: #d8e6ff;
+    .chip.selected-violet {
+      background: rgba(194, 140, 255, 0.2);
+      border-color: var(--violet);
+      color: var(--text);
     }
-    .prompt-box .hl-cmd { color: var(--cyan); font-weight: 700; }
-    .prompt-box .hl-skill { color: var(--violet); font-weight: 700; }
-    .prompt-box .hl-voice { color: var(--mint); font-weight: 700; }
-    .prompt-box .hl-gate { color: var(--amber); font-weight: 700; }
 
-    /* Center Column: Giant Hero Active Block + Clickable Drill-Down Pipeline */
-    .hero-block {
-      background: linear-gradient(180deg, #132242 0%, #0c152a 100%);
-      border: 2.5px solid var(--cyan);
-      border-radius: 14px;
-      padding: 20px 24px;
-      box-shadow: 0 0 40px rgba(56, 232, 255, 0.14);
+    .prompt-story-box {
+      background: #081020;
+      border: 2px solid var(--cyan);
+      border-radius: 10px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
+      font-size: 13.5px;
+    }
+    .story-line {
+      background: #101c36;
+      padding: 7px 10px;
+      border-radius: 6px;
+      border-left: 4px solid var(--mint);
+    }
+
+    /* Column 2: Giant Hero Block + 6 Big Story Blocks + Simple Line-by-Line List */
+    .hero-block {
+      background: linear-gradient(180deg, #16284c 0%, #0e1932 100%);
+      border: 3px solid var(--cyan);
+      border-radius: 16px;
+      padding: 18px 22px;
+      box-shadow: 0 0 36px rgba(58, 232, 255, 0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .hero-top {
       display: flex;
@@ -265,56 +258,53 @@
       background: var(--cyan);
       color: #04101e;
       font-weight: 900;
-      font-size: 13px;
+      font-size: 13.5px;
       padding: 4px 12px;
-      border-radius: 5px;
-      letter-spacing: 0.06em;
+      border-radius: 6px;
     }
     .hero-headline {
       font-size: 26px;
-      font-weight: 800;
+      font-weight: 900;
       color: var(--text);
-      line-height: 1.25;
+      line-height: 1.22;
     }
     .hero-sub {
-      font-size: 15.5px;
-      color: #cfe0ff;
-      line-height: 1.45;
+      font-size: 16px;
+      color: #dce8ff;
+      line-height: 1.42;
     }
     .hero-live-cmd {
-      background: #060a12;
-      border-left: 5px solid var(--mint);
-      padding: 12px 16px;
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 14px;
-      color: var(--mint);
+      background: #070d19;
+      border: 1.5px solid var(--mint);
+      border-left: 6px solid var(--mint);
+      padding: 10px 14px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      font-size: 14px;
     }
 
-    /* 6 Clickable Pipeline Blocks */
+    /* 6 Big Clickable Story Blocks */
     .blocks-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
     .exec-block {
-      background: #10192e;
-      border: 2px solid #24375e;
-      border-radius: 10px;
-      padding: 13px 15px;
+      background: #101b33;
+      border: 2px solid #263c69;
+      border-radius: 12px;
+      padding: 11px 14px;
       cursor: pointer;
-      transition: all 0.15s ease;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
     }
     .exec-block.active-block {
-      background: rgba(56, 232, 255, 0.12);
+      background: rgba(58, 232, 255, 0.16);
       border-color: var(--cyan);
-      box-shadow: 0 0 20px rgba(56, 232, 255, 0.2);
+      box-shadow: 0 0 18px rgba(58, 232, 255, 0.24);
     }
     .exec-block-top {
       display: flex;
@@ -325,363 +315,378 @@
       color: var(--cyan);
     }
     .exec-block-title {
-      font-size: 15.5px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--text);
     }
     .exec-block-desc {
-      font-size: 12.5px;
+      font-size: 13px;
       color: var(--muted);
     }
 
-    /* Line-by-Line Deep Inspector (Inside Selected Block) */
+    /* Inside the Block: Line-by-Line in Plain Everyday Language */
     .line-inspector {
       flex: 1;
-      background: #080d18;
-      border: 1.5px solid #263a63;
-      border-radius: 10px;
-      padding: 16px 18px;
+      background: #091122;
+      border: 2px solid #283e6b;
+      border-radius: 12px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       overflow: hidden;
     }
     .line-row {
       display: grid;
-      grid-template-columns: 44px 120px 1fr 110px;
+      grid-template-columns: 115px 1fr 220px 95px;
       align-items: center;
       gap: 12px;
-      padding: 9px 12px;
-      background: #0e1629;
-      border-left: 4px solid var(--cyan);
-      border-radius: 6px;
-      font-family: var(--font-mono);
-      font-size: 13px;
+      padding: 8px 12px;
+      background: #101c36;
+      border-left: 5px solid var(--cyan);
+      border-radius: 8px;
+      font-size: 13.5px;
     }
-    .line-row.subagent { border-left-color: var(--violet); }
-    .line-row.shell { border-left-color: var(--mint); }
-    .line-row.diff { border-left-color: var(--amber); }
-    .line-row.gate { border-left-color: var(--coral); }
-    .line-num { color: var(--muted); font-weight: 700; }
-    .line-kind {
-      font-size: 11.5px;
+    .line-row.edit { border-left-color: var(--amber); }
+    .line-row.bot { border-left-color: var(--violet); }
+    .line-row.cmd { border-left-color: var(--mint); }
+    .line-row.safe { border-left-color: var(--coral); }
+
+    .line-badge {
       font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 4px;
+      font-size: 12.5px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.07);
       text-align: center;
-      background: rgba(255, 255, 255, 0.06);
+    }
+    .line-plain {
+      font-weight: 700;
       color: var(--text);
     }
-    .line-code { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .line-status { text-align: right; font-weight: 800; font-size: 12px; color: var(--mint); }
+    .line-real-cmd {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--cyan);
+      background: #070d1a;
+      padding: 4px 8px;
+      border-radius: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .line-status {
+      text-align: right;
+      font-weight: 800;
+      font-size: 12.5px;
+      color: var(--mint);
+    }
 
-    /* Right Column: Learner Mode (Harness Engineering Coach) + Desktop Live */
+    /* Column 3: Kid & Beginner Learner Mode */
     .learner-card {
-      background: linear-gradient(180deg, #181332 0%, #0e1224 100%);
+      background: linear-gradient(180deg, #1b1438 0%, #0e1326 100%);
       border: 2px solid var(--violet);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 15px 16px;
       display: flex;
       flex-direction: column;
       gap: 9px;
     }
     .lesson-step {
-      background: rgba(9, 13, 26, 0.82);
-      border: 1px solid #352961;
-      border-left: 4px solid var(--violet);
-      border-radius: 8px;
+      background: rgba(10, 15, 30, 0.88);
+      border: 1.5px solid #382c66;
+      border-left: 5px solid var(--violet);
+      border-radius: 9px;
       padding: 9px 12px;
     }
     .lesson-step.cyan { border-left-color: var(--cyan); }
-    .lesson-step.mint { border-left-color: var(--mint); }
     .lesson-step.amber { border-left-color: var(--amber); }
+    .lesson-step.mint { border-left-color: var(--mint); }
     .lesson-h {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 800;
       color: var(--violet);
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
     .lesson-step.cyan .lesson-h { color: var(--cyan); }
-    .lesson-step.mint .lesson-h { color: var(--mint); }
     .lesson-step.amber .lesson-h { color: var(--amber); }
+    .lesson-step.mint .lesson-h { color: var(--mint); }
     .lesson-p {
-      font-size: 12px;
-      color: #dce6ff;
-      line-height: 1.35;
+      font-size: 12.8px;
+      color: #e4ecff;
+      line-height: 1.38;
     }
 
     .desktop-live-box {
-      background: #09101f;
-      border: 1.5px solid #243860;
-      border-radius: 8px;
+      background: #091122;
+      border: 1.5px solid #283f6b;
+      border-radius: 9px;
       padding: 9px 12px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 12.5px;
     }
     .proc-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 4px 8px;
-      background: #101b33;
-      border-radius: 5px;
+      padding: 5px 9px;
+      background: #111e38;
+      border-radius: 6px;
+      font-weight: 700;
     }
   </style>
 </head>
 <body>
-  <!-- TOP PRODUCT BAR -->
+  <!-- TOP HEADER -->
   <header class="topbar">
     <div class="brand">
-      <span class="brand-badge">BUILD ALIVE v2.0</span>
-      <span class="brand-title">Spatial LLM &amp; Harness Engineering Workbench</span>
-      <span class="brand-sub">Visualizing Every Prompt, Skill, Shell Command, Sub-Agent &amp; Loop Step</span>
+      <span class="brand-badge">BUILD ALIVE</span>
+      <span class="brand-title">See &amp; Learn How AI Builds Software</span>
+      <span class="brand-sub">✨ Super Simple Mode — Easy Enough for a 5-Year-Old, Deep Enough for an Engineer</span>
     </div>
 
     <div class="llm-pills">
-      <div class="llm-pill active"><span class="dot"></span>Antigravity (84 Sessions Live)</div>
-      <div class="llm-pill active"><span class="dot violet"></span>Claude Code (4 Sessions)</div>
-      <div class="llm-pill active"><span class="dot cyan"></span>OpenAI Codex CLI</div>
-      <div class="llm-pill"><span class="dot amber"></span>Snap Spectacles AR (:8787)</div>
+      <div class="llm-pill active"><span class="dot"></span>Antigravity AI (On)</div>
+      <div class="llm-pill active"><span class="dot violet"></span>Claude Code (On)</div>
+      <div class="llm-pill active"><span class="dot cyan"></span>OpenAI Codex (On)</div>
+      <div class="llm-pill"><span class="dot amber"></span>3D Glasses View</div>
     </div>
 
     <div class="pace-controls">
-      <span class="pace-label">READING PACE:</span>
-      <button class="btn-sm on" id="btn-slow">Calm (10s / block)</button>
-      <button class="btn-sm" id="btn-pause">Pause &amp; Inspect</button>
-      <button class="btn-sm" id="btn-next">Next Line →</button>
+      <span class="pace-label">🐢 SPEED:</span>
+      <button class="btn-sm on">Slow &amp; Easy (10s)</button>
+      <button class="btn-sm">⏸️ Pause</button>
+      <button class="btn-sm">Next Step ➡</button>
     </div>
   </header>
 
-  <!-- MAIN 3-COLUMN WORKSPACE -->
+  <!-- 3-COLUMN WORKSPACE -->
   <main class="workspace">
-    <!-- COLUMN 1: AGENT SETUP & PROMPT FORGING STUDIO -->
+    <!-- COLUMN 1: STEP 1 — PICK YOUR AI & SUPERPOWERS (SETUP) -->
     <section class="col">
       <div class="panel" style="flex: 1;">
         <div class="panel-header">
-          <span class="panel-title">1. Agent Setup &amp; Prompt Forging</span>
-          <span class="panel-tag tag-cyan">SETUP → PROMPT</span>
+          <span class="panel-title">1. Pick Your AI &amp; Superpowers</span>
+          <span class="panel-tag tag-cyan">START HERE</span>
         </div>
 
         <div class="setup-group">
-          <div class="setup-label">A. Connected LLM Engine</div>
+          <div class="setup-label">🧠 Step A: Choose Which AI Brain Helps You</div>
           <div class="chip-row">
-            <span class="chip selected">Claude Code (Opus 4.6)</span>
-            <span class="chip selected">Antigravity (Gemini)</span>
-            <span class="chip selected">OpenAI Codex</span>
+            <span class="chip selected">🤖 Claude Code</span>
+            <span class="chip selected">🚀 Antigravity</span>
+            <span class="chip selected">⚡ OpenAI Codex</span>
           </div>
         </div>
 
         <div class="setup-group">
-          <div class="setup-label">B. Voice &amp; Spatial Input Channel</div>
+          <div class="setup-label">🎤 Step B: How Do You Want to Talk to It?</div>
           <div class="chip-row">
-            <span class="chip selected-mint">🎙️ Voice Command ("Fix lobby bug")</span>
-            <span class="chip selected-mint">👓 AR Gaze + Pinch</span>
-            <span class="chip selected-mint">🖥️ Desktop Live Sync</span>
+            <span class="chip selected-mint">🎙️ Speak with Voice</span>
+            <span class="chip selected-mint">👓 Look &amp; Pinch in 3D</span>
+            <span class="chip selected-mint">🖱️ Click on Screen</span>
           </div>
         </div>
 
         <div class="setup-group">
-          <div class="setup-label">C. Active Harness Skills (Discovered via skillister)</div>
+          <div class="setup-label">🛠️ Step C: Give Your AI Superpowers (Skills)</div>
           <div class="chip-row">
-            <span class="chip selected-violet">agent-harness-construction</span>
-            <span class="chip selected-violet">systematic-debugging</span>
-            <span class="chip selected-violet">autonomous-loops</span>
-            <span class="chip selected-violet">subagent-driven-development</span>
-            <span class="chip selected-violet">verification-loop</span>
-            <span class="chip">browser-playwright</span>
+            <span class="chip selected-violet">🧭 Smart Planner</span>
+            <span class="chip selected-violet">🔍 Bug Detective</span>
+            <span class="chip selected-violet">🔁 Keep-Trying Loop</span>
+            <span class="chip selected-violet">🤝 Team of Helper Bots</span>
+            <span class="chip selected-violet">✅ Double-Checker</span>
+            <span class="chip">🌐 Web Browser</span>
           </div>
         </div>
 
-        <div class="setup-group">
-          <div class="setup-label">D. Enabled Tool &amp; Sandbox Channels</div>
-          <div class="chip-row">
-            <span class="chip selected">PowerShell / Bash</span>
-            <span class="chip selected">Sub-Agent Swarm</span>
-            <span class="chip selected">AST File Editor</span>
-            <span class="chip selected">Browser DOM</span>
-            <span class="chip selected">LensifyTS Compiler</span>
-          </div>
-        </div>
-
-        <div class="setup-group" style="margin-top: 4px; flex: 1; display: flex; flex-direction: column; gap: 6px;">
-          <div class="setup-label" style="color: var(--cyan);">E. Transformed Harness Prompt → Sent to Computer</div>
-          <div class="prompt-box" style="flex: 1;">
-            <div><span class="hl-voice">[VOICE+NAV]</span> Target: <b>server/lobby.ts</b> &amp; <b>BuildAliveSceneUI.ts</b></div>
-            <div><span class="hl-skill">[SKILLS LOADED]</span> systematic-debugging → agent-harness-construction → verification-loop</div>
-            <div><span class="hl-cmd">[LOOP CONTRACT]</span> 1. Read files before edit  2. Fan-out Subagent Verifier  3. Run deterministic test sweep  4. Require SHA-256 pinch approval</div>
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #253a63; color: var(--mint);">
-              $ claude --model opus-4-6 --skills systematic-debugging,verification-loop --bridge ws://127.0.0.1:8787/build-alive
+        <div class="setup-group" style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+          <div class="setup-label" style="color: var(--cyan);">✨ Step D: How Your Wish Turns Into an AI Plan</div>
+          <div class="prompt-story-box" style="flex: 1;">
+            <div style="color: var(--amber); font-weight: 800;">
+              🗣️ What You Said: "Fix the game room so 4 friends can play!"
+            </div>
+            <div class="story-line">
+              <b>1. Read First:</b> Open <code>lobby.ts</code> and look for the mistake.
+            </div>
+            <div class="story-line" style="border-left-color: var(--amber);">
+              <b>2. Fix the Number:</b> Change <code>&gt;= 4</code> to <code>&gt; 4</code> so Player #4 can come in.
+            </div>
+            <div class="story-line" style="border-left-color: var(--violet);">
+              <b>3. Call Helper Bot:</b> Ask the Checker Bot to test all 2,223 rules.
+            </div>
+            <div class="story-line" style="border-left-color: var(--cyan);">
+              <b>4. Ask You First:</b> Wait for your green thumbs-up before saving!
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- COLUMN 2: GIANT HERO ACTIVE BLOCK + CLICKABLE DRILL-DOWN BLOCKS + LINE-BY-LINE INSPECTOR -->
+    <!-- COLUMN 2: GIANT HERO BLOCK + 6 CLICKABLE STORY BLOCKS + PLAIN-ENGLISH LINE TRACE -->
     <section class="col">
       <!-- GIANT TOP HERO BLOCK -->
       <div class="hero-block">
         <div class="hero-top">
-          <span class="hero-step-badge" id="hero-badge">ACTIVE BLOCK #2 OF 6 • SHELL &amp; SUB-AGENT EXECUTION</span>
-          <span class="panel-tag tag-mint">LIVE_VERIFIED • CALM READABLE MODE</span>
+          <span class="hero-step-badge" id="hero-badge">🌟 BIGGEST BLOCK: WHAT THE AI IS DOING RIGHT NOW (STEP 2 OF 6)</span>
+          <span class="panel-tag tag-mint">🐢 SLOW &amp; EASY TO READ</span>
         </div>
         <div class="hero-headline" id="hero-title">
-          Running Deterministic Verification &amp; Spawning Adversarial Sub-Agent
+          Fixing the "4 Friends" Room Bug &amp; Testing If It Works!
         </div>
         <div class="hero-sub" id="hero-desc">
-          The LLM finished patching <b>server/lobby.ts</b> and <b>BuildAliveSceneUI.ts</b>. Before marking the task complete, the <b>verification-loop</b> skill forces a live compiler pass and spawns an independent Sub-Agent to verify zero regressions.
+          Your AI found why the 4th friend couldn't join the game room! It fixed that 1 line of code, and now it is running a check to make sure nothing else broke.
         </div>
         <div class="hero-live-cmd" id="hero-cmd">
-          <span>▶ EXEC: lensifyts.exe run --tsconfig Src/tsconfig.json &amp;&amp; node devpost/tests/build-alive.sweep.mjs</span>
-          <span style="color: var(--amber);">EXIT CODE: 0 (2,223 PASS)</span>
+          <span>🟢 <b>Plain English:</b> "Testing all 2,223 rules right now..."</span>
+          <span style="font-family: var(--font-mono); color: var(--cyan); font-size: 12.5px;">Command: node build-alive.sweep.mjs → 2,223 PASSED ✅</span>
         </div>
       </div>
 
-      <!-- 6 CLICKABLE PIPELINE BLOCKS (CLICK ANY BLOCK TO SEE INSIDE) -->
+      <!-- 6 BIG CLICKABLE BLOCKS -->
       <div class="blocks-grid">
         <div class="exec-block" onclick="selectBlock(0)">
-          <div class="exec-block-top"><span>BLOCK 01</span><span>✓ DONE</span></div>
-          <div class="exec-block-title">Prompt &amp; Skill Routing</div>
-          <div class="exec-block-desc">Voice + 5 Skills → Structured Harness Prompt (14.2k tokens)</div>
+          <div class="exec-block-top"><span>BLOCK 1</span><span>✅ DONE</span></div>
+          <div class="exec-block-title">🎤 Hear Your Wish</div>
+          <div class="exec-block-desc">Turns your voice &amp; superpowers into a step-by-step checklist</div>
         </div>
         <div class="exec-block active-block" onclick="selectBlock(1)">
-          <div class="exec-block-top"><span>BLOCK 02</span><span style="color: var(--mint);">● ACTIVE</span></div>
-          <div class="exec-block-title">Commands &amp; Shell Lines</div>
-          <div class="exec-block-desc">6 live PowerShell / Node commands &amp; line-by-line stdout</div>
+          <div class="exec-block-top"><span>BLOCK 2</span><span style="color: var(--mint);">● HAPPENING NOW</span></div>
+          <div class="exec-block-title">💻 Run Commands</div>
+          <div class="exec-block-desc">Click to see every computer command explained simply</div>
         </div>
         <div class="exec-block" onclick="selectBlock(2)">
-          <div class="exec-block-top"><span>BLOCK 03</span><span style="color: var(--violet);">◆ 2 AGENTS</span></div>
-          <div class="exec-block-title">Sub-Agents &amp; Fan-Out</div>
-          <div class="exec-block-desc">Primary Builder + Adversarial Hackathon Judge (138ef673)</div>
+          <div class="exec-block-top"><span>BLOCK 3</span><span style="color: var(--violet);">🤖 2 HELPERS</span></div>
+          <div class="exec-block-title">🤝 Helper Bots</div>
+          <div class="exec-block-desc">Main AI builds it + Judge Bot checks for any mistakes</div>
         </div>
         <div class="exec-block" onclick="selectBlock(3)">
-          <div class="exec-block-top"><span>BLOCK 04</span><span style="color: var(--amber);">↻ ITERATION 3</span></div>
-          <div class="exec-block-title">Loop Engineering Gate</div>
-          <div class="exec-block-desc">Plan → Tool Act → Compiler Check → 2,223-Assertion Sweep</div>
+          <div class="exec-block-top"><span>BLOCK 4</span><span style="color: var(--amber);">🔁 LOOP</span></div>
+          <div class="exec-block-title">🔁 Try-Again Loop</div>
+          <div class="exec-block-desc">If a test fails, the AI loops back and fixes it automatically</div>
         </div>
         <div class="exec-block" onclick="selectBlock(4)">
-          <div class="exec-block-top"><span>BLOCK 05</span><span>AST DIFF</span></div>
-          <div class="exec-block-title">Code &amp; AST File Edits</div>
-          <div class="exec-block-desc">Exact before/after diff in lobby.ts &amp; BuildAliveSceneUI.ts</div>
+          <div class="exec-block-top"><span>BLOCK 5</span><span>✏️ CODE</span></div>
+          <div class="exec-block-title">✏️ Code Change</div>
+          <div class="exec-block-desc">Changed &gt;= 4 to &gt; 4 so all 4 friends fit in the room!</div>
         </div>
         <div class="exec-block" onclick="selectBlock(5)">
-          <div class="exec-block-top"><span>BLOCK 06</span><span style="color: var(--mint);">SHA-256</span></div>
-          <div class="exec-block-title">Desktop Live &amp; Approval</div>
-          <div class="exec-block-desc">Windows Process Monitor + Nonce Pinch Gate (8f4a9c02)</div>
+          <div class="exec-block-top"><span>BLOCK 6</span><span style="color: var(--mint);">🛡️ SAFE</span></div>
+          <div class="exec-block-title">👍 Ask You First</div>
+          <div class="exec-block-desc">Waits for your Pinch or Click before finishing the job</div>
         </div>
       </div>
 
-      <!-- LINE-BY-LINE EXECUTION STREAM INSIDE THE SELECTED BLOCK -->
+      <!-- INSIDE THE BLOCK: LINE BY LINE IN SIMPLE WORDS -->
       <div class="line-inspector">
-        <div class="panel-header" style="padding-bottom: 8px;">
-          <span class="panel-title" style="font-size: 16px;">Inside Selected Block — Line-by-Line Execution Trace (Click any row to inspect)</span>
-          <span class="panel-tag tag-amber">F33 SECRET REDACTION ACTIVE</span>
+        <div class="panel-header" style="padding-bottom: 6px;">
+          <span class="panel-title" style="font-size: 16.5px;">🔍 Inside This Block — Line by Line (What Happened &amp; What Command Ran)</span>
+          <span class="panel-tag tag-amber">PASSWORDS HIDDEN FOR SAFETY 🔒</span>
         </div>
 
         <div class="line-row">
-          <span class="line-num">#811</span>
-          <span class="line-kind">SKILL LOAD</span>
-          <span class="line-code">Read SKILL.md: agent-harness-construction &amp; systematic-debugging (loaded action space rules)</span>
-          <span class="line-status">0.8 ms • OK</span>
+          <span class="line-badge" style="color: var(--cyan);">1. 🧭 SKILL</span>
+          <span class="line-plain">Opened the "Bug Detective" rulebook so the AI doesn't guess</span>
+          <span class="line-real-cmd">skill: systematic-debugging</span>
+          <span class="line-status">DONE ✅</span>
         </div>
 
-        <div class="line-row diff">
-          <span class="line-num">#812</span>
-          <span class="line-kind" style="color: var(--amber);">AST EDIT</span>
-          <span class="line-code">edit_file(Assets/Scripts/BuildAliveSceneUI.ts) → Added CausalFaultBeam &amp; readable 9.5s pacing</span>
-          <span class="line-status" style="color: var(--amber);">+74 / -6 lines</span>
+        <div class="line-row edit">
+          <span class="line-badge" style="color: var(--amber);">2. ✏️ EDIT</span>
+          <span class="line-plain">Fixed the room limit from "&gt;= 4" to "&gt; 4" so 4 friends can join</span>
+          <span class="line-real-cmd">edit_file(server/lobby.ts)</span>
+          <span class="line-status" style="color: var(--amber);">FIXED ✏️</span>
         </div>
 
-        <div class="line-row subagent">
-          <span class="line-num">#813</span>
-          <span class="line-kind" style="color: var(--violet);">SUB-AGENT</span>
-          <span class="line-code">invoke_subagent(role="Adversarial Hackathon Judge", id="138ef673") → Refutation audit</span>
-          <span class="line-status" style="color: var(--violet);">SURVIVED</span>
+        <div class="line-row bot">
+          <span class="line-badge" style="color: var(--violet);">3. 🤖 HELPER</span>
+          <span class="line-plain">Called "Judge Bot" to double-check the fix with fresh eyes</span>
+          <span class="line-real-cmd">invoke_subagent(Judge)</span>
+          <span class="line-status" style="color: var(--violet);">CHECKED 🤝</span>
         </div>
 
-        <div class="line-row shell">
-          <span class="line-num">#814</span>
-          <span class="line-kind" style="color: var(--mint);">SHELL CMD</span>
-          <span class="line-code">lensifyts.exe run --componentsCompileDir Out/Components --tsconfig Src/tsconfig.json</span>
-          <span class="line-status">0 ERRORS</span>
+        <div class="line-row cmd">
+          <span class="line-badge" style="color: var(--mint);">4. 💻 BUILD</span>
+          <span class="line-plain">Built the 3D scene for Lens Studio with zero mistakes</span>
+          <span class="line-real-cmd">lensifyts.exe run</span>
+          <span class="line-status">0 ERRORS ✅</span>
         </div>
 
-        <div class="line-row shell">
-          <span class="line-num">#815</span>
-          <span class="line-kind" style="color: var(--mint);">EVAL SWEEP</span>
-          <span class="line-code">node devpost/tests/build-alive.sweep.mjs → 2,223 assertions (p50=0.02ms, 0 allocs)</span>
-          <span class="line-status">2,223 PASS</span>
+        <div class="line-row cmd">
+          <span class="line-badge" style="color: var(--mint);">5. 🧪 TEST</span>
+          <span class="line-plain">Tested 2,223 rules to prove the whole project works</span>
+          <span class="line-real-cmd">node build-alive.sweep.mjs</span>
+          <span class="line-status">2,223 PASS 🎉</span>
         </div>
 
-        <div class="line-row gate">
-          <span class="line-num">#816</span>
-          <span class="line-kind" style="color: var(--coral);">SAFE GATE</span>
-          <span class="line-code">approveAction(req="run_known_test", gesture="CONFIRM_PINCH_APPROVE", nonce="8f4a9c02")</span>
-          <span class="line-status">SIGNED ✓</span>
+        <div class="line-row safe">
+          <span class="line-badge" style="color: var(--coral);">6. 👍 YOU</span>
+          <span class="line-plain">Asked for your Pinch approval before running the final test</span>
+          <span class="line-real-cmd">CONFIRM_PINCH_APPROVE</span>
+          <span class="line-status">APPROVED 👍</span>
         </div>
       </div>
     </section>
 
-    <!-- COLUMN 3: LEARNER MODE (HARNESS ENGINEERING COACH) + DESKTOP LIVE MONITOR -->
+    <!-- COLUMN 3: KID & BEGINNER LEARNER MODE (HOW AI WORKS) -->
     <section class="col">
       <div class="learner-card" style="flex: 1;">
         <div class="panel-header">
-          <span class="panel-title">3. Learner Mode: Harness Engineering</span>
-          <span class="panel-tag tag-violet">LEARNER MODE: ON</span>
+          <span class="panel-title">3. Learner Mode: How AI Works!</span>
+          <span class="panel-tag tag-violet">🎓 EASY LEARNING</span>
         </div>
 
-        <div style="font-size: 13.5px; color: #d8cfff;">
-          Understand <b>how the LLM works internally</b> at this exact step—designed for engineers learning Agent Harnesses, Loop Engineering &amp; Multi-Agent Systems:
+        <div style="font-size: 13.5px; color: #e2d9ff;">
+          Want to know <b>how AI &amp; Harness Engineering work inside</b>? Here is the simple secret behind what you see on screen:
         </div>
 
         <div class="lesson-step cyan">
-          <div class="lesson-h">① Why Setup Transforms into a Structured Prompt</div>
+          <div class="lesson-h">① Why We Give AI a Checklist (Prompt &amp; Skills)</div>
           <div class="lesson-p">
-            Raw voice or chat prompts are ambiguous. The harness wraps your voice intent with <b>Skill Frontmatter</b> (<i>systematic-debugging</i>) and explicit tool schemas so the LLM plans goal-backward before touching files.
+            Imagine building a LEGO castle without instructions—you might put blocks in the wrong place! <b>Skills</b> are like LEGO instruction books that tell the AI the right steps before it starts.
           </div>
         </div>
 
         <div class="lesson-step">
-          <div class="lesson-h">② How Sub-Agents Prevent Context Pollution</div>
+          <div class="lesson-h">② Why AI Calls Helper Friends (Sub-Agents)</div>
           <div class="lesson-p">
-            Instead of stuffing 50 file reads into one context window, the Primary Agent spawns <b>Sub-Agent 138ef673</b> in an isolated context. Only its verified 3-sentence conclusion returns to the main loop.
+            If one robot tries to read 100 books at once, its head gets messy! So the Main AI calls a <b>Helper Bot</b> to check one part and report back a short, clean answer.
           </div>
         </div>
 
         <div class="lesson-step amber">
-          <div class="lesson-h">③ Loop Engineering: Why "Compiled" ≠ "Done"</div>
+          <div class="lesson-h">③ The "Check Your Homework" Loop (Loop Engineering)</div>
           <div class="lesson-p">
-            An LLM loop without an eval gate drifts into broken code. Here, every edit triggers a deterministic <b>2,223-assertion sweep</b> + <b>lensifyts</b> compiler gate before advancing the state machine.
+            Smart AI never says "I'm done!" right away. It runs a <b>Test Loop</b> (like checking your math homework). If 1 answer is wrong, the loop makes the AI fix it first!
           </div>
         </div>
 
         <div class="lesson-step mint">
-          <div class="lesson-h">④ Cryptographic Human-in-the-Loop Safety</div>
+          <div class="lesson-h">④ Why You Are Always the Boss (Safety Gate)</div>
           <div class="lesson-p">
-            Never let an agent run arbitrary shell commands blindly. Side-effecting actions require an allowlisted ID (<b>run_known_test</b>) + single-use <b>SHA-256 nonce</b> signed by your pinch or click.
+            The AI is your helper, not the boss. Before it runs an important command, it shows a green <b>Approve</b> button and waits for your thumbs-up!
           </div>
         </div>
 
-        <!-- DESKTOP LIVE & SPATIAL AR SYNC MONITOR -->
+        <!-- LIVE DESKTOP MONITOR IN SIMPLE WORDS -->
         <div class="desktop-live-box">
           <div style="display: flex; justify-content: space-between; color: var(--cyan); font-weight: 800;">
-            <span>🖥️ WINDOWS DESKTOP LIVE MONITOR</span>
-            <span style="color: var(--mint);">SYNCED (14.7ms)</span>
+            <span>🖥️ WHAT IS RUNNING ON YOUR WINDOWS PC</span>
+            <span style="color: var(--mint);">🟢 LIVE NOW</span>
           </div>
           <div class="proc-row">
-            <span>Lens Studio 5.23.2 (EarthProof.esproj)</span>
-            <span style="color: var(--mint);">RUNNING • 0 TS Errors</span>
+            <span>👓 Lens Studio 3D Preview</span>
+            <span style="color: var(--mint);">Running Smoothly (0 Errors)</span>
           </div>
           <div class="proc-row">
-            <span>Antigravity + Claude Bridge (:8787)</span>
-            <span style="color: var(--cyan);">88 Sessions Tailed</span>
+            <span>🧠 Connected AI Brains (:8787)</span>
+            <span style="color: var(--cyan);">88 Live Sessions Connected</span>
           </div>
           <div class="proc-row">
-            <span>3D Spatial Scene (BuildAliveRoot)</span>
-            <span style="color: var(--amber);">6 Modules • 2 Vessels</span>
+            <span>🏙️ 3D Toy City on Desk</span>
+            <span style="color: var(--amber);">6 Buildings + 2 AI Bots</span>
           </div>
         </div>
       </div>
@@ -689,51 +694,57 @@
   </main>
 
   <script>
-    const BLOCKS = [
+    const SIMPLE_BLOCKS = [
       {
-        badge: "ACTIVE BLOCK #1 OF 6 • PROMPT & SKILL ROUTING",
-        title: "Voice + Setup Transformed into Structured Harness Prompt",
-        desc: "Your selected LLM (Claude Code / Antigravity), Voice Input, and 5 Superkit Skills are compiled into a deterministic system prompt with explicit tool schemas and safety boundaries.",
-        cmd: "▶ PROMPT DISPATCH: 5 Skills Injected | Context Window: 14,210 / 200,000 tokens (92.9% free)"
+        badge: "🌟 BIGGEST BLOCK: STEP 1 OF 6 • HEARING YOUR WISH",
+        title: "Turning Your Voice & Superpowers Into a Simple Checklist!",
+        desc: "You picked Claude Code + Antigravity and the 'Bug Detective' superpower. The computer turned your wish into a clear 4-step LEGO instruction plan!",
+        plain: "🟢 Plain English: 'Checklist ready! Step 1: Read code first.'",
+        cmd: "Skills: systematic-debugging + verification-loop ✅"
       },
       {
-        badge: "ACTIVE BLOCK #2 OF 6 • SHELL & SUB-AGENT EXECUTION",
-        title: "Running Deterministic Verification & Spawning Adversarial Sub-Agent",
-        desc: "The LLM finished patching server/lobby.ts and BuildAliveSceneUI.ts. Before marking the task complete, the verification-loop skill forces a live compiler pass and spawns an independent Sub-Agent.",
-        cmd: "▶ EXEC: lensifyts.exe run --tsconfig Src/tsconfig.json && node devpost/tests/build-alive.sweep.mjs"
+        badge: "🌟 BIGGEST BLOCK: WHAT THE AI IS DOING RIGHT NOW (STEP 2 OF 6)",
+        title: "Fixing the '4 Friends' Room Bug & Testing If It Works!",
+        desc: "Your AI found why the 4th friend couldn't join the game room! It fixed that 1 line of code, and now it is running a check to make sure nothing else broke.",
+        plain: "🟢 Plain English: 'Testing all 2,223 rules right now...'",
+        cmd: "Command: node build-alive.sweep.mjs → 2,223 PASSED ✅"
       },
       {
-        badge: "ACTIVE BLOCK #3 OF 6 • SUB-AGENT SWARM FAN-OUT",
-        title: "Parallel Sub-Agent Verification (Adversarial Hackathon Judge)",
-        desc: "Sub-agent 138ef673 runs in an isolated read-only context with a mandate to REFUTE weak claims, checking all 72 capabilities (F01-F72) and 22 LEAF scenarios (L01-L22).",
-        cmd: "▶ SUB-AGENT [138ef673]: Audited 174,521 assertions -> 0 refutations, 0 per-frame allocations"
+        badge: "🌟 BIGGEST BLOCK: STEP 3 OF 6 • CALLING HELPER BOTS",
+        title: "Two AI Brains Working Together: Builder Bot + Judge Bot!",
+        desc: "While the Main AI writes the code, it calls a second AI friend ('Judge Bot') to check every single building in the 3D city for mistakes.",
+        plain: "🟢 Plain English: 'Judge Bot checked everything — 0 mistakes found!'",
+        cmd: "Sub-Agent [138ef673]: 174,521 checks passed 🤝"
       },
       {
-        badge: "ACTIVE BLOCK #4 OF 6 • LOOP ENGINEERING & EVAL GATES",
-        title: "Closed-Loop Eval Gate: Plan → Act → Verify → Refute",
-        desc: "Instead of single-shot guessing, the autonomous loop checks compiler diagnostics, AST diff blast radius, and latency budgets (p50 = 0.02 ms) at every state transition.",
-        cmd: "▶ LOOP GATE PASS: p50=0.02ms | p95=0.08ms | State Hash 81a68b verified"
+        badge: "🌟 BIGGEST BLOCK: STEP 4 OF 6 • THE TRY-AGAIN LOOP",
+        title: "The 'Check Your Homework' Loop: Plan → Fix → Test!",
+        desc: "Instead of guessing once and stopping, the Loop makes the AI test its own work. If a red laser beam appears on a building, the AI fixes it until every building turns green!",
+        plain: "🟢 Plain English: 'Homework checked! All 6 buildings are green.'",
+        cmd: "Loop Gate: 0 errors | Speed: 0.02 milliseconds ⚡"
       },
       {
-        badge: "ACTIVE BLOCK #5 OF 6 • LINE-BY-LINE AST CODE DIFF",
-        title: "Inspecting Exact Code Mutation & Downstream Blast Radius",
-        desc: "In server/lobby.ts, the off-by-one boundary (`players.length >= 4`) is traced across `ws-gateway.ts` to `tests/room-capacity.test.mjs` and repaired to `players.length > 4`.",
-        cmd: "▶ AST DIFF: - if (players.length >= 4) return false   + if (players.length > 4) return false"
+        badge: "🌟 BIGGEST BLOCK: STEP 5 OF 6 • THE EXACT CODE CHANGE",
+        title: "Before & After: Changing 1 Symbol So 4 Friends Can Play!",
+        desc: "In server/lobby.ts, the old rule said 'if players >= 4, stop!' That locked out friend #4. The AI changed it to 'if players > 4' so 4 friends fit!",
+        plain: "🟢 Plain English: 'Changed >= 4 (broken) to > 4 (fixed!)'",
+        cmd: "- if (players.length >= 4)   + if (players.length > 4) ✏️"
       },
       {
-        badge: "ACTIVE BLOCK #6 OF 6 • DESKTOP LIVE & CRYPTOGRAPHIC GATE",
-        title: "Human-in-the-Loop SHA-256 Approval & Live Desktop Sync",
-        desc: "All 84 Antigravity transcripts, 4 Claude Code sessions, OpenAI Codex, and Lens Studio 5.23.2 stay synchronized on 127.0.0.1:8787 with strict secret redaction.",
-        cmd: "▶ RECEIPT SIGNED: CONFIRM_PINCH_APPROVE | Nonce 8f4a9c02 | 12/12 Tests PASS"
+        badge: "🌟 BIGGEST BLOCK: STEP 6 OF 6 • YOU ARE THE BOSS!",
+        title: "Waiting for Your Thumbs-Up Pinch & Hiding Secret Passwords!",
+        desc: "Before finishing, the Safety Gate hides any secret passwords on your computer and waits for you to pinch or click the green Approve button.",
+        plain: "🟢 Plain English: 'You clicked Approve! All 12/12 tests passed!'",
+        cmd: "Safety Gate: CONFIRM_PINCH_APPROVE | 12/12 PASS 🎉"
       }
     ];
 
     function selectBlock(idx) {
-      const b = BLOCKS[idx] || BLOCKS[1];
+      const b = SIMPLE_BLOCKS[idx] || SIMPLE_BLOCKS[1];
       document.getElementById("hero-badge").textContent = b.badge;
       document.getElementById("hero-title").textContent = b.title;
       document.getElementById("hero-desc").textContent = b.desc;
-      document.getElementById("hero-cmd").innerHTML = `<span>${b.cmd}</span><span style="color: var(--mint);">VERIFIED ✓</span>`;
+      document.getElementById("hero-cmd").innerHTML = `<span><b>${b.plain}</b></span><span style="font-family: var(--font-mono); color: var(--cyan); font-size: 12.5px;">${b.cmd}</span>`;
       document.querySelectorAll(".exec-block").forEach((el, i) => {
         el.classList.toggle("active-block", i === idx);
       });

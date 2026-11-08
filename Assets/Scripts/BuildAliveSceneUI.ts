@@ -620,24 +620,24 @@ export class BuildAliveSceneUI {
         const lc = this.engine.activeLearningCase
         this.cardRows[0].text = "LEARNING ATELIER: " + lc.title
         this.cardRows[0].textFill.color = COLOR_VIOLET
-        this.cardRows[1].text = lc.prompt
-        this.cardRows[2].text = snap.lastPrediction ? snap.lastPrediction.feedback : "Pinch Learn to submit prediction"
-        this.cardRows[3].text = lc.whyItMatters
-        this.cardRows[4].text = "Tier: " + this.engine.getAdaptiveDifficulty()
+        this.cardRows[1].text = "Kid Question: Which building breaks when Friend #4 joins?"
+        this.cardRows[2].text = snap.lastPrediction ? snap.lastPrediction.feedback : "Pinch Learn or the Test building to guess!"
+        this.cardRows[3].text = "Why: Changing > 4 to >= 4 locks out the 4th friend!"
+        this.cardRows[4].text = "Learner Mode: Check your homework loop (" + this.engine.getAdaptiveDifficulty() + ")"
       } else if (hasFailures) {
-        this.cardRows[0].text = "FAILURE ALERT: test-room-03"
+        this.cardRows[0].text = "OOPS! BUG FOUND IN ROOM 03"
         this.cardRows[0].textFill.color = COLOR_CORAL
-        this.cardRows[1].text = snap.explanation
+        this.cardRows[1].text = "Friend #4 got locked out! (" + snap.explanation + ")"
         this.cardRows[2].text = "Causal: " + trace.explanation
-        this.cardRows[3].text = diff ? diff.beforeLine + " -> " + diff.afterLine : ""
-        this.cardRows[4].text = "Pinch Approve to run allowlisted repair verification"
+        this.cardRows[3].text = diff ? "Fix: " + diff.beforeLine + " -> " + diff.afterLine : ""
+        this.cardRows[4].text = "You are the Boss: Pinch Approve to test & fix it!"
       } else {
-        this.cardRows[0].text = snap.testRepaired ? "VERIFIED PASS: 12/12" : snap.projectTitle + " [" + snap.sceneMode + "]"
+        this.cardRows[0].text = snap.testRepaired ? "YAY! ALL 12/12 TESTS PASSED!" : "AI HELPER AT WORK [" + snap.sceneMode + "]"
         this.cardRows[0].textFill.color = snap.testRepaired ? COLOR_MINT : COLOR_CYAN
         this.cardRows[1].text = snap.explanation
-        this.cardRows[2].text = diff ? "Diff: " + diff.beforeLine + " -> " + diff.afterLine : "No active diff"
+        this.cardRows[2].text = diff ? "Code Change: " + diff.beforeLine + " -> " + diff.afterLine : "No code change yet"
         this.cardRows[3].text = "Causal: " + trace.explanation
-        this.cardRows[4].text = "Glyph: " + snap.glyph.statusBadge + " " + snap.glyph.glyph
+        this.cardRows[4].text = "AI Bot: " + snap.glyph.statusBadge + " " + snap.glyph.glyph
       }
       this.cardRows[5].text = prov.bannerText + " | Hash " + snap.stateHash
     }
