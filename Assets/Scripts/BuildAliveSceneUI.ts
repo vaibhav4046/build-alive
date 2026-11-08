@@ -85,14 +85,21 @@ export class BuildAliveSceneUI {
   private subVessel!: SceneObject
   private rewindCrystal!: SceneObject
   private faultMarker!: SceneObject
+  private causalBeam!: SceneObject
+  private causalBeamLen = 1
+  private dataPacket!: SceneObject
   private cardRoot!: SceneObject
   private cardRows: Text[] = []
   private buttons: Record<string, Button> = {}
   private pendingPresses: {kind: BuildAlivePressRecord["kind"]; target: string; pressMs: number}[] = []
   private pulseClock = 0
+  private autoDemoClock = 0
+  private autoDemoPhase = 0
+  private leafOrUserTouched = false
   private lastRequestId: string | null = null
   private lastNonce: string | null = null
   private scratchScale: vec3 = new vec3(1, 1, 1)
+  private scratchPos: vec3 = new vec3(0, 0, 0)
 
   init(
     host: BaseScriptComponent,
@@ -234,6 +241,7 @@ export class BuildAliveSceneUI {
 
   tick(dt: number): void {
     this.pulseClock += dt
+    this.autoDemoClock += dt
     const snap = this.engine.snapshot()
     if (!snap.reducedMotion && this.faultMarker && this.faultMarker.enabled) {
       const pulse = 1 + 0.08 * Math.sin(this.pulseClock * 5)
@@ -241,6 +249,56 @@ export class BuildAliveSceneUI {
       this.scratchScale.y = FAULT_MARKER_SIZE.h
       this.scratchScale.z = FAULT_MARKER_SIZE.d * pulse
       this.faultMarker.getTransform().setLocalScale(this.scratchScale)
+    }
+    if (!snap.reducedMotion && this.causalBeam && this.causalBeam.enabled) {
+      const bw = 0.55 + 0.16 * Math.sin(this.pulseClock * 6.5)
+      this.scratchScale.x = bw
+      this.scratchScale.y = bw
+      this.scratchScale.z = this.causalBeamLen
+      this.causalBeam.getTransform().setLocalScale(this.scratchScale)
+    }
+    if (!snap.reducedMotion && this.dataPacket) {
+      const bIdx = Math.floor(this.pulseClock * 0.9) % CITY_BRIDGES.length
+      const b = CITY_BRIDGES[bIdx]
+      const fromMod = CITY_MODULES.find((m) => m.moduleId === b.fromModuleId)
+      const toMod = CITY_MODULES.find((m) => m.moduleId === b.toModuleId)
+      if (fromMod && toMod) {
+        const u = (this.pulseClock * 0.9) % 1
+        this.scratchPos.x = fromMod.center.x + (toMod.center.x - fromMod.center.x) * u
+        this.scratchPos.y = fromMod.center.y + (toMod.center.y - fromMod.center.y) * u + 0.65
+        this.scratchPos.z = fromMod.center.z + (toMod.center.z - fromMod.center.z) * u
+        this.dataPacket.getTransform().setLocalPosition(this.scratchPos)
+      }
+    }
+    // Live Preview Observatory auto-progression when idle (disabled immediately when LEAF or user presses any control)
+    if (!this.leafOrUserTouched && this.autoDemoClock >= 2.2) {
+      const stepIdx = Math.floor((this.autoDemoClock - 2.2) / 2.4) % 9
+      if (stepIdx !== this.autoDemoPhase) {
+        this.autoDemoPhase = stepIdx
+        if (stepIdx === 0) {
+          this.engine.reset()
+          this.engine.stepForward()
+        } else if (stepIdx === 1 || stepIdx === 2 || stepIdx === 3) {
+          this.engine.stepForward()
+        } else if (stepIdx === 4) {
+          this.engine.selectModule("server-lobby")
+        } else if (stepIdx === 5) {
+          this.engine.enterLearningMode()
+        } else if (stepIdx === 6) {
+          this.engine.submitPrediction(this.engine.activeLearningCase.expectedFailedModuleId)
+        } else if (stepIdx === 7) {
+          const stage = this.engine.proposeSafeAction("run_known_test", "tests/room-capacity.test.mjs")
+          if (stage.ok && stage.request) {
+            if (this.engine.snapshot().connectionState === "OFFLINE") {
+              this.engine.handleReconnect(false)
+            }
+            this.engine.approveAction(stage.request.requestId, "CONFIRM_PINCH_APPROVE", stage.request.nonce)
+          }
+        } else if (stepIdx === 8) {
+          this.engine.reset()
+        }
+        this.syncVisuals()
+      }
     }
   }
 
@@ -395,6 +453,29 @@ export class BuildAliveSceneUI {
     fLabel.setParent(this.faultMarker)
     fLabel.getTransform().setLocalPosition(new vec3(0, 0.9, 0))
     this.addText(fLabel, "[FAIL] test-room-03", 36, COLOR_CORAL)
+
+    const lobbyMod = CITY_MODULES.find((m) => m.moduleId === "server-lobby") || CITY_MODULES[1]
+    const fromVec = new vec3(FAULT_MARKER_POS.x, FAULT_MARKER_POS.y, FAULT_MARKER_POS.z)
+    const toVec = new vec3(lobbyMod.center.x, lobbyMod.center.y + 1.5, lobbyMod.center.z)
+    const diffVec = toVec.sub(fromVec)
+    this.causalBeamLen = Math.max(0.1, diffVec.length)
+    const midVec = fromVec.add(toVec).uniformScale(0.5)
+    this.causalBeam = this.makeBoxObject(
+      "CausalFaultBeam",
+      this.rootObj,
+      {x: midVec.x, y: midVec.y, z: midVec.z},
+      {w: 0.55, h: 0.55, d: this.causalBeamLen},
+      COLOR_CORAL,
+    )
+    this.causalBeam.getTransform().setLocalRotation(quat.lookAt(diffVec.uniformScale(1 / this.causalBeamLen), vec3.up()))
+
+    this.dataPacket = this.makeBoxObject(
+      "DataFlowPacket",
+      this.rootObj,
+      {x: lobbyMod.center.x, y: lobbyMod.center.y + 0.65, z: lobbyMod.center.z},
+      {w: 1.1, h: 1.1, d: 1.1},
+      COLOR_CYAN,
+    )
   }
 
   private buildControlRail(): void {
@@ -528,6 +609,9 @@ export class BuildAliveSceneUI {
     )
     this.subVessel.enabled = snap.glyph.lane === "subagent" || snap.cursorSeq >= 4
     this.faultMarker.enabled = hasFailures
+    if (this.causalBeam) {
+      this.causalBeam.enabled = hasFailures || snap.selectedModuleId === "server-lobby" || snap.sceneMode === "ERROR"
+    }
 
     if (this.cardRows.length >= 6) {
       const diff = this.engine.currentProject.diffs[0]
@@ -641,6 +725,7 @@ export class BuildAliveSceneUI {
   }
 
   private markPress(kind: BuildAlivePressRecord["kind"], target: string, pressMs: number): void {
+    this.leafOrUserTouched = true
     this.pendingPresses.push({kind, target, pressMs})
   }
 }

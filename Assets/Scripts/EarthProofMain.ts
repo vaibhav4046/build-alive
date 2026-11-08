@@ -79,6 +79,7 @@ export class EarthProofMain extends BaseScriptComponent {
   private mountLabelText: Text | null = null
   private audio: AudioComponent | null = null
   private pending: {kind: PressRecord["kind"]; pressMs: number}[] = []
+  private hideRoverOnFirstLateUpdate = false
 
   onAwake() {
     this.wheels = [this.wheelFL, this.wheelFR, this.wheelRL, this.wheelRR]
@@ -101,6 +102,10 @@ export class EarthProofMain extends BaseScriptComponent {
       this.buildAlive.tick(dt)
     })
     this.createEvent("LateUpdateEvent").bind(() => {
+      if (this.hideRoverOnFirstLateUpdate) {
+        this.hideRoverOnFirstLateUpdate = false
+        this.setRoverActive(false)
+      }
       this.flushLatency()
       this.buildAlive.flushLatency()
     })
@@ -109,6 +114,8 @@ export class EarthProofMain extends BaseScriptComponent {
   // ---- public API (UI events, LEAF scenarios) -------------------------------------------------
 
   handleRun(pressMs: number = Date.now()): void {
+    this.hideRoverOnFirstLateUpdate = false
+    this.setRoverActive(true)
     this.markPress("run", pressMs)
     if (!this.flow.run()) return // already running: ignored
     this.hideOutputs()
@@ -118,11 +125,15 @@ export class EarthProofMain extends BaseScriptComponent {
   }
 
   handleReset(pressMs: number = Date.now()): void {
+    this.hideRoverOnFirstLateUpdate = false
+    this.setRoverActive(true)
     this.markPress("reset", pressMs)
     this.install("small")
   }
 
   handleSwap(id: MotorId, pressMs: number = Date.now()): void {
+    this.hideRoverOnFirstLateUpdate = false
+    this.setRoverActive(true)
     this.markPress("swap", pressMs)
     this.install(id)
   }
@@ -170,6 +181,25 @@ export class EarthProofMain extends BaseScriptComponent {
     if (this.tray) this.tray.enabled = active
     if (this.mount) this.mount.enabled = active
     if (this.mountLabel) this.mountLabel.enabled = active
+    if (this.stallMarker) this.stallMarker.enabled = active
+    if (!active && this.beam) this.beam.enabled = false
+    const root = this.getSceneObject()
+    const count = root ? root.getChildrenCount() : 0
+    for (let i = 0; i < count; i++) {
+      const child = root.getChild(i)
+      const name = child.name
+      if (name === "Controls") {
+        child.enabled = active
+      } else if (name === "Course") {
+        const cCount = child.getChildrenCount()
+        for (let j = 0; j < cCount; j++) {
+          const sub = child.getChild(j)
+          if (sub.name === "Ramp" || sub.name === "TableLabel") {
+            sub.enabled = active
+          }
+        }
+      }
+    }
   }
 
   // ---- setup ------------------------------------------------------------------------------------
@@ -179,7 +209,8 @@ export class EarthProofMain extends BaseScriptComponent {
     this.controls.onReset.add((t0) => this.handleReset(t0))
     this.blocks.forEach((b) => this.bindBlockInput(b))
     this.install("small")
-    print("[EarthProof] ready: small motor mounted, rover at base")
+    this.hideRoverOnFirstLateUpdate = true
+    print("[EarthProof] ready: BUILD ALIVE primary workbench active (Rover fallback standby)")
   }
 
   private makeBlock(id: MotorId, obj: SceneObject, slot: {x: number; y: number; z: number}, mounted: boolean): Block {
