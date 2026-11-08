@@ -1,6 +1,6 @@
 # EarthProof Ramp Climb: progress
 
-**Next action:** reconnect the lens-studio MCP (Lens Studio was hung on first connect), then build the scene (phase 3).
+**Next action:** re-dial the `lens-studio` MCP server (press Reconnect in /mcp, or start a fresh session with this folder as working directory while Lens Studio is responsive), then build the scene (phase 3). Lens Studio is responsive again; the session's MCP server stayed in `failed` after the first-connect timeout.
 
 Scope: `design-brief.md` wins (no voice, no network, no cross-session memory, no Circuit Coach). Repo and honesty rules: `MASTER_BRIEF.md`.
 
