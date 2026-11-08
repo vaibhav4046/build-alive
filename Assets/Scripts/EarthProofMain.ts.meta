@@ -1,0 +1,88 @@
+- !<AssetImportMetadata/8aa46f1f-9bf7-427a-9317-7642d6772697>
+  ImportedAssetIds:
+    TypeScriptAsset: !<reference> 753be3b0-76ca-4d91-aa90-f46a6212da64
+  ImporterName: TypeScriptAssetImporter
+  PrimaryAsset: !<reference> 753be3b0-76ca-4d91-aa90-f46a6212da64
+  PackageType: NotAPackage
+  LegacyPackagePolicy: ~
+  ExtraData:
+    {}
+  AssetDataMap:
+    TypeScriptAsset: !<own> c75c1a6f-d71a-4b0f-96aa-043f254d8cc9
+  DependentFiles:
+    []
+  ImporterSettings: !<AssetImporterSettings>
+    {}
+  CompressionSettings: !<own> 00000000-0000-0000-0000-000000000000
+- !<TypeScriptAssetData/c75c1a6f-d71a-4b0f-96aa-043f254d8cc9>
+  SvgIcon: ""
+  SetupScript:
+    code: ""
+  Description: ""
+  VersionMajor: 0
+  VersionMinor: 0
+  VersionPatch: 0
+  VersionPrerelease: ""
+  UpdateOrder: 0
+  ComponentUid: de9b8a6e-83c9-4114-9805-cbace9309bc9
+  ExportUid: 00000000-0000-0000-0000-000000000000
+  PackagePolicy: CanBeUnpacked
+  ScriptInputsHidden:
+    beam: false
+    blockGeared: false
+    blockSmall: false
+    cards: false
+    chime: false
+    controls: false
+    mount: false
+    mountLabel: false
+    rover: false
+    stallMarker: false
+    tray: false
+    wheelFL: false
+    wheelFR: false
+    wheelRL: false
+    wheelRR: false
+  ScriptTypesHidden:
+    {}
+  ReadMe: !<reference> 00000000-0000-0000-0000-000000000000
+  DeclarationFile: !<reference> 00000000-0000-0000-0000-000000000000
+  Tags:
+    []
+  Attachments:
+    []
+  DefaultScriptInputs:
+    - controls: !<MappingBased.AssignableType_1> 00000000-0000-0000-0000-000000000000
+      cards: !<MappingBased.AssignableType_2> 00000000-0000-0000-0000-000000000000
+      rover: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      wheelFL: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      wheelFR: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      wheelRL: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      wheelRR: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      mount: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      mountLabel: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      tray: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      blockSmall: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      blockGeared: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      beam: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      stallMarker: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
+      chime: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+  ScriptTypes:
+    -
+      {}
+  InputLines:
+    - // @input AssignableType_1 controls
+    - // @input AssignableType_2 cards
+    - // @input SceneObject rover
+    - // @input SceneObject wheelFL
+    - // @input SceneObject wheelFR
+    - // @input SceneObject wheelRL
+    - // @input SceneObject wheelRR
+    - // @input SceneObject mount
+    - // @input SceneObject mountLabel
+    - // @input SceneObject tray
+    - // @input SceneObject blockSmall
+    - // @input SceneObject blockGeared
+    - // @input SceneObject beam
+    - // @input SceneObject stallMarker
+    - // @input Asset.AudioTrackAsset chime
