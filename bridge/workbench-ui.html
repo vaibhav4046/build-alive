@@ -1,657 +1,1652 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1920, height=1080" />
-  <title>BUILD ALIVE — The Living 3D AI World</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      width: 1920px;
-      height: 1080px;
-      overflow: hidden;
-      background: #060b18;
-      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      user-select: none;
-    }
-    #world {
-      position: absolute;
-      inset: 0;
-      width: 1920px;
-      height: 1080px;
-      display: block;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BUILD ALIVE — Minecraft Voxel AI World (Walk Inside How LLMs Build)</title>
+<style>
+  :root {
+    --mc-dark: #18141e;
+    --mc-stone: #4a494d;
+    --mc-stone-light: #75747a;
+    --mc-stone-dark: #2c2b2e;
+    --mc-wood: #6b4c2b;
+    --mc-wood-light: #966c3e;
+    --mc-wood-dark: #432e18;
+    --mc-parchment: #f4e8c1;
+    --mc-parchment-dark: #d8c38e;
+    --mc-emerald: #2ecc71;
+    --mc-emerald-bright: #55ff55;
+    --mc-diamond: #55ffff;
+    --mc-gold: #ffaa00;
+    --mc-yellow: #ffff55;
+    --mc-redstone: #ff5555;
+    --mc-amethyst: #ff55ff;
+    --mc-text: #ffffff;
+    --mc-shadow: #1b1b1b;
+    --mono: "Consolas", "Courier New", monospace;
+    --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
 
-    /* Floating Hologram Sky Banner (Part of the 3D World Sky, not a dashboard) */
-    .sky-holo {
-      position: absolute;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 1120px;
-      background: linear-gradient(180deg, rgba(16, 36, 72, 0.92) 0%, rgba(10, 22, 46, 0.92) 100%);
-      border: 3px solid #3ae8ff;
-      border-radius: 22px;
-      padding: 14px 26px;
-      box-shadow: 0 0 50px rgba(58, 232, 255, 0.35), inset 0 0 24px rgba(58, 232, 255, 0.15);
-      color: #fff;
-      text-align: center;
-      pointer-events: auto;
-    }
-    .sky-holo-badge {
-      display: inline-block;
-      background: linear-gradient(90deg, #3ae8ff, #2ef2a6);
-      color: #041220;
-      font-weight: 900;
-      font-size: 13px;
-      padding: 3px 14px;
-      border-radius: 20px;
-      letter-spacing: 0.05em;
-      margin-bottom: 5px;
-    }
-    .sky-holo-title {
-      font-size: 27px;
-      font-weight: 900;
-      color: #ffffff;
-      text-shadow: 0 2px 12px rgba(58, 232, 255, 0.4);
-    }
-    .sky-holo-sub {
-      font-size: 16px;
-      color: #d8ebff;
-      margin-top: 4px;
-      font-weight: 600;
-    }
-    .sky-holo-cmd {
-      margin-top: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 16px;
-      background: rgba(5, 11, 24, 0.9);
-      border: 1.5px solid #2ef2a6;
-      padding: 6px 18px;
-      border-radius: 14px;
-      font-size: 14px;
-    }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+  }
 
-    /* World Speech Bubbles & Interactive 3D Building Callouts */
-    .world-tag {
-      position: absolute;
-      background: rgba(10, 20, 42, 0.92);
-      border: 2.5px solid #3ae8ff;
-      border-radius: 16px;
-      padding: 10px 14px;
-      color: #fff;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
-      cursor: pointer;
-      transition: transform 0.15s ease;
-    }
-    .world-tag:hover { transform: scale(1.04); }
-    .world-tag::after {
-      content: "";
-      position: absolute;
-      bottom: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 12px 10px 0;
-      border-style: solid;
-      border-color: #3ae8ff transparent transparent;
-    }
-    .world-tag.amber { border-color: #ffca3a; }
-    .world-tag.amber::after { border-color: #ffca3a transparent transparent; }
-    .world-tag.mint { border-color: #2ef2a6; }
-    .world-tag.mint::after { border-color: #2ef2a6 transparent transparent; }
-    .world-tag.violet { border-color: #c28cff; }
-    .world-tag.violet::after { border-color: #c28cff transparent transparent; }
-    .world-tag.coral { border-color: #ff6359; }
-    .world-tag.coral::after { border-color: #ff6359 transparent transparent; }
+  html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: #5c94fc;
+    color: var(--mc-text);
+    font-family: var(--sans);
+    image-rendering: pixelated;
+  }
 
-    .wt-num {
-      font-size: 11px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: #ffca3a;
-    }
-    .wt-title {
-      font-size: 16px;
-      font-weight: 900;
-      margin-top: 1px;
-    }
-    .wt-desc {
-      font-size: 12.5px;
-      color: #c9dcff;
-      margin-top: 2px;
-      line-height: 1.3;
-    }
+  /* FULL-SCREEN MINECRAFT VOXEL WORLD CANVAS */
+  #world-canvas {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    z-index: 1;
+  }
 
-    /* Cutaway Inside-the-Building Conveyor Belt (Bottom Center of the 3D World) */
-    .cutaway-room {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 1180px;
-      background: linear-gradient(180deg, rgba(13, 25, 50, 0.95) 0%, rgba(7, 14, 30, 0.97) 100%);
-      border: 3px solid #ffca3a;
-      border-radius: 20px;
-      padding: 12px 20px 14px;
-      box-shadow: 0 0 40px rgba(255, 202, 58, 0.25);
-      color: #fff;
-    }
-    .cutaway-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .conveyor-belt {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 10px;
-    }
-    .station {
-      background: rgba(18, 34, 68, 0.95);
-      border: 2px solid #2e4b82;
-      border-radius: 12px;
-      padding: 9px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      position: relative;
-    }
-    .station.done { border-color: #2ef2a6; }
-    .station.active {
-      border-color: #ffca3a;
-      background: rgba(255, 202, 58, 0.15);
-      box-shadow: 0 0 18px rgba(255, 202, 58, 0.3);
-    }
-    .st-step {
-      font-size: 11.5px;
-      font-weight: 900;
-      color: #ffca3a;
-    }
-    .st-plain {
-      font-size: 13px;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1.28;
-    }
-    .st-cmd {
-      margin-top: auto;
-      font-family: "Cascadia Code", Consolas, monospace;
-      font-size: 11px;
-      color: #3ae8ff;
-      background: #060c18;
-      padding: 4px 6px;
-      border-radius: 5px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+  /* MINECRAFT PIXEL FRAME MIXIN STYLE */
+  .mc-frame-stone {
+    background: rgba(34, 32, 38, 0.90);
+    border: 4px solid #75747a;
+    box-shadow:
+      inset 0 0 0 3px #232226,
+      inset 4px 4px 0 rgba(255,255,255,0.18),
+      inset -4px -4px 0 rgba(0,0,0,0.55),
+      0 8px 0 rgba(0,0,0,0.45);
+  }
 
-    /* Floating Learner Treehouse Guide Bubbles on the East Island */
-    .learner-island-bubble {
-      position: absolute;
-      right: 26px;
-      width: 340px;
-      background: rgba(24, 16, 52, 0.93);
-      border: 2.5px solid #c28cff;
-      border-radius: 16px;
-      padding: 11px 15px;
-      color: #fff;
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.55);
-    }
-    .lib-title {
-      font-size: 14px;
-      font-weight: 900;
-      color: #ffca3a;
-      margin-bottom: 3px;
-    }
-    .lib-text {
-      font-size: 12.5px;
-      color: #e8e0ff;
-      line-height: 1.35;
-    }
-  </style>
+  .mc-frame-wood {
+    background: linear-gradient(180deg, rgba(78, 52, 26, 0.93) 0%, rgba(54, 35, 17, 0.95) 100%);
+    border: 4px solid #a87945;
+    box-shadow:
+      inset 0 0 0 3px #36220f,
+      inset 4px 4px 0 rgba(255, 220, 160, 0.22),
+      inset -4px -4px 0 rgba(0, 0, 0, 0.55),
+      0 8px 0 rgba(0,0,0,0.45);
+  }
+
+  .mc-frame-command {
+    background: linear-gradient(180deg, rgba(52, 34, 24, 0.94) 0%, rgba(34, 23, 18, 0.96) 100%);
+    border: 4px solid #d97b43;
+    box-shadow:
+      inset 0 0 0 3px #1e130e,
+      0 0 0 2px #3b2113,
+      0 8px 0 rgba(0,0,0,0.5);
+  }
+
+  .mc-btn {
+    background: #6d6d6d;
+    border: 3px solid #1e1e1e;
+    box-shadow:
+      inset 3px 3px 0 #aaa,
+      inset -3px -3px 0 #444;
+    color: #fff;
+    font-weight: 900;
+    font-size: 12px;
+    padding: 5px 12px;
+    cursor: pointer;
+    text-shadow: 2px 2px 0 #111;
+    letter-spacing: 0.04em;
+    transition: transform 0.08s;
+  }
+  .mc-btn:hover {
+    background: #7e88a6;
+    border-color: #fff;
+  }
+  .mc-btn.emerald {
+    background: #27ae60;
+    box-shadow: inset 3px 3px 0 #68f79c, inset -3px -3px 0 #166938;
+  }
+  .mc-btn.gold {
+    background: #d68910;
+    box-shadow: inset 3px 3px 0 #ffd56b, inset -3px -3px 0 #7e5006;
+  }
+  .mc-btn.diamond {
+    background: #178596;
+    box-shadow: inset 3px 3px 0 #7ff9ff, inset -3px -3px 0 #0b4a54;
+  }
+
+  /* 1. TOP MINECRAFT BOSS BAR & SKY HUD */
+  .top-boss-hud {
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    right: 20px;
+    z-index: 20;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  .world-sign-left, .world-sign-right {
+    pointer-events: auto;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mc-brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(180deg, #55c93c 0%, #55c93c 35%, #865c36 35%, #865c36 100%);
+    border: 3px solid #1f170f;
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.3), inset -3px -3px 0 rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .mc-brand-title {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    color: var(--mc-yellow);
+    text-shadow: 2px 2px 0 #111;
+  }
+
+  .mc-brand-sub {
+    font-size: 11px;
+    font-weight: 800;
+    color: #d7e8d4;
+    text-shadow: 1px 1px 0 #111;
+  }
+
+  /* CENTER SKY COMMAND BLOCK HOLOGRAM (BIGGEST BLOCK AT TOP) */
+  .boss-command-banner {
+    pointer-events: auto;
+    width: 970px;
+    padding: 6px 14px 8px;
+    position: relative;
+  }
+
+  .boss-bar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .boss-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .boss-step-tag {
+    background: #d97b43;
+    border: 2px solid #111;
+    box-shadow: inset 2px 2px 0 #ffba8c, inset -2px -2px 0 #7a3e18;
+    color: #fff;
+    font-weight: 900;
+    font-size: 10.5px;
+    padding: 2px 8px;
+    text-shadow: 1px 1px 0 #111;
+  }
+
+  .boss-main-label {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--mc-yellow);
+    text-shadow: 2px 2px 0 #111;
+    letter-spacing: 0.03em;
+  }
+
+  /* Magenta/Emerald Minecraft Boss Health Bar */
+  .mc-boss-meter {
+    width: 100%;
+    height: 10px;
+    background: #231729;
+    border: 2px solid #111;
+    margin-bottom: 5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mc-boss-meter-fill {
+    height: 100%;
+    width: 84%;
+    background: repeating-linear-gradient(
+      90deg,
+      #37d65a 0px,
+      #37d65a 28px,
+      #28a745 28px,
+      #28a745 32px
+    );
+    box-shadow: inset 0 2px 0 #7fff9b, inset 0 -2px 0 #196c2b;
+    transition: width 0.25s linear;
+  }
+
+  .boss-headline {
+    font-size: 16.5px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 2px 2px 0 #111;
+    margin-bottom: 5px;
+    line-height: 1.18;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .boss-dual-row {
+    display: grid;
+    grid-template-columns: 1.18fr 1fr;
+    gap: 8px;
+  }
+
+  .boss-kid-box {
+    background: rgba(28, 68, 36, 0.90);
+    border: 3px solid #55ff55;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.2);
+    padding: 5px 9px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #eaffea;
+    text-shadow: 1px 1px 0 #0b1f0e;
+    line-height: 1.26;
+  }
+  .boss-kid-box b {
+    color: var(--mc-yellow);
+  }
+
+  .boss-cmd-box {
+    background: rgba(16, 16, 22, 0.94);
+    border: 3px solid #55ffff;
+    padding: 5px 9px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 800;
+    color: #55ffff;
+    text-shadow: 1px 1px 0 #000;
+    line-height: 1.35;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .boss-cmd-box span {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 900;
+    color: #ffaa00;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+
+  /* 2. WEST BIOME: SPAWN VILLAGE CRAFTING & ENCHANTING OUTPOST */
+  .west-crafting-outpost {
+    position: absolute;
+    left: 18px;
+    top: 178px;
+    width: 342px;
+    z-index: 15;
+    padding: 11px 13px;
+  }
+
+  .biome-banner {
+    background: #3d2713;
+    border: 3px solid #1a1007;
+    box-shadow: inset 2px 2px 0 #6e4823;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .biome-banner-title {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--mc-yellow);
+    text-shadow: 2px 2px 0 #111;
+    letter-spacing: 0.04em;
+  }
+
+  .biome-banner-tag {
+    font-size: 10px;
+    font-weight: 900;
+    color: #55ff55;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  .outpost-sec-label {
+    font-size: 11px;
+    font-weight: 900;
+    color: #ffdd88;
+    text-shadow: 1px 1px 0 #111;
+    margin: 6px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* 3 Voxel AI Golem Slots */
+  .golem-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .golem-slot {
+    background: #3a393d;
+    border: 3px solid #18181a;
+    box-shadow: inset 2px 2px 0 #626066, inset -2px -2px 0 #242326;
+    padding: 6px 4px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .golem-slot.active {
+    background: #1f4e2c;
+    border-color: #55ff55;
+    box-shadow: inset 2px 2px 0 #489e5d, inset -2px -2px 0 #102b18;
+  }
+  .golem-slot .icon {
+    font-size: 19px;
+    margin-bottom: 2px;
+  }
+  .golem-slot .name {
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+  }
+  .golem-slot .role {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #55ff55;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  /* Oak Sign Speech Wish */
+  .oak-speech-sign {
+    background: #875d31;
+    border: 3px solid #2e1d0c;
+    box-shadow: inset 2px 2px 0 #b38049, inset -2px -2px 0 #593b1c;
+    padding: 7px 9px;
+    font-size: 12px;
+    font-weight: 900;
+    color: #fff8e7;
+    text-shadow: 1px 1px 0 #241608;
+    line-height: 1.32;
+  }
+  .oak-speech-sign .mic-tag {
+    display: inline-block;
+    background: #c0392b;
+    border: 2px solid #111;
+    padding: 1px 6px;
+    font-size: 10px;
+    color: #fff;
+    margin-right: 4px;
+  }
+
+  /* Enchanted Book Skills Grid */
+  .enchant-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+  .enchant-book {
+    background: #2f2342;
+    border: 2px solid #a55eea;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.16);
+    padding: 5px 7px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #f3e5ff;
+    text-shadow: 1px 1px 0 #111;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .redstone-send-banner {
+    margin-top: 7px;
+    background: #471c1c;
+    border: 3px solid #ff5555;
+    padding: 6px 8px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #ffdddd;
+    text-shadow: 1px 1px 0 #000;
+    line-height: 1.28;
+  }
+  .redstone-send-banner code {
+    display: block;
+    margin-top: 2px;
+    font-family: var(--mono);
+    color: #ffff55;
+    font-size: 10.5px;
+  }
+
+  /* 3. FLOATING MINECRAFT WOOD/STONE SIGNS ANCHORED DIRECTLY TO 3D VOXEL BUILDINGS */
+  .voxel-sign {
+    position: absolute;
+    z-index: 14;
+    width: 218px;
+    padding: 5px 8px;
+    cursor: pointer;
+    transition: transform 0.14s ease;
+  }
+  .voxel-sign:hover {
+    transform: translateY(-3px) scale(1.02);
+  }
+  .voxel-sign.selected {
+    border-color: #ffff55 !important;
+    box-shadow:
+      0 0 0 3px #111,
+      0 0 18px rgba(255, 255, 85, 0.75),
+      inset 0 0 0 2px #36220f !important;
+  }
+  /* Oak Post under each sign so it literally stands on the voxel roof */
+  .voxel-sign::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 14px;
+    background: #6b4c2b;
+    border-left: 2px solid #966c3e;
+    border-right: 2px solid #2e1d0c;
+  }
+
+  .vs-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+  }
+  .vs-num {
+    background: #1b1b1b;
+    border: 2px solid #777;
+    padding: 0px 5px;
+    font-size: 9px;
+    font-weight: 900;
+    color: var(--mc-yellow);
+  }
+  .vs-badge {
+    font-size: 9px;
+    font-weight: 900;
+    padding: 0px 5px;
+    border: 2px solid #111;
+    text-shadow: 1px 1px 0 #000;
+  }
+  .vs-badge.done { background: #27ae60; color: #fff; }
+  .vs-badge.live { background: #d68910; color: #fff; }
+  .vs-badge.gate { background: #8e44ad; color: #fff; }
+
+  .vs-title {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 2px 2px 0 #111;
+    margin-bottom: 1px;
+  }
+  .vs-kid {
+    font-size: 10.2px;
+    font-weight: 800;
+    color: #f7e9c8;
+    text-shadow: 1px 1px 0 #1a1007;
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+  .vs-cmd {
+    background: rgba(16, 15, 20, 0.92);
+    border: 2px solid #4a494d;
+    padding: 2px 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 800;
+    color: #55ffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 4. EAST BIOME: VILLAGER LIBRARIAN'S OAK TREEHOUSE (LEARNER MODE) */
+  .east-treehouse-biome {
+    position: absolute;
+    right: 18px;
+    top: 178px;
+    width: 356px;
+    z-index: 15;
+    padding: 11px 13px;
+  }
+
+  .lectern-scroll {
+    background: #e9d7a5;
+    border: 3px solid #593b1c;
+    box-shadow: inset 2px 2px 0 #fff6dc, inset -2px -2px 0 #bfa56b;
+    padding: 7px 9px;
+    margin-bottom: 7px;
+    color: #261708;
+  }
+  .lectern-scroll:last-child {
+    margin-bottom: 0;
+  }
+  .ls-head {
+    font-size: 11px;
+    font-weight: 900;
+    color: #7a290f;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ls-title {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: #1c1105;
+    margin-bottom: 2px;
+  }
+  .ls-body {
+    font-size: 11.2px;
+    font-weight: 800;
+    color: #36220d;
+    line-height: 1.28;
+  }
+  .ls-body code {
+    background: #2b1d10;
+    color: #55ff55;
+    padding: 1px 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+  }
+
+  /* 5. UNDERGROUND REDSTONE CONVEYOR MINESHAFT (BOTTOM CUTAWAY) */
+  .underground-mineshaft {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 52px;
+    height: 222px;
+    z-index: 18;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .mineshaft-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mineshaft-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mineshaft-badge {
+    background: #d97b43;
+    border: 2px solid #111;
+    box-shadow: inset 2px 2px 0 #ffbb8e, inset -2px -2px 0 #7a3e18;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 0 #111;
+  }
+
+  .mineshaft-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--mc-yellow);
+    text-shadow: 2px 2px 0 #111;
+  }
+
+  .mineshaft-sub {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #d7e8d4;
+    text-shadow: 1px 1px 0 #111;
+  }
+
+  /* 6 MINECART COMMAND STATIONS ON POWERED GOLD RAILS */
+  .minecart-rail-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 9px;
+    position: relative;
+    padding-bottom: 10px;
+  }
+
+  /* Powered Gold & Redstone Rail Track underneath the 6 carts */
+  .minecart-rail-row::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 8px;
+    background: repeating-linear-gradient(
+      90deg,
+      #ffaa00 0px,
+      #ffaa00 18px,
+      #ff5555 18px,
+      #ff5555 26px,
+      #593b1c 26px,
+      #593b1c 34px
+    );
+    border: 2px solid #111;
+  }
+
+  .minecart-card {
+    background: rgba(45, 43, 50, 0.95);
+    border: 3px solid #75747a;
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,0.18), inset -2px -2px 0 rgba(0,0,0,0.6);
+    padding: 7px 9px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .minecart-card.done {
+    border-color: #2ecc71;
+    background: linear-gradient(180deg, rgba(28, 56, 38, 0.94), rgba(34, 34, 40, 0.96));
+  }
+  .minecart-card.active {
+    border-color: #ffff55;
+    background: linear-gradient(180deg, rgba(84, 58, 22, 0.96), rgba(42, 31, 18, 0.98));
+    box-shadow: 0 0 14px rgba(255, 255, 85, 0.55), inset 2px 2px 0 rgba(255,255,255,0.28);
+    transform: translateY(-2px);
+  }
+
+  .mc-cart-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+  .mc-cart-step {
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--mc-yellow);
+    text-shadow: 1px 1px 0 #000;
+  }
+  .mc-cart-lamp {
+    font-size: 9.5px;
+    font-weight: 900;
+    padding: 1px 5px;
+    border: 2px solid #111;
+    background: #27ae60;
+    color: #fff;
+  }
+  .mc-cart-lamp.active { background: #d68910; }
+  .mc-cart-lamp.gate { background: #8e44ad; }
+
+  .mc-cart-title {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+    margin-bottom: 2px;
+  }
+  .mc-cart-kid {
+    font-size: 11px;
+    font-weight: 800;
+    color: #e4e2e8;
+    line-height: 1.26;
+    margin-bottom: 5px;
+  }
+  .mc-cart-cmd {
+    background: #141318;
+    border: 2px solid #3c3a42;
+    padding: 4px 6px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #55ff55;
+    line-height: 1.25;
+  }
+  .mc-cart-cmd .diff-del { color: #ff5555; display: block; }
+  .mc-cart-cmd .diff-add { color: #55ff55; display: block; }
+
+  /* 6. BOTTOM AUTHENTIC MINECRAFT XP BAR + 9-SLOT HOTBAR */
+  .mc-bottom-hotbar-wrap {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .mc-xp-bar {
+    width: 620px;
+    height: 10px;
+    background: #1a2e1a;
+    border: 2px solid #000;
+    position: relative;
+  }
+  .mc-xp-fill {
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      90deg,
+      #7fff00 0px,
+      #7fff00 14px,
+      #32cd32 14px,
+      #32cd32 16px
+    );
+  }
+  .mc-xp-lvl {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    font-weight: 900;
+    color: #7fff00;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+  }
+
+  .mc-hotbar {
+    display: flex;
+    background: #333;
+    border: 3px solid #111;
+    padding: 2px;
+    gap: 2px;
+  }
+  .mc-slot {
+    width: 66px;
+    height: 28px;
+    background: #555;
+    border: 2px solid #222;
+    box-shadow: inset 2px 2px 0 #333, inset -2px -2px 0 #777;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+    cursor: pointer;
+  }
+  .mc-slot.active {
+    border: 3px solid #fff;
+    background: #6b6b6b;
+  }
+</style>
 </head>
 <body>
-  <!-- FULL-SCREEN 3D ISOMETRIC AI WORLD CANVAS -->
-  <canvas id="world" width="1920" height="1080"></canvas>
 
-  <!-- 1. FLOATING SKY HOLOGRAM ABOVE THE 3D WORLD (BIGGEST BLOCK: WHAT IS HAPPENING NOW) -->
-  <div class="sky-holo">
-    <div class="sky-holo-badge">🌍 BUILD ALIVE 3D AI WORLD • 🐢 SLOW &amp; EASY TO READ (10s / STEP) • 88 LIVE SESSIONS</div>
-    <div class="sky-holo-title" id="sky-title">
-      🌟 Happening Now in Building #2: Fixing the "4 Friends" Bug &amp; Testing It!
-    </div>
-    <div class="sky-holo-sub" id="sky-sub">
-      Follow the glowing road from left to right! Your Voice Wish entered the Setup Castle, the AI fixed <code>lobby.ts</code>, and Judge Bot is testing all 6 buildings!
-    </div>
-    <div class="sky-holo-cmd" id="sky-cmd">
-      <span style="color: #2ef2a6; font-weight: 800;">🟢 Kid Translation: "Checking 2,223 rules to make sure 4 friends can play!"</span>
-      <span style="font-family: Consolas, monospace; color: #3ae8ff;">💻 Real Command: node build-alive.sweep.mjs → 2,223 PASSED ✅</span>
+<!-- FULL-BLEED 3D MINECRAFT VOXEL WORLD CANVAS -->
+<canvas id="world-canvas" width="1920" height="1080"></canvas>
+
+<!-- 1. TOP MINECRAFT BOSS BAR & WORLD SIGNS -->
+<header class="top-boss-hud">
+  <div class="world-sign-left mc-frame-wood">
+    <div class="mc-brand-icon">⛏️</div>
+    <div>
+      <div class="mc-brand-title">BUILD ALIVE : MINECRAFT AI WORLD</div>
+      <div class="mc-brand-sub">Walk Inside What Claude, Antigravity &amp; Codex Build Block-by-Block</div>
     </div>
   </div>
 
-  <!-- 2. FLOATING 3D BUILDING CALLOUT BUBBLES (ANCHORED DIRECTLY ABOVE EACH 3D ISLAND/BUILDING) -->
-  <!-- West Island: Setup & Wish Castle -->
-  <div class="world-tag cyan" style="left: 48px; top: 195px; width: 310px;" onclick="focusBuilding(0)">
-    <div class="wt-num">🏰 ISLAND 1 • SETUP &amp; WISH CASTLE</div>
-    <div class="wt-title">🎤 Your Wish + AI Superpowers</div>
-    <div class="wt-desc">
-      <b>Brains:</b> 🤖 Claude + 🚀 Antigravity + ⚡ Codex<br/>
-      <b>Voice:</b> "Fix room so 4 friends can play!"<br/>
-      <b>Skills:</b> 🧭 Planner • 🔍 Detective • 🔁 Loop • 🌐 Browser
-    </div>
-  </div>
-
-  <!-- Building 1: Prompt Forge -->
-  <div class="world-tag mint" style="left: 410px; top: 270px; width: 235px;" onclick="focusBuilding(1)">
-    <div class="wt-num">🏛️ BUILDING 1 • PROMPT MILL</div>
-    <div class="wt-title">📜 LEGO Checklist Maker</div>
-    <div class="wt-desc">Turns your voice into 4 clear steps so the AI never guesses!</div>
-  </div>
-
-  <!-- Building 2: Command Powerhouse (Center Hero Building) -->
-  <div class="world-tag amber" style="left: 725px; top: 190px; width: 280px;" onclick="focusBuilding(2)">
-    <div class="wt-num">⚡ BUILDING 2 • COMMAND FACTORY (OPEN!)</div>
-    <div class="wt-title">💻 Commands Running Inside</div>
-    <div class="wt-desc">Roof is open! Look down at the conveyor belt to see every command line-by-line!</div>
-  </div>
-
-  <!-- Building 3: Helper Bot Hangar -->
-  <div class="world-tag violet" style="left: 1065px; top: 235px; width: 255px;" onclick="focusBuilding(3)">
-    <div class="wt-num">🛸 BUILDING 3 • BOT HANGAR</div>
-    <div class="wt-title">🤝 Helper Bots Flying Out</div>
-    <div class="wt-desc">🤖 Main AI builds code while purple <b>Judge Bot</b> checks for mistakes!</div>
-  </div>
-
-  <!-- Building 4: Loop Track -->
-  <div class="world-tag cyan" style="left: 455px; top: 535px; width: 245px;" onclick="focusBuilding(4)">
-    <div class="wt-num">🎡 BUILDING 4 • LOOP TRACK</div>
-    <div class="wt-title">🔁 Check-Homework Loop</div>
-    <div class="wt-desc">Rides in a circle: <b>Plan → Fix → Test</b> until every building turns green!</div>
-  </div>
-
-  <!-- Building 5: Code Workshop -->
-  <div class="world-tag amber" style="left: 765px; top: 525px; width: 255px;" onclick="focusBuilding(5)">
-    <div class="wt-num">🛠️ BUILDING 5 • CODE WORKSHOP</div>
-    <div class="wt-title">✏️ Changed &gt;= 4 to &gt; 4</div>
-    <div class="wt-desc">In <code>lobby.ts</code>: unlocked the door so Friend #4 can join the game!</div>
-  </div>
-
-  <!-- Building 6: Boss Drawbridge -->
-  <div class="world-tag mint" style="left: 1090px; top: 530px; width: 250px;" onclick="focusBuilding(6)">
-    <div class="wt-num">🛡️ BUILDING 6 • BOSS GATE</div>
-    <div class="wt-title">👍 Waits for Your Pinch!</div>
-    <div class="wt-desc">You are the Boss! Passwords are hidden &amp; the bridge waits for your Approve!</div>
-  </div>
-
-  <!-- 3. EAST FLOATING ISLAND: OWL PROFESSOR'S LEARNER MODE TREEHOUSE -->
-  <div class="learner-island-bubble" style="top: 185px;">
-    <div class="lib-title">🦉 LEARNER ISLAND #1: Why Use Skills?</div>
-    <div class="lib-text">
-      Building without instructions is messy! <b>Skills</b> (like <i>Bug Detective</i>) give the AI a LEGO instruction book before it types a single command.
-    </div>
-  </div>
-
-  <div class="learner-island-bubble" style="top: 315px; border-color: #3ae8ff;">
-    <div class="lib-title" style="color: #3ae8ff;">🤖 LEARNER ISLAND #2: Why Two Robots?</div>
-    <div class="lib-text">
-      If one robot reads 100 files, its memory gets full! Spawning a <b>Sub-Agent (Judge Bot)</b> keeps the main AI's brain clean and sharp.
-    </div>
-  </div>
-
-  <div class="learner-island-bubble" style="top: 445px; border-color: #ffca3a;">
-    <div class="lib-title" style="color: #ffca3a;">🔁 LEARNER ISLAND #3: What is Loop Engineering?</div>
-    <div class="lib-text">
-      Instead of stopping after 1 try, a <b>Harness Loop</b> automatically runs <b>2,223 tests</b>. If 1 test fails, the robot rides the loop back to fix it!
-    </div>
-  </div>
-
-  <div class="learner-island-bubble" style="top: 575px; border-color: #2ef2a6;">
-    <div class="lib-title" style="color: #2ef2a6;">🖥️ LIVE PC &amp; AR WORLD STATUS</div>
-    <div class="lib-text">
-      🟢 <b>Lens Studio 3D Preview:</b> Running (0 Errors)<br/>
-      🟢 <b>Connected LLMs:</b> 84 Antigravity + 4 Claude + Codex<br/>
-      🟢 <b>Safety Gate:</b> Passwords Hidden • Boss Pinch Ready
-    </div>
-  </div>
-
-  <!-- 4. BOTTOM CENTER CUTAWAY ROOM: INSIDE THE CLICKED BUILDING (CONVEYOR BELT OF COMMANDS LINE-BY-LINE) -->
-  <div class="cutaway-room">
-    <div class="cutaway-header">
-      <div style="font-size: 18px; font-weight: 900; color: #ffca3a;">
-        🏭 INSIDE THE BUILDING (X-RAY CUTAWAY VIEW): Watch Every Command Move Along the Conveyor Belt Line-by-Line!
+  <!-- CENTER COMMAND BLOCK BOSS BAR (BIGGEST BLOCK AT TOP) -->
+  <div class="boss-command-banner mc-frame-command">
+    <div class="boss-bar-top">
+      <div class="boss-title-wrap">
+        <span class="boss-step-tag" id="top-step-badge">MINECART STEP 5 OF 6 · CALM PACE (10s / BLOCK)</span>
+        <span class="boss-main-label">🔊 LIVE REDSTONE COMMAND BLOCK — WHAT YOUR AI GOLEM IS CRAFTING NOW</span>
       </div>
-      <div style="font-size: 13px; font-weight: 800; color: #2ef2a6;">
-        🔒 Secret Passwords Scrubbed Automatically • Click Any Building Above to Inspect!
+      <div style="display:flex; gap:6px;">
+        <button class="mc-btn" id="btn-pause" onclick="togglePause()">⏸ PAUSE WORLD</button>
+        <button class="mc-btn gold" onclick="nextBuilding()">⏭ NEXT BLOCK</button>
+        <button class="mc-btn emerald" id="btn-kid" onclick="toggleKidMode()">🧒 5-YEAR-OLD MODE: ON</button>
       </div>
     </div>
 
-    <div class="conveyor-belt">
-      <div class="station done">
-        <div class="st-step">STATION 1 • VOICE &amp; SKILL</div>
-        <div class="st-plain">🧭 Opened "Bug Detective" &amp; "Loop" rulebooks</div>
-        <div class="st-cmd">skill: systematic-debugging</div>
-      </div>
+    <div class="mc-boss-meter">
+      <div class="mc-boss-meter-fill" id="boss-meter-fill"></div>
+    </div>
 
-      <div class="station done">
-        <div class="st-step">STATION 2 • READ CODE</div>
-        <div class="st-plain">👀 Looked inside <code>lobby.ts</code> to find why friend #4 failed</div>
-        <div class="st-cmd">read_file(server/lobby.ts)</div>
-      </div>
+    <div class="boss-headline" id="top-headline">
+      🛤️ Building #4 (Redstone Loop Track): Running 2,223 Redstone Lamp Tests to Prove Room #3 Holds 4 Players!
+    </div>
 
-      <div class="station active">
-        <div class="st-step">STATION 3 • FIX CODE</div>
-        <div class="st-plain">✏️ Changed <code>&gt;= 4</code> to <code>&gt; 4</code> so 4 friends fit!</div>
-        <div class="st-cmd">edit_file(server/lobby.ts)</div>
+    <div class="boss-dual-row">
+      <div class="boss-kid-box" id="top-kid-box">
+        <b>🧒 Kid Story (Simple):</b> Your Builder Golem fixed the broken door in <b>Room #3</b> so 4 friends can play together! Now the Minecart is riding around <b>2,223 Redstone Lamps</b> to make sure every single lamp lights up green!
       </div>
-
-      <div class="station done">
-        <div class="st-step">STATION 4 • HELPER BOT</div>
-        <div class="st-plain">🤝 Purple Judge Bot checked the whole city for bugs</div>
-        <div class="st-cmd">invoke_subagent(Judge)</div>
-      </div>
-
-      <div class="station done">
-        <div class="st-step">STATION 5 • RUN 2,223 TESTS</div>
-        <div class="st-plain">🧪 Ran the test machine — all 2,223 rules passed!</div>
-        <div class="st-cmd">node build-alive.sweep.mjs</div>
-      </div>
-
-      <div class="station done">
-        <div class="st-step">STATION 6 • BOSS APPROVE</div>
-        <div class="st-plain">👍 You pinched Approve to open the green drawbridge!</div>
-        <div class="st-cmd">CONFIRM_PINCH_APPROVE</div>
+      <div class="boss-cmd-box">
+        <span>💻 REAL COMMAND RUNNING INSIDE COMPUTER:</span>
+        <div id="top-cmd-text">$ node devpost/tests/build-alive.sweep.mjs → 2,223 / 2,223 LAMPS GREEN (0ms lag)</div>
       </div>
     </div>
   </div>
 
-  <script>
-    const cv = document.getElementById("world");
-    const ctx = cv.getContext("2d");
+  <div class="world-sign-right mc-frame-wood">
+    <div style="font-size:11.5px; font-weight:900; color:#55ff55; text-shadow:1px 1px 0 #000;">
+      🟢 LIVE WINDOWS + AR REALM<br/>
+      <span style="color:#fff8e7; font-size:10.5px;">3 AI Golems · 2,223 Lamps Lit</span>
+    </div>
+  </div>
+</header>
 
-    // Draw a rich, colorful, storybook 3D Isometric World on the 1920x1080 canvas
-    function drawIsoTile(cx, cy, w, h, depth, topColor, leftColor, rightColor, strokeColor) {
-      const hw = w / 2;
-      const hh = h / 2;
+<!-- 2. WEST BIOME: SPAWN VILLAGE (CRAFT YOUR AI GOLEM, VOICE WISH & ENCHANTED SKILLS) -->
+<aside class="west-crafting-outpost mc-frame-wood">
+  <div class="biome-banner">
+    <span class="biome-banner-title">🏰 WEST BIOME: SPAWN CASTLE</span>
+    <span class="biome-banner-tag">STEP 0 · SETUP</span>
+  </div>
 
-      // Left face
+  <div class="outpost-sec-label">🤖 1. Pick Your Voxel AI Golem Helpers</div>
+  <div class="golem-slots">
+    <div class="golem-slot active">
+      <div class="icon">🤖</div>
+      <div class="name">Claude Bot</div>
+      <div class="role">● Builder</div>
+    </div>
+    <div class="golem-slot active">
+      <div class="icon">🚀</div>
+      <div class="name">Antigravity</div>
+      <div class="role">● Judge</div>
+    </div>
+    <div class="golem-slot active">
+      <div class="icon">⚡</div>
+      <div class="name">Codex Bot</div>
+      <div class="role">● Tester</div>
+    </div>
+  </div>
+
+  <div class="outpost-sec-label">🎙️ 2. Speak Your Voice Wish into Note Block</div>
+  <div class="oak-speech-sign">
+    <span class="mic-tag">🎤 VOICE</span>
+    "Fix Room #3 crash when 4 friends join, test with 2Golem Judge, and teach me like I'm 5!"
+  </div>
+
+  <div class="outpost-sec-label">✨ 3. Pack Enchanted Skill Books</div>
+  <div class="enchant-grid">
+    <div class="enchant-book">📘 Bug Compass</div>
+    <div class="enchant-book">📕 2-Golem Judge</div>
+    <div class="enchant-book">📗 Redstone Loop</div>
+    <div class="enchant-book">📙 Live PC Spyglass</div>
+  </div>
+
+  <div class="redstone-send-banner">
+    🚀 <b>Sent Across Redstone Bridge to Computer:</b>
+    <code>claude --voice --skills bug,judge,loop "Fix Room #3"</code>
+  </div>
+</aside>
+
+<!-- 3. FLOATING MINECRAFT WOODEN SIGNS ANCHORED ABOVE THE 6 3D VOXEL BUILDINGS -->
+<!-- Sign 1: Lectern & Recipe Mill (Prompt Mill) -->
+<div class="voxel-sign mc-frame-wood" id="sign-0" style="left: 392px; top: 232px;" onclick="selectBuilding(0)">
+  <div class="vs-head">
+    <span class="vs-num">BLOCK #1</span>
+    <span class="vs-badge done">✓ CRAFTED</span>
+  </div>
+  <div class="vs-title">📖 1. Recipe Book Mill</div>
+  <div class="vs-kid">Turns your voice wish into a 5-step Minecraft Crafting Recipe!</div>
+  <div class="vs-cmd">1.Read → 2.Fix → 3.Judge → 4.Test</div>
+</div>
+
+<!-- Sign 2: Open-Roof Command Block Factory -->
+<div class="voxel-sign mc-frame-command" id="sign-1" style="left: 658px; top: 204px;" onclick="selectBuilding(1)">
+  <div class="vs-head">
+    <span class="vs-num">BLOCK #2</span>
+    <span class="vs-badge live">⚡ OPEN ROOF</span>
+  </div>
+  <div class="vs-title">🟧 2. Command Block Factory</div>
+  <div class="vs-kid">Roof is open! Watch the Golem read <code>lobby.ts</code> &amp; find the bug!</div>
+  <div class="vs-cmd">$ rg -n "players.length" src/</div>
+</div>
+
+<!-- Sign 3: Builder + Judge Golem Arena -->
+<div class="voxel-sign mc-frame-wood" id="sign-2" style="left: 938px; top: 208px;" onclick="selectBuilding(2)">
+  <div class="vs-head">
+    <span class="vs-num">BLOCK #3</span>
+    <span class="vs-badge done">✓ 2 GOLEMS</span>
+  </div>
+  <div class="vs-title">🤖 3. Two-Golem Arena</div>
+  <div class="vs-kid">Purple Judge Golem checks Builder Golem's work so it never lies!</div>
+  <div class="vs-cmd">invoke_subagent("JudgeGolem")</div>
+</div>
+
+<!-- Sign 4: Redstone Minecart Loop Track -->
+<div class="voxel-sign mc-frame-wood selected" id="sign-3" style="left: 1202px; top: 234px;" onclick="selectBuilding(3)">
+  <div class="vs-head">
+    <span class="vs-num">BLOCK #4</span>
+    <span class="vs-badge live">🎡 RUNNING NOW</span>
+  </div>
+  <div class="vs-title">🛤️ 4. Redstone Loop Track</div>
+  <div class="vs-kid">Minecart rides 2,223 Redstone Lamps until every lamp turns GREEN!</div>
+  <div class="vs-cmd">node build-alive.sweep.mjs (2,223)</div>
+</div>
+
+<!-- Sign 5: Anvil & Code Forge -->
+<div class="voxel-sign mc-frame-wood" id="sign-4" style="left: 525px; top: 454px;" onclick="selectBuilding(4)">
+  <div class="vs-head">
+    <span class="vs-num">BLOCK #5</span>
+    <span class="vs-badge done">⚒️ 1 LINE FORGED</span>
+  </div>
+  <div class="vs-title">⚒️ 5. Anvil Code Forge</div>
+  <div class="vs-kid">Smashed bad <code>&gt;= 4</code> block &amp; forged shiny <code>&gt; 4</code> block!</div>
+  <div class="vs-cmd">lobby.ts:42 (&gt;= 4 → &gt; 4)</div>
+</div>
+
+<!-- Sign 6: Piston Drawbridge Boss Gate -->
+<div class="voxel-sign mc-frame-wood" id="sign-5" style="left: 1062px; top: 454px;" onclick="selectBuilding(5)">
+  <div class="vs-head">
+    <span class="vs-num">BLOCK #6</span>
+    <span class="vs-badge gate">🛡️ BOSS LEVER</span>
+  </div>
+  <div class="vs-title">🏰 6. Piston Boss Gate</div>
+  <div class="vs-kid">Sticky Piston bridge waits for YOUR pinch on the Approve Lever!</div>
+  <div class="vs-cmd">[APPROVE] [REWIND] [REJECT]</div>
+</div>
+
+<!-- 4. EAST BIOME: VILLAGER LIBRARIAN'S OAK TREEHOUSE (LEARNER MODE) -->
+<aside class="east-treehouse-biome mc-frame-wood">
+  <div class="biome-banner">
+    <span class="biome-banner-title">🦉 EAST BIOME: LIBRARIAN TREEHOUSE</span>
+    <span class="biome-banner-tag">LEARNER MODE</span>
+  </div>
+
+  <div class="lectern-scroll">
+    <div class="ls-head"><span>📘 SCROLL #1 · HARNESS SKILLS</span><span>LEVEL 1</span></div>
+    <div class="ls-title">Why Give the Golem Enchanted Books?</div>
+    <div class="ls-body">
+      Without Enchanted Books (Skills), an AI guesses randomly. Giving it <code>Bug Compass</code> tells it: <b>"Read the file first before swinging your pickaxe!"</b>
+    </div>
+  </div>
+
+  <div class="lectern-scroll">
+    <div class="ls-head"><span>🤖 SCROLL #2 · SUB-AGENT JUDGE</span><span>LEVEL 2</span></div>
+    <div class="ls-title">Why Use Two Golems Instead of One?</div>
+    <div class="ls-body">
+      If one Golem builds a house AND grades its own homework, it might miss a creeper hole! So <b>Builder Golem</b> writes code, and <b>Purple Judge Golem</b> tries to break it.
+    </div>
+  </div>
+
+  <div class="lectern-scroll">
+    <div class="ls-head"><span>🛤️ SCROLL #3 · REDSTONE LOOP</span><span>LEVEL 3</span></div>
+    <div class="ls-title">How Does the Redstone Minecart Loop Work?</div>
+    <div class="ls-body">
+      <code>Try → Test → Fix!</code> If even 1 Redstone Lamp stays red, the Minecart loops back to the Anvil automatically until <b>all 2,223 lamps glow green!</b>
+    </div>
+  </div>
+
+  <div class="lectern-scroll">
+    <div class="ls-head"><span>🖥️ SCROLL #4 · LIVE PC + AR BRIDGE</span><span>LIVE</span></div>
+    <div class="ls-title">Connected to Your Real Windows PC</div>
+    <div class="ls-body">
+      Every command block here streams live from <code>ws://127.0.0.1:8787</code> into Lens Studio AR &amp; your browser at a calm, readable pace.
+    </div>
+  </div>
+</aside>
+
+<!-- 5. UNDERGROUND REDSTONE CONVEYOR MINESHAFT (OPEN-ROOF X-RAY CUTAWAY) -->
+<section class="underground-mineshaft mc-frame-stone">
+  <div class="mineshaft-header">
+    <div class="mineshaft-title-group">
+      <span class="mineshaft-badge">🔍 UNDERGROUND REDSTONE MINESHAFT CUTAWAY</span>
+      <span class="mineshaft-title">PEEK INSIDE THE COMMAND FACTORY — 6 MINECART STATIONS LINE-BY-LINE</span>
+      <span class="mineshaft-sub">(Simple 5-Year-Old Story on Top + Real Terminal Command Underneath)</span>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button class="mc-btn emerald" onclick="approveGate()">🟢 PULL APPROVE LEVER</button>
+      <button class="mc-btn diamond" onclick="nextBuilding()">🔄 STEP MINECART</button>
+    </div>
+  </div>
+
+  <div class="minecart-rail-row">
+    <!-- Cart 1 -->
+    <div class="minecart-card done" id="cart-0" onclick="selectBuilding(0)">
+      <div>
+        <div class="mc-cart-top">
+          <span class="mc-cart-step">🛒 CART #1 · WISH</span>
+          <span class="mc-cart-lamp">✓ LIT</span>
+        </div>
+        <div class="mc-cart-title">Voice + Enchantments</div>
+        <div class="mc-cart-kid">Heard your voice wish &amp; equipped 4 Enchanted Skill Books.</div>
+      </div>
+      <div class="mc-cart-cmd">$ claude --voice --skills bug,judge</div>
+    </div>
+
+    <!-- Cart 2 -->
+    <div class="minecart-card done" id="cart-1" onclick="selectBuilding(1)">
+      <div>
+        <div class="mc-cart-top">
+          <span class="mc-cart-step">🛒 CART #2 · FIND</span>
+          <span class="mc-cart-lamp">✓ LIT</span>
+        </div>
+        <div class="mc-cart-title">Open Code Chest</div>
+        <div class="mc-cart-kid">Opened <code>lobby.ts</code> chest &amp; spotted the broken door on Line 42!</div>
+      </div>
+      <div class="mc-cart-cmd">$ rg -n "players.length" src/lobby.ts</div>
+    </div>
+
+    <!-- Cart 3 -->
+    <div class="minecart-card done" id="cart-2" onclick="selectBuilding(4)">
+      <div>
+        <div class="mc-cart-top">
+          <span class="mc-cart-step">🛒 CART #3 · FORGE</span>
+          <span class="mc-cart-lamp">✓ LIT</span>
+        </div>
+        <div class="mc-cart-title">Anvil Code Fix</div>
+        <div class="mc-cart-kid">Changed <code>&gt;= 4</code> to <code>&gt; 4</code> so Player #4 fits inside!</div>
+      </div>
+      <div class="mc-cart-cmd">
+        <span class="diff-del">- if (players.length &gt;= 4) throw</span>
+        <span class="diff-add">+ if (players.length &gt; 4) return</span>
+      </div>
+    </div>
+
+    <!-- Cart 4 -->
+    <div class="minecart-card done" id="cart-3" onclick="selectBuilding(2)">
+      <div>
+        <div class="mc-cart-top">
+          <span class="mc-cart-step">🛒 CART #4 · JUDGE</span>
+          <span class="mc-cart-lamp">✓ LIT</span>
+        </div>
+        <div class="mc-cart-title">Purple Judge Golem</div>
+        <div class="mc-cart-kid">Second Golem checked Line 42 &amp; gave a big thumbs-up!</div>
+      </div>
+      <div class="mc-cart-cmd">subagent("Judge"): PASS (4/4 fit)</div>
+    </div>
+
+    <!-- Cart 5 -->
+    <div class="minecart-card active" id="cart-4" onclick="selectBuilding(3)">
+      <div>
+        <div class="mc-cart-top">
+          <span class="mc-cart-step">🛒 CART #5 · LOOP</span>
+          <span class="mc-cart-lamp active">⚡ TESTING</span>
+        </div>
+        <div class="mc-cart-title">2,223 Redstone Lamps</div>
+        <div class="mc-cart-kid">Minecart tested 2,223 games! Zero red lamps, all green!</div>
+      </div>
+      <div class="mc-cart-cmd">$ node build-alive.sweep.mjs → 2223 OK</div>
+    </div>
+
+    <!-- Cart 6 -->
+    <div class="minecart-card" id="cart-5" onclick="selectBuilding(5)">
+      <div>
+        <div class="mc-cart-top">
+          <span class="mc-cart-step">🛒 CART #6 · BOSS</span>
+          <span class="mc-cart-lamp gate" id="cart-6-lamp">⏳ LEVER</span>
+        </div>
+        <div class="mc-cart-title">Piston Boss Drawbridge</div>
+        <div class="mc-cart-kid">You are the Boss! Pull the Approve Lever to save!</div>
+      </div>
+      <div class="mc-cart-cmd" id="cart-6-cmd">Waiting: [APPROVE] / [REWIND]</div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. AUTHENTIC MINECRAFT XP BAR + 9-SLOT HOTBAR -->
+<div class="mc-bottom-hotbar-wrap">
+  <div class="mc-xp-bar">
+    <div class="mc-xp-fill"></div>
+    <div class="mc-xp-lvl">2223</div>
+  </div>
+  <div class="mc-hotbar">
+    <div class="mc-slot" id="slot-0" onclick="selectBuilding(0)">1 📖 Recipe</div>
+    <div class="mc-slot" id="slot-1" onclick="selectBuilding(1)">2 🟧 CmdBlk</div>
+    <div class="mc-slot" id="slot-2" onclick="selectBuilding(2)">3 🤖 Golems</div>
+    <div class="mc-slot active" id="slot-3" onclick="selectBuilding(3)">4 🛤️ Loop</div>
+    <div class="mc-slot" id="slot-4" onclick="selectBuilding(4)">5 ⚒️ Anvil</div>
+    <div class="mc-slot" id="slot-5" onclick="selectBuilding(5)">6 🏰 Gate</div>
+    <div class="mc-slot" onclick="togglePause()">7 ⏯ Pace</div>
+    <div class="mc-slot" onclick="toggleKidMode()">8 🧒 5yo</div>
+    <div class="mc-slot" onclick="approveGate()">9 🟢 Save</div>
+  </div>
+</div>
+
+<script>
+  // ============================================================================
+  // CALM 10-SECOND-PER-BLOCK MINECRAFT STORY STATE
+  // ============================================================================
+  const BUILDINGS = [
+    {
+      stepBadge: "MINECART STEP 1 OF 6 · CALM PACE (10s / BLOCK)",
+      headline: "📖 Building #1 (Recipe Book Mill): Turning Your Voice Wish into a 5-Step Minecraft Crafting Recipe!",
+      kidText: "<b>🧒 Kid Story (Simple):</b> You spoke into the Note Block: <i>'Fix Room #3 crash when 4 friends join!'</i> The Recipe Mill wrote down a neat 5-step LEGO &amp; Minecraft checklist so the Golems know what to build!",
+      proText: "<b>🔧 Engineer View:</b> Prompt Compiler parsed voice intent + attached 4 SKILL.md contracts (<code>systematic-debugging</code>, <code>adversarial-verification</code>, <code>verification-loop</code>).",
+      cmdText: "$ claude --voice --skills bug-finder,judge-bot,test-loop \"Fix Room #3 crash when 4 players join\"",
+      cartIdx: 0
+    },
+    {
+      stepBadge: "MINECART STEP 2 OF 6 · CALM PACE (10s / BLOCK)",
+      headline: "🟧 Building #2 (Command Block Factory): Open Roof Shows Golem Reading lobby.ts Line 42!",
+      kidText: "<b>🧒 Kid Story (Simple):</b> Look inside the open roof! The Builder Golem opened the <b>lobby.ts</b> treasure chest and found the broken door block on <b>Line 42</b> that slammed shut on friend #4!",
+      proText: "<b>🔧 Engineer View:</b> Tool call <code>rg -n \"players.length\" src/</code> located off-by-one guard at <code>src/server/lobby.ts:42</code>.",
+      cmdText: "$ rg -n \"players.length\" src/server/lobby.ts → Line 42: if (players.length >= 4) throw Error(\"ROOM_FULL\")",
+      cartIdx: 1
+    },
+    {
+      stepBadge: "MINECART STEP 3 OF 6 · CALM PACE (10s / BLOCK)",
+      headline: "🤖 Building #3 (Two-Golem Arena): Builder Golem + Purple Judge Golem Team Up!",
+      kidText: "<b>🧒 Kid Story (Simple):</b> Why are there TWO Golems in the arena? Because <b>Builder Golem</b> fixes the blocks, and <b>Purple Judge Golem</b> checks the homework with a magnifying glass so no Creeper bugs hide!",
+      proText: "<b>🔧 Engineer View:</b> Spawned independent read-only <code>invoke_subagent(\"JudgeGolem\")</code> to refute root-cause hypothesis and verify boundary safety.",
+      cmdText: "invoke_subagent({ role: \"JudgeGolem\", target: \"src/server/lobby.ts:42\" }) → VERIFIED PASS",
+      cartIdx: 3
+    },
+    {
+      stepBadge: "MINECART STEP 4 OF 6 · CALM PACE (10s / BLOCK)",
+      headline: "🛤️ Building #4 (Redstone Loop Track): Running 2,223 Redstone Lamp Tests to Prove Room #3 Holds 4 Players!",
+      kidText: "<b>🧒 Kid Story (Simple):</b> Your Builder Golem fixed the broken door in <b>Room #3</b> so 4 friends can play together! Now the Minecart is riding around <b>2,223 Redstone Lamps</b> to make sure every single lamp lights up green!",
+      proText: "<b>🔧 Engineer View:</b> Closed-loop evaluator executed <code>node devpost/tests/build-alive.sweep.mjs</code>: 2,223 assertions passed, 0 failures (p50 = 0.02 ms).",
+      cmdText: "$ node devpost/tests/build-alive.sweep.mjs → 2,223 / 2,223 LAMPS GREEN (0ms lag)",
+      cartIdx: 4
+    },
+    {
+      stepBadge: "MINECART STEP 5 OF 6 · CALM PACE (10s / BLOCK)",
+      headline: "⚒️ Building #5 (Anvil Code Forge): Smashed Bad '>= 4' Block & Forged Shiny '> 4' Block!",
+      kidText: "<b>🧒 Kid Story (Simple):</b> On the Minecraft Anvil, the Golem swapped <code>&gt;= 4</code> (which kicked out player #4) for <code>&gt; 4</code> (which lets players 1, 2, 3, and 4 all play together happily)!",
+      proText: "<b>🔧 Engineer View:</b> Minimal 1-line root-cause diff applied in <code>src/server/lobby.ts:42</code> without adding unrequested abstractions.",
+      cmdText: "git diff src/server/lobby.ts → -if (players.length >= 4)  +if (players.length > 4)",
+      cartIdx: 2
+    },
+    {
+      stepBadge: "MINECART STEP 6 OF 6 · CALM PACE (10s / BLOCK)",
+      headline: "🏰 Building #6 (Piston Boss Gate): All 2,223 Redstone Lamps Green — Pull Approve Lever!",
+      kidText: "<b>🧒 Kid Story (Simple):</b> The Golems never open the castle drawbridge without asking YOU first! Since all <b>2,223 Redstone Lamps</b> are glowing green, click <b>PULL APPROVE LEVER</b> to lower the bridge!",
+      proText: "<b>🔧 Engineer View:</b> Human-in-the-loop authority gate armed. Pinch/click Approve to commit verified patch or Rewind to rollback.",
+      cmdText: "gate.awaitApproval({ testsPassed: 2223, reviewer: \"JudgeGolem\" }) → READY FOR YOUR LEVER",
+      cartIdx: 5
+    }
+  ];
+
+  let selectedIdx = 3; // Default on Building #4 (Redstone Loop Track)
+  let isPaused = false;
+  let isKidMode = true;
+  let stepProgress = 0.78;
+  let lastTick = performance.now();
+
+  function renderUI() {
+    const b = BUILDINGS[selectedIdx];
+    document.getElementById("top-step-badge").textContent = b.stepBadge;
+    document.getElementById("top-headline").textContent = b.headline;
+    document.getElementById("top-kid-box").innerHTML = isKidMode ? b.kidText : b.proText;
+    document.getElementById("top-cmd-text").textContent = b.cmdText;
+
+    for (let i = 0; i < 6; i++) {
+      const s = document.getElementById("sign-" + i);
+      if (s) s.classList.toggle("selected", i === selectedIdx);
+      const slot = document.getElementById("slot-" + i);
+      if (slot) slot.classList.toggle("active", i === selectedIdx);
+      const c = document.getElementById("cart-" + i);
+      if (c) c.classList.toggle("active", i === b.cartIdx);
+    }
+  }
+
+  function selectBuilding(idx) {
+    selectedIdx = idx;
+    stepProgress = 0.15;
+    renderUI();
+  }
+
+  function nextBuilding() {
+    selectedIdx = (selectedIdx + 1) % BUILDINGS.length;
+    stepProgress = 0.1;
+    renderUI();
+  }
+
+  function togglePause() {
+    isPaused = !isPaused;
+    document.getElementById("btn-pause").textContent = isPaused ? "▶ PLAY WORLD" : "⏸ PAUSE WORLD";
+  }
+
+  function toggleKidMode() {
+    isKidMode = !isKidMode;
+    document.getElementById("btn-kid").textContent = isKidMode ? "🧒 5-YEAR-OLD MODE: ON" : "🔧 ENGINEER MODE: ON";
+    renderUI();
+  }
+
+  function approveGate() {
+    selectedIdx = 5;
+    document.getElementById("cart-6-lamp").textContent = "✓ SAVED";
+    document.getElementById("cart-6-lamp").style.background = "#27ae60";
+    document.getElementById("cart-6-cmd").textContent = "git commit -m 'fix(lobby): allow 4th player'";
+    renderUI();
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key >= "1" && e.key <= "6") selectBuilding(Number(e.key) - 1);
+    else if (e.code === "Space") togglePause();
+    else if (e.key === "k" || e.key === "K") toggleKidMode();
+  });
+
+  // ============================================================================
+  // TRUE 3D ISOMETRIC MINECRAFT VOXEL ENGINE (GRASS BLOCKS, WATER, REDSTONE, GOLEMS)
+  // ============================================================================
+  const canvas = document.getElementById("world-canvas");
+  const ctx = canvas.getContext("2d");
+
+  // Isometric Voxel Block Renderer (draws a crisp 3-face Minecraft cube with pixel texture details)
+  function drawVoxelCube(cx, cy, w, d, h, topCol, leftCol, rightCol, opts = {}) {
+    ctx.save();
+    // Top Diamond Face
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - h - d);
+    ctx.lineTo(cx + w, cy - h);
+    ctx.lineTo(cx, cy - h + d);
+    ctx.lineTo(cx - w, cy - h);
+    ctx.closePath();
+    ctx.fillStyle = topCol;
+    ctx.fill();
+    ctx.lineWidth = opts.borderWidth || 1.2;
+    ctx.strokeStyle = opts.borderCol || "rgba(20, 16, 12, 0.55)";
+    ctx.stroke();
+
+    // Left Face
+    ctx.beginPath();
+    ctx.moveTo(cx - w, cy - h);
+    ctx.lineTo(cx, cy - h + d);
+    ctx.lineTo(cx, cy + d);
+    ctx.lineTo(cx - w, cy);
+    ctx.closePath();
+    ctx.fillStyle = leftCol;
+    ctx.fill();
+    ctx.stroke();
+
+    // Right Face
+    ctx.beginPath();
+    ctx.moveTo(cx + w, cy - h);
+    ctx.lineTo(cx, cy - h + d);
+    ctx.lineTo(cx, cy + d);
+    ctx.lineTo(cx + w, cy);
+    ctx.closePath();
+    ctx.fillStyle = rightCol;
+    ctx.fill();
+    ctx.stroke();
+
+    // Optional Grass Trim on Top Edge of Dirt Sides (Classic Minecraft Grass Block!)
+    if (opts.grassTrim) {
+      const trimH = Math.min(7, h * 0.28);
+      ctx.fillStyle = "#48b52a";
       ctx.beginPath();
-      ctx.moveTo(cx - hw, cy);
-      ctx.lineTo(cx, cy + hh);
-      ctx.lineTo(cx, cy + hh + depth);
-      ctx.lineTo(cx - hw, cy + depth);
+      ctx.moveTo(cx - w, cy - h);
+      ctx.lineTo(cx, cy - h + d);
+      ctx.lineTo(cx, cy - h + d + trimH);
+      ctx.lineTo(cx - w, cy - h + trimH);
       ctx.closePath();
-      ctx.fillStyle = leftColor;
       ctx.fill();
-      if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = 2; ctx.stroke(); }
 
-      // Right face
+      ctx.fillStyle = "#368f1e";
       ctx.beginPath();
-      ctx.moveTo(cx + hw, cy);
-      ctx.lineTo(cx, cy + hh);
-      ctx.lineTo(cx, cy + hh + depth);
-      ctx.lineTo(cx + hw, cy + depth);
+      ctx.moveTo(cx + w, cy - h);
+      ctx.lineTo(cx, cy - h + d);
+      ctx.lineTo(cx, cy - h + d + trimH);
+      ctx.lineTo(cx + w, cy - h + trimH);
       ctx.closePath();
-      ctx.fillStyle = rightColor;
       ctx.fill();
-      if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = 2; ctx.stroke(); }
-
-      // Top diamond face
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - hh);
-      ctx.lineTo(cx + hw, cy);
-      ctx.lineTo(cx, cy + hh);
-      ctx.lineTo(cx - hw, cy);
-      ctx.closePath();
-      ctx.fillStyle = topColor;
-      ctx.fill();
-      if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = 2.5; ctx.stroke(); }
     }
 
-    function drawIsoBuilding(cx, cy, w, h, height, roofCol, leftCol, rightCol, edgeCol, windows = true) {
-      // Draw building body from (cx, cy - height) with depth = height
-      drawIsoTile(cx, cy - height, w, h, height, roofCol, leftCol, rightCol, edgeCol);
-      if (windows) {
-        ctx.fillStyle = "rgba(255, 230, 120, 0.85)";
-        for (let row = 1; row <= 2; row++) {
-          const wy = cy - height + row * (height * 0.32);
-          ctx.fillRect(cx - w * 0.25, wy, 10, 12);
-          ctx.fillRect(cx - w * 0.10, wy + 7, 10, 12);
-          ctx.fillRect(cx + w * 0.08, wy + 7, 10, 12);
-          ctx.fillRect(cx + w * 0.22, wy, 10, 12);
+    // Optional Command Block Core Square on Faces
+    if (opts.commandCore) {
+      ctx.fillStyle = "#55ffff";
+      ctx.fillRect(cx - 5, cy - h * 0.55, 10, 10);
+      ctx.strokeStyle = "#111";
+      ctx.strokeRect(cx - 5, cy - h * 0.55, 10, 10);
+    }
+
+    ctx.restore();
+  }
+
+  // Draw a Voxel Oak Tree made of stacked trunk + leaf cubes
+  function drawVoxelTree(tx, ty, scale = 1) {
+    const s = scale;
+    // Oak Trunk
+    drawVoxelCube(tx, ty, 10 * s, 5 * s, 26 * s, "#8a6236", "#6b4c2b", "#4e361d");
+    // Leaf Layer 1
+    drawVoxelCube(tx, ty - 22 * s, 28 * s, 14 * s, 16 * s, "#52c435", "#3da124", "#2b7a18");
+    // Leaf Layer 2
+    drawVoxelCube(tx, ty - 36 * s, 20 * s, 10 * s, 14 * s, "#65d846", "#48b52a", "#358c1d");
+  }
+
+  // Draw a Cute 3D Voxel Minecraft Golem (Head, Body, Glowing Eyes)
+  function drawVoxelGolem(gx, gy, bodyCol, headCol, eyeCol, labelText, bobOffset = 0) {
+    const y = gy + bobOffset;
+    // Shadow
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(gx, gy + 5, 16, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Legs / Base
+    drawVoxelCube(gx, y, 10, 5, 10, "#555", "#444", "#333");
+    // Torso
+    drawVoxelCube(gx, y - 10, 16, 8, 16, bodyCol[0], bodyCol[1], bodyCol[2]);
+    // Head
+    drawVoxelCube(gx, y - 26, 13, 6.5, 13, headCol[0], headCol[1], headCol[2]);
+    // Glowing Voxel Eyes
+    ctx.fillStyle = eyeCol;
+    ctx.fillRect(gx - 6, y - 31, 4, 3);
+    ctx.fillRect(gx + 2, y - 31, 4, 3);
+
+    // Floating Minecraft Nameplate above Golem
+    if (labelText) {
+      ctx.font = "900 10.5px 'Segoe UI', sans-serif";
+      const tw = ctx.measureText(labelText).width + 10;
+      ctx.fillStyle = "rgba(18, 16, 22, 0.82)";
+      ctx.fillRect(gx - tw / 2, y - 55, tw, 16);
+      ctx.strokeStyle = eyeCol;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(gx - tw / 2, y - 55, tw, 16);
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "center";
+      ctx.fillText(labelText, gx, y - 43);
+    }
+  }
+
+  // Draw Redstone Dust & Powered Minecart Rail Path between two points with animated Minecart
+  function drawRedstoneRail(x1, y1, x2, y2, t, active) {
+    ctx.save();
+    // Wooden Rail Ties
+    const steps = 12;
+    for (let i = 0; i <= steps; i++) {
+      const u = i / steps;
+      const px = x1 + (x2 - x1) * u;
+      const py = y1 + (y2 - y1) * u;
+      ctx.fillStyle = "#593b1c";
+      ctx.fillRect(px - 6, py - 2, 12, 4);
+    }
+    // Outer Gold Rails
+    ctx.strokeStyle = "#ffaa00";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    // Inner Glowing Redstone Dust Core
+    ctx.strokeStyle = active ? "#ff3333" : "#992222";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    // Moving Redstone Spark / Minecart Packet along the rail
+    const u = (t * 0.45) % 1;
+    const mx = x1 + (x2 - x1) * u;
+    const my = y1 + (y2 - y1) * u;
+    drawVoxelCube(mx, my + 2, 8, 4, 7, "#ffdd55", "#ff5555", "#cc2222");
+    ctx.restore();
+  }
+
+  // 6 Main Voxel Buildings Coordinates on Center Citadel Island
+  const VOXEL_BUILDINGS = [
+    { id: 0, x: 505,  y: 432, name: "Recipe Mill" },
+    { id: 1, x: 771,  y: 408, name: "Command Factory" },
+    { id: 2, x: 1051, y: 412, name: "Two-Golem Arena" },
+    { id: 3, x: 1315, y: 436, name: "Redstone Loop" },
+    { id: 4, x: 638,  y: 656, name: "Anvil Code Forge" },
+    { id: 5, x: 1175, y: 656, name: "Piston Boss Gate" }
+  ];
+
+  function renderMinecraftWorld(now) {
+    const dt = (now - lastTick) / 1000;
+    lastTick = now;
+    const t = now / 1000;
+
+    if (!isPaused) {
+      stepProgress += dt / 10.0; // Calm 10 seconds per block!
+      if (stepProgress >= 1.0) {
+        stepProgress = 0;
+        selectedIdx = (selectedIdx + 1) % BUILDINGS.length;
+        renderUI();
+      }
+      const fill = document.getElementById("boss-meter-fill");
+      if (fill) fill.style.width = Math.round(stepProgress * 100) + "%";
+    }
+
+    // 1. MINECRAFT DAYLIGHT / SUNSET SKY GRADIENT
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, 1080);
+    skyGrad.addColorStop(0.0, "#3b76d6");
+    skyGrad.addColorStop(0.38, "#6fa8ff");
+    skyGrad.addColorStop(0.68, "#9ec9ff");
+    skyGrad.addColorStop(0.74, "#2a2421");
+    skyGrad.addColorStop(1.0, "#151210");
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, 1920, 1080);
+
+    // 2. SQUARE MINECRAFT VOXEL SUN & PUFFY 3D VOXEL CLOUDS
+    // Square Voxel Sun
+    ctx.fillStyle = "#fff380";
+    ctx.fillRect(390, 95, 54, 54);
+    ctx.fillStyle = "rgba(255, 255, 160, 0.35)";
+    ctx.fillRect(380, 85, 74, 74);
+
+    // Drifting 3D Voxel Clouds
+    const clouds = [
+      { x: (180 + t * 8) % 2000 - 100, y: 125, w: 64, d: 20, h: 12 },
+      { x: (620 + t * 6) % 2000 - 100, y: 110, w: 84, d: 24, h: 14 },
+      { x: (1280 + t * 7) % 2000 - 100, y: 132, w: 72, d: 22, h: 12 },
+      { x: (1640 + t * 5) % 2000 - 100, y: 115, w: 58, d: 18, h: 11 }
+    ];
+    for (const c of clouds) {
+      drawVoxelCube(c.x, c.y, c.w, c.d, c.h, "#ffffff", "#e2ecff", "#c5d7f5", { borderCol: "rgba(120,150,200,0.4)" });
+    }
+
+    // 3. DISTANT VOXEL MOUNTAINS & OCEAN HORIZON + UNDERGROUND STONE BEDROCK LAYER
+    ctx.fillStyle = "#2b65c9";
+    ctx.fillRect(0, 410, 1920, 355);
+    // Water shimmer lines
+    ctx.fillStyle = "rgba(130, 210, 255, 0.28)";
+    for (let i = 0; i < 24; i++) {
+      const wx = ((i * 173 + Math.sin(t + i) * 20) % 1880);
+      const wy = 430 + (i * 21) % 310;
+      ctx.fillRect(wx, wy, 46, 4);
+    }
+
+    // Underground Minecraft Stone, Deepslate & Ore Cross-Section (y = 755 to 1080)
+    ctx.fillStyle = "#333138";
+    ctx.fillRect(0, 755, 1920, 325);
+    // Dirt & Grass Crust Edge along top of underground mineshaft
+    ctx.fillStyle = "#48b52a";
+    ctx.fillRect(0, 752, 1920, 7);
+    ctx.fillStyle = "#6e4928";
+    ctx.fillRect(0, 759, 1920, 14);
+    // Voxel Stone & Glowing Ore Blocks in the underground wall
+    const oreColors = ["#55ffff", "#55ff55", "#ffaa00", "#ff5555"];
+    for (let bx = 0; bx < 1920; bx += 48) {
+      for (let by = 775; by < 1080; by += 44) {
+        ctx.fillStyle = ((bx + by) % 96 === 0) ? "#27262b" : "#3a3840";
+        ctx.fillRect(bx + 2, by + 2, 44, 40);
+        if ((bx * 7 + by * 13) % 11 === 0) {
+          ctx.fillStyle = oreColors[((bx + by) / 4) % 4 | 0];
+          ctx.fillRect(bx + 10, by + 10, 8, 8);
+          ctx.fillRect(bx + 24, by + 22, 7, 7);
         }
       }
     }
 
-    function drawRobot(x, y, color, name, bubbleText) {
-      ctx.save();
-      // Glow shadow
-      ctx.fillStyle = "rgba(0,0,0,0.45)";
-      ctx.beginPath(); ctx.ellipse(x, y + 22, 18, 8, 0, 0, Math.PI * 2); ctx.fill();
+    // =========================================================================
+    // 4. WEST FLOATING VOXEL ISLAND (SPAWN VILLAGE TERRAIN)
+    // =========================================================================
+    drawVoxelCube(200, 650, 185, 88, 52, "#58c93a", "#865c36", "#634224", { grassTrim: true });
+    drawVoxelCube(200, 702, 145, 68, 38, "#75747a", "#5a595e", "#403f44");
+    drawVoxelTree(72, 575, 0.85);
+    drawVoxelTree(335, 585, 0.8);
 
-      // Body
-      ctx.fillStyle = color;
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.roundRect(x - 16, y - 16, 32, 32, 10); ctx.fill(); ctx.stroke();
+    // Redstone Bridge connecting West Spawn Island to Center AI Citadel
+    drawRedstoneRail(350, 560, 505, 432, t, true);
 
-      // Visor eyes
-      ctx.fillStyle = "#061020";
-      ctx.beginPath(); ctx.roundRect(x - 11, y - 9, 22, 11, 4); ctx.fill();
-      ctx.fillStyle = "#3ae8ff";
-      ctx.beginPath(); ctx.arc(x - 5, y - 3.5, 3, 0, Math.PI * 2); ctx.arc(x + 5, y - 3.5, 3, 0, Math.PI * 2); ctx.fill();
+    // =========================================================================
+    // 5. CENTER MAIN VOXEL CONTINENT — "REDSTONE AI CITADEL" (CHUNKED GRASS + STONE)
+    // =========================================================================
+    // Deep Stone Foundation Layer
+    drawVoxelCube(925, 765, 540, 225, 62, "#75747a", "#56555c", "#3b3a40");
+    // Upper Grass & Dirt Voxel Continent
+    drawVoxelCube(925, 704, 565, 238, 50, "#56c738", "#865c36", "#634224", { grassTrim: true });
+    // Stepped Inner Grass Terrace
+    drawVoxelCube(925, 515, 435, 175, 28, "#63d444", "#865c36", "#634224", { grassTrim: true });
 
-      // Antenna
-      ctx.strokeStyle = color; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(x, y - 16); ctx.lineTo(x, y - 26); ctx.stroke();
-      ctx.fillStyle = "#ffca3a";
-      ctx.beginPath(); ctx.arc(x, y - 28, 4.5, 0, Math.PI * 2); ctx.fill();
+    // Decorative Voxel Trees & Waterfalls on Center Continent
+    drawVoxelTree(415, 495, 0.85);
+    drawVoxelTree(910, 355, 0.8);
+    drawVoxelTree(1425, 505, 0.85);
+    drawVoxelTree(910, 665, 0.85);
 
-      // Name badge
-      ctx.fillStyle = "rgba(6, 12, 26, 0.9)";
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(x - 52, y + 20, 104, 20, 8); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 11.5px Segoe UI, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(name, x, y + 34);
+    // Voxel Waterfall cascading down front cliff of Center Island
+    const wfAlpha = 0.72 + Math.sin(t * 5) * 0.12;
+    drawVoxelCube(925, 780, 28, 14, 110, `rgba(65,165,255,${wfAlpha})`, `rgba(45,135,235,${wfAlpha})`, `rgba(30,105,205,${wfAlpha})`);
 
-      if (bubbleText) {
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.roundRect(x - 78, y - 58, 156, 24, 10); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#061020";
-        ctx.font = "bold 11.5px Segoe UI, sans-serif";
-        ctx.fillText(bubbleText, x, y - 42);
-      }
-      ctx.restore();
-    }
+    // =========================================================================
+    // 6. EAST FLOATING VOXEL ISLAND (VILLAGER LIBRARIAN'S OAK TREEHOUSE BIOME)
+    // =========================================================================
+    drawVoxelCube(1720, 655, 185, 88, 52, "#58c93a", "#865c36", "#634224", { grassTrim: true });
+    drawVoxelCube(1720, 707, 145, 68, 38, "#75747a", "#5a595e", "#403f44");
+    drawVoxelTree(1575, 565, 1.05);
+    drawVoxelTree(1855, 575, 0.95);
 
-    function drawGlowingRoad(x0, y0, x1, y1, color, label) {
-      ctx.save();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 10;
-      ctx.lineCap = "round";
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 18;
-      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-
-      // Inner bright core
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 3;
-      ctx.setLineDash([10, 10]);
-      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Energy orbs along the road
-      for (const u of [0.28, 0.68]) {
-        const px = x0 + (x1 - x0) * u;
-        const py = y0 + (y1 - y0) * u;
-        ctx.fillStyle = "#ffca3a";
-        ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
-      }
-
-      if (label) {
-        const mx = (x0 + x1) / 2;
-        const my = (y0 + y1) / 2;
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = "rgba(7, 14, 30, 0.92)";
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.roundRect(mx - 68, my - 13, 136, 22, 8); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = color;
-        ctx.font = "bold 11.5px Segoe UI, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(label, mx, my + 2);
-      }
-      ctx.restore();
-    }
-
-    function renderWorld() {
-      // 1. Starry Night + Aurora Sky Gradient
-      const sky = ctx.createLinearGradient(0, 0, 0, 1080);
-      sky.addColorStop(0, "#050a18");
-      sky.addColorStop(0.45, "#0d1f42");
-      sky.addColorStop(1, "#071126");
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, 1920, 1080);
-
-      // Subtle stars & perspective world grid
-      ctx.fillStyle = "rgba(255,255,255,0.65)";
-      for (let i = 0; i < 90; i++) {
-        const sx = (i * 197) % 1920;
-        const sy = (i * 89) % 420;
-        ctx.fillRect(sx, sy, (i % 3) + 1, (i % 3) + 1);
-      }
-
-      ctx.strokeStyle = "rgba(58, 232, 255, 0.07)";
-      ctx.lineWidth = 1;
-      for (let x = -400; x <= 2320; x += 90) {
-        ctx.beginPath(); ctx.moveTo(960 + (x - 960) * 0.25, 220); ctx.lineTo(x, 1080); ctx.stroke();
-      }
-      for (let y = 260; y < 1080; y += 52) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1920, y); ctx.stroke();
-      }
-
-      // 2. Three Giant Floating 3D Continents / Islands
-      // West Continent: Setup & Wish Island
-      drawIsoTile(210, 490, 340, 180, 36, "#17385c", "#0f243d", "#0a192b", "#3ae8ff");
-      // Center Continent: Main 6-Building AI City Island
-      drawIsoTile(880, 560, 1040, 470, 44, "#152c52", "#0d1d38", "#091428", "#3ae8ff");
-      // East Continent: Owl Professor's Learner Treehouse Island
-      drawIsoTile(1690, 490, 360, 220, 36, "#281b54", "#1b113b", "#120b29", "#c28cff");
-
-      // 3. Glowing Energy Roads & Conveyor Bridges Connecting the World
-      drawGlowingRoad(230, 445, 525, 455, "#3ae8ff", "📜 Prompt Scroll Road");
-      drawGlowingRoad(525, 455, 865, 410, "#ffca3a", "⚡ Command Highway");
-      drawGlowingRoad(865, 410, 1190, 440, "#c28cff", "🛸 Sub-Agent Bridge");
-      drawGlowingRoad(575, 725, 890, 720, "#3ae8ff", "🔁 Homework Loop");
-      drawGlowingRoad(890, 720, 1210, 715, "#2ef2a6", "👍 Boss Approval Road");
-      drawGlowingRoad(865, 410, 890, 720, "#ffca3a", "✏️ AST Code Link");
-      drawGlowingRoad(1190, 440, 1210, 715, "#2ef2a6", "✅ Verified 2,223 Rules");
-
-      // 4. Draw the 7 Iconic 3D Buildings on the Islands
-      // West Island: Setup Castle
-      drawIsoBuilding(205, 455, 165, 95, 95, "#246694", "#184769", "#10324a", "#3ae8ff");
-      // Building 1: Prompt Mill
-      drawIsoBuilding(525, 455, 145, 85, 80, "#1c6e5e", "#134d42", "#0d362e", "#2ef2a6");
-      // Building 2: Command Powerhouse (Giant Center Factory with Open Glowing Roof!)
-      drawIsoBuilding(865, 415, 200, 115, 105, "#6b4c14", "#4d360d", "#362508", "#ffca3a");
-      // Open glowing roof core on Building 2
-      drawIsoTile(865, 310, 130, 72, 10, "#ffca3a", "#d49b1a", "#9e7110", "#ffffff");
-
-      // Building 3: Helper Bot Hangar
-      drawIsoBuilding(1190, 440, 155, 90, 86, "#46297a", "#311c57", "#22133d", "#c28cff");
-
-      // Building 4: Loop Track Carousel (Front Left)
-      drawIsoBuilding(575, 725, 150, 88, 72, "#19537a", "#113a57", "#0b283d", "#3ae8ff");
-      // Glowing circular loop halo around Building 4
-      ctx.save();
-      ctx.strokeStyle = "#3ae8ff"; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.ellipse(575, 675, 82, 34, 0, 0, Math.PI * 2); ctx.stroke();
-      ctx.restore();
-
-      // Building 5: Code Workshop (Front Center)
-      drawIsoBuilding(890, 720, 165, 95, 78, "#6e4816", "#4f330f", "#38240a", "#ffca3a");
-
-      // Building 6: Boss Drawbridge Gate (Front Right)
-      drawIsoBuilding(1210, 715, 155, 90, 76, "#19694c", "#114a35", "#0b3324", "#2ef2a6");
-
-      // 5. Draw Cute, Friendly AI Robots Working Across the World!
-      drawRobot(145, 465, "#3ae8ff", "🤖 Claude Bot", "I hear your wish!");
-      drawRobot(270, 480, "#2ef2a6", "🚀 Antigravity", "Skills loaded!");
-      drawRobot(790, 375, "#ffca3a", "⚡ Builder Bot", "Running commands!");
-      drawRobot(1140, 395, "#c28cff", "🤝 Judge Bot", "Checking 2,223 rules!");
-      drawRobot(1265, 700, "#2ef2a6", "👍 Boss Gate", "Pinch Approve!");
-
-      // Draw dashed laser beam from Cutaway Room up to Building #2 so kids see the cutaway is INSIDE Building #2
-      ctx.save();
-      ctx.strokeStyle = "rgba(255, 202, 58, 0.55)";
-      ctx.lineWidth = 3;
-      ctx.setLineDash([8, 8]);
-      ctx.beginPath(); ctx.moveTo(865, 415); ctx.lineTo(540, 875); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(865, 415); ctx.lineTo(1380, 875); ctx.stroke();
-      ctx.restore();
-    }
-
-    renderWorld();
-
-    const WORLD_STORIES = [
-      {
-        title: "🏰 Island 1 (Setup Castle): Picking Your AI Brain, Voice & Superpowers!",
-        sub: "You picked Claude Code + Antigravity + Codex, spoke your wish, and gave the AI 5 Superpower Backpacks (Skills)!",
-        plain: "🟢 Kid Translation: 'Turning your voice wish into a 4-step LEGO instruction book!'",
-        cmd: "💻 Real Command: claude --skills systematic-debugging,verification-loop --bridge :8787"
-      },
-      {
-        title: "🏛️ Building #1 (Prompt Mill): Making the Step-by-Step Checklist!",
-        sub: "Instead of guessing, the Prompt Mill writes a neat checklist: 1. Read lobby.ts  2. Fix >= 4  3. Ask Judge Bot  4. Ask You!",
-        plain: "🟢 Kid Translation: 'Checklist ready! No messy guessing allowed.'",
-        cmd: "💻 Real Command: Loaded SKILL.md (agent-harness-construction + systematic-debugging)"
-      },
-      {
-        title: "🌟 Happening Now in Building #2: Fixing the '4 Friends' Bug & Testing It!",
-        sub: "Follow the glowing road from left to right! Your Voice Wish entered the Setup Castle, the AI fixed lobby.ts, and Judge Bot is testing all 6 buildings!",
-        plain: "🟢 Kid Translation: 'Checking 2,223 rules to make sure 4 friends can play!'",
-        cmd: "💻 Real Command: node build-alive.sweep.mjs → 2,223 PASSED ✅"
-      },
-      {
-        title: "🛸 Building #3 (Bot Hangar): Main AI + Purple Judge Bot Team Up!",
-        sub: "One robot gets tired if it reads everything! So Main AI calls purple Judge Bot to fly over the city and check for mistakes.",
-        plain: "🟢 Kid Translation: 'Judge Bot checked 174,521 rules — 0 mistakes!'",
-        cmd: "💻 Real Command: invoke_subagent(role='Adversarial Hackathon Judge', id='138ef673')"
-      },
-      {
-        title: "🎡 Building #4 (Loop Track): The 'Check Your Homework' Carousel!",
-        sub: "Smart AI rides the Loop Track: Plan → Fix → Test! If a test fails, it rides around again until every building glows green!",
-        plain: "🟢 Kid Translation: 'Homework checked! 0 errors in Lens Studio.'",
-        cmd: "💻 Real Command: lensifyts.exe run && node build-alive.sweep.mjs (p50 = 0.02ms)"
-      },
-      {
-        title: "🛠️ Building #5 (Code Workshop): Changing >= 4 to > 4 in lobby.ts!",
-        sub: "Look inside the Code Workshop: the old door sign said 'Stop at >= 4' (locking out Friend #4!). Now it says '> 4' so 4 friends fit!",
-        plain: "🟢 Kid Translation: 'Unlocked the door for Friend #4!'",
-        cmd: "💻 Real Command: edit_file(server/lobby.ts) [- if (len >= 4) / + if (len > 4)]"
-      },
-      {
-        title: "🛡️ Building #6 (Boss Gate): Waiting for Your Thumbs-Up Pinch!",
-        sub: "You are the Boss of the AI World! Secret passwords are hidden automatically, and the green bridge waits for your Approve pinch!",
-        plain: "🟢 Kid Translation: 'You pinched Approve! All 12/12 room tests passed!'",
-        cmd: "💻 Real Command: approveAction('run_known_test', 'CONFIRM_PINCH_APPROVE', nonce='8f4a9c02')"
-      }
+    // =========================================================================
+    // 7. GLOWING REDSTONE RAILS CONNECTING ALL 6 VOXEL BUILDINGS
+    // =========================================================================
+    const rails = [
+      [0, 1], [1, 2], [2, 3],
+      [1, 4], [4, 2], [3, 5], [4, 5]
     ];
-
-    function focusBuilding(idx) {
-      const s = WORLD_STORIES[idx] || WORLD_STORIES[2];
-      document.getElementById("sky-title").textContent = s.title;
-      document.getElementById("sky-sub").textContent = s.sub;
-      document.getElementById("sky-cmd").innerHTML = `<span style="color: #2ef2a6; font-weight: 800;">${s.plain}</span><span style="font-family: Consolas, monospace; color: #3ae8ff;">${s.cmd}</span>`;
+    for (const [a, b] of rails) {
+      const ba = VOXEL_BUILDINGS[a];
+      const bb = VOXEL_BUILDINGS[b];
+      const isActive = (selectedIdx === a || selectedIdx === b);
+      drawRedstoneRail(ba.x, ba.y, bb.x, bb.y, t + a * 0.3, isActive);
     }
-  </script>
+
+    // =========================================================================
+    // 8. DRAW THE 6 THEMED MINECRAFT VOXEL BUILDINGS ON THE CENTER CONTINENT
+    // =========================================================================
+
+    // --- BUILDING #1: RECIPE BOOK MILL (Oak Planks + Bookshelf Voxel Tower + Lectern) ---
+    {
+      const bx = 505, by = 432;
+      // Cobblestone Base
+      drawVoxelCube(bx, by, 54, 26, 18, "#888", "#666", "#4a4a4a");
+      // Oak Plank Walls
+      drawVoxelCube(bx, by - 18, 46, 22, 30, "#b8874e", "#966c3e", "#6b4c2b");
+      // Enchanted Bookshelf Stripe
+      drawVoxelCube(bx, by - 30, 48, 23, 12, "#d68910", "#9c27b0", "#2980b9");
+      // Stepped Oak Roof
+      drawVoxelCube(bx, by - 48, 52, 25, 12, "#8a5a2b", "#6b441e", "#4d3014");
+      drawVoxelCube(bx, by - 60, 34, 16, 10, "#9e6934", "#7a5025", "#593919");
+    }
+
+    // --- BUILDING #2: OPEN-ROOF COMMAND BLOCK FACTORY (Orange/Cyan Command Blocks + Redstone Core) ---
+    {
+      const bx = 771, by = 408;
+      // Dark Stone Foundation
+      drawVoxelCube(bx, by, 68, 33, 18, "#555", "#3f3f44", "#2b2b2e");
+      // Back & Side Command Block Walls (Impulse Orange + Chain Green + Repeat Purple)
+      drawVoxelCube(bx - 22, by - 18, 26, 13, 34, "#e68a4d", "#c96f34", "#9c5121", { commandCore: true });
+      drawVoxelCube(bx + 22, by - 18, 26, 13, 34, "#58b89c", "#42967d", "#2e705c", { commandCore: true });
+      // Open-Roof Glowing Redstone Matrix Inside
+      const pulse = Math.sin(t * 6) * 3;
+      drawVoxelCube(bx, by - 20 + pulse, 24, 12, 20, "#ff5555", "#cc2222", "#991111");
+      // Builder Golem working inside the open factory
+      drawVoxelGolem(bx, by - 32, ["#55ffff", "#29b6f6", "#0288d1"], ["#e0f7fa", "#80deea", "#4dd0e1"], "#ffff55", "", Math.sin(t * 4) * 2);
+    }
+
+    // --- BUILDING #3: TWO-GOLEM ARENA (Main Builder Golem + Purple Amethyst Judge Golem) ---
+    {
+      const bx = 1051, by = 412;
+      // Quartz & Obsidian Arena Platform
+      drawVoxelCube(bx, by, 66, 32, 18, "#eceff1", "#cfd8dc", "#90a4ae");
+      drawVoxelCube(bx, by - 18, 54, 26, 8, "#37474f", "#263238", "#1c262b");
+      // Amethyst Crystal Pillars
+      drawVoxelCube(bx - 36, by - 22, 12, 6, 32, "#e040fb", "#aa00ff", "#7200ca");
+      drawVoxelCube(bx + 36, by - 22, 12, 6, 32, "#55ffff", "#00bcd4", "#00838f");
+      // Main Builder Golem (Left) & Purple Judge Golem (Right) inspecting code together!
+      drawVoxelGolem(bx - 16, by - 24, ["#55ffff", "#26c6da", "#0097a7"], ["#fff", "#b2ebf2", "#80deea"], "#55ff55", "", Math.sin(t * 3.5) * 2);
+      drawVoxelGolem(bx + 16, by - 24, ["#e040fb", "#ab47bc", "#7b1fa2"], ["#f3e5f5", "#ce93d8", "#ba68c8"], "#ffff55", "", Math.cos(t * 3.5) * 2);
+    }
+
+    // --- BUILDING #4: REDSTONE MINECART LOOP TRACK (4 Glowing Emerald Test Towers + Orbiting Cart) ---
+    {
+      const bx = 1315, by = 436;
+      // Gold & Cobblestone Track Platform
+      drawVoxelCube(bx, by, 68, 33, 18, "#ffca28", "#ffa000", "#ff6f00");
+      drawVoxelCube(bx, by - 18, 56, 27, 10, "#43a047", "#2e7d32", "#1b5e20");
+      // Central Emerald Beacon Tower (2,223 PASS)
+      drawVoxelCube(bx, by - 28, 24, 12, 34, "#55ff55", "#2ecc71", "#27ae60");
+      // Orbiting Redstone Minecart on the Loop
+      const angle = t * 2.4;
+      const mx = bx + Math.cos(angle) * 38;
+      const my = (by - 24) + Math.sin(angle) * 16;
+      drawVoxelCube(mx, my, 12, 6, 10, "#ffff55", "#ffaa00", "#cc7700");
+    }
+
+    // --- BUILDING #5: ANVIL & CODE FORGE (Blackstone Anvil + Lava Forge + Emerald Diff Block) ---
+    {
+      const bx = 638, by = 656;
+      // Cobblestone Forge Base
+      drawVoxelCube(bx, by, 60, 29, 18, "#666", "#4d4d4d", "#363636");
+      // Glowing Lava Furnace Core
+      drawVoxelCube(bx - 18, by - 18, 22, 11, 26, "#ff7043", "#f4511e", "#bf360c");
+      // Giant Voxel Anvil on Right
+      drawVoxelCube(bx + 14, by - 18, 20, 10, 12, "#424242", "#303030", "#212121");
+      drawVoxelCube(bx + 14, by - 30, 26, 13, 12, "#616161", "#424242", "#212121");
+      // Floating Forged Emerald Block (> 4)
+      drawVoxelCube(bx + 14, by - 46 + Math.sin(t * 4) * 3, 14, 7, 14, "#55ff55", "#2ecc71", "#1e8449");
+    }
+
+    // --- BUILDING #6: PISTON DRAWBRIDGE BOSS GATE (Twin Castle Towers + Nether/Beacon Gate) ---
+    {
+      const bx = 1175, by = 656;
+      // Castle Gate Base
+      drawVoxelCube(bx, by, 64, 31, 18, "#75747a", "#56555c", "#3b3a40");
+      // Left & Right Stone Brick Battlement Towers
+      drawVoxelCube(bx - 26, by - 18, 20, 10, 40, "#90a4ae", "#607d8b", "#455a64");
+      drawVoxelCube(bx + 26, by - 18, 20, 10, 40, "#90a4ae", "#607d8b", "#455a64");
+      // Glowing Emerald / Gold Portal Arch in Center
+      drawVoxelCube(bx, by - 18, 22, 10, 32, "#55ff55", "#2ecc71", "#1b5e20");
+      // Roof Bridge
+      drawVoxelCube(bx, by - 58, 52, 24, 10, "#ffca28", "#ffa000", "#e65100");
+    }
+
+    // =========================================================================
+    // 9. SELECTION BEACON BEAM FROM THE ACTIVE VOXEL BUILDING TO THE SKY
+    // =========================================================================
+    const selB = VOXEL_BUILDINGS[selectedIdx];
+    if (selB) {
+      ctx.save();
+      const beamGrad = ctx.createLinearGradient(selB.x, selB.y - 320, selB.x, selB.y - 30);
+      beamGrad.addColorStop(0, "rgba(255, 255, 85, 0.0)");
+      beamGrad.addColorStop(0.5, "rgba(85, 255, 85, 0.28)");
+      beamGrad.addColorStop(1, "rgba(255, 255, 85, 0.55)");
+      ctx.fillStyle = beamGrad;
+      ctx.fillRect(selB.x - 16, selB.y - 320, 32, 290);
+
+      // Glowing Ground Target Ring around Selected Building
+      ctx.strokeStyle = "#ffff55";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.ellipse(selB.x, selB.y + 4, 76, 36, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    requestAnimationFrame(renderMinecraftWorld);
+  }
+
+  renderUI();
+  renderMinecraftWorld(1250);
+  requestAnimationFrame(renderMinecraftWorld);
+</script>
 </body>
 </html>
