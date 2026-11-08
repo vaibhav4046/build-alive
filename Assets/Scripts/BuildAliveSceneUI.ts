@@ -270,9 +270,9 @@ export class BuildAliveSceneUI {
         this.dataPacket.getTransform().setLocalPosition(this.scratchPos)
       }
     }
-    // Live Preview Observatory auto-progression when idle (disabled immediately when LEAF or user presses any control)
+    // Live Preview Observatory auto-progression when idle (calm 9.5s human-readable pacing per block)
     if (!this.leafOrUserTouched && this.autoDemoClock >= 2.2) {
-      const stepIdx = Math.floor((this.autoDemoClock - 2.2) / 2.4) % 9
+      const stepIdx = Math.floor((this.autoDemoClock - 2.2) / 9.5) % 9
       if (stepIdx !== this.autoDemoPhase) {
         this.autoDemoPhase = stepIdx
         if (stepIdx === 0) {

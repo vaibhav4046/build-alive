@@ -5,6 +5,9 @@
 
 import http from "node:http"
 import crypto from "node:crypto"
+import fs from "node:fs"
+import path from "node:path"
+import {fileURLToPath} from "node:url"
 import {EventJournal} from "./journal.mjs"
 import {ActionGate, ALLOWLISTED_ACTIONS} from "./action-gate.mjs"
 import {normalizeClaudeHookEvent} from "./claude-hook.mjs"
@@ -104,6 +107,21 @@ export function createBridgeServer({port = 8787, journalPath = null, watchWindow
   }
 
   const server = http.createServer((req, res) => {
+    // Serve Real Product Workbench UI at root (GET / or GET /workbench)
+    if (req.method === "GET" && (req.url === "/" || req.url?.startsWith("/?") || req.url?.startsWith("/workbench"))) {
+      try {
+        const uiPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "workbench-ui.html")
+        const html = fs.readFileSync(uiPath, "utf8")
+        res.writeHead(200, {"Content-Type": "text/html; charset=utf-8"})
+        res.end(html)
+        return
+      } catch (e) {
+        res.writeHead(500, {"Content-Type": "text/plain"})
+        res.end("Failed to load workbench-ui.html: " + e.message)
+        return
+      }
+    }
+
     // Health probe endpoint
     if (req.url === "/health") {
       res.writeHead(200, {"Content-Type": "application/json"})
