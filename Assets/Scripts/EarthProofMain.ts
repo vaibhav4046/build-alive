@@ -21,6 +21,7 @@ const DEG = Math.PI / 180
 const TWO_PI = Math.PI * 2
 const NOMINAL_DT = 1 / 60 // the press handler applies one nominal step so the response is on the same frame
 const TAP_MOVE_CM = 2 // a release that moved less than this is a tap (pinch without drag)
+const TAP_MAX_MS = 400 // ... and so is a pinch released this quickly
 const PLATE_TOP_CM = 0.4
 const SEAT_LOCAL = new vec3(0, PLATE_TOP_CM + BLOCK_SIZE_CM / 2, 0) // block centre, in MotorMount space
 const BEAM_THICKNESS_CM = 0.5
@@ -35,6 +36,7 @@ interface Block {
   readonly slotLocal: vec3
   mounted: boolean
   gestureStart: vec3 | null
+  gestureT0: number
 }
 
 @component
@@ -59,6 +61,8 @@ export class EarthProofMain extends BaseScriptComponent {
 
   /** Press-to-first-frame log for done criterion 7. Read by the LEAF scenario. */
   readonly latencyLog: PressRecord[] = []
+  /** What the last block release looked like (read by the LEAF drag scenario to calibrate a simulated hand). */
+  lastDrop: {block: MotorId; movedCm: number; toSeatCm: number; tap: boolean} | null = null
 
   private flow = new Flow()
   private wheelAngle = 0
@@ -166,6 +170,7 @@ export class EarthProofMain extends BaseScriptComponent {
       slotLocal: new vec3(slot.x, slot.y + PLATE_TOP_CM + BLOCK_SIZE_CM / 2, slot.z),
       mounted,
       gestureStart: null,
+      gestureT0: 0,
     }
   }
 
@@ -187,6 +192,7 @@ export class EarthProofMain extends BaseScriptComponent {
     const interactable = b.obj.getComponent(Interactable.getTypeName()) as Interactable
     interactable.onTriggerStart.add(() => {
       b.gestureStart = b.obj.getTransform().getWorldPosition()
+      b.gestureT0 = Date.now()
     })
     const end = () => this.finishGesture(b)
     interactable.onTriggerEnd.add(end)
@@ -206,7 +212,10 @@ export class EarthProofMain extends BaseScriptComponent {
       return
     }
     const pos = b.obj.getTransform().getWorldPosition()
-    const isTap = pos.distance(start) < TAP_MOVE_CM
+    // A tap is a short pinch (released within TAP_MAX_MS) or one that barely moved the block. A simulated or real
+    // hand can carry the block while it pinches, so a quick release counts as a tap whatever the hand travelled.
+    const isTap = pos.distance(start) < TAP_MOVE_CM || Date.now() - b.gestureT0 < TAP_MAX_MS
+    this.lastDrop = {block: b.id, movedCm: pos.distance(start), toSeatCm: pos.distance(this.seatWorld()), tap: isTap}
     if (isTap || snapsToMount(pos.distance(this.seatWorld()))) {
       this.handleSwap(b.id, pressMs)
     } else {

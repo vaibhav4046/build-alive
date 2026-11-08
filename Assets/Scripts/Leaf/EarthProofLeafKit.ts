@@ -25,7 +25,11 @@ export function textOf(obj: SceneObject): string {
 
 /** Text of row `row` (Row0, Row1, ...) of a card ("EvidenceCard" or "ProofCard"). */
 export function cardRow(card: string, row: number): string {
-  const o = findSceneObject((s) => s.name === "Row" + row && s.getParent() !== null && s.getParent().getParent() !== null && s.getParent().getParent().name === card)
+  const o = findSceneObject((s) => {
+    const content = s.getParent()
+    const root = content ? content.getParent() : null
+    return s.name === "Row" + row && root !== null && root.name === card ? s : undefined
+  })
   return textOf(o)
 }
 
