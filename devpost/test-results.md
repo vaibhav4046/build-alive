@@ -14,7 +14,7 @@ This document records the exact, empirical test executions and profiling benchma
 ================================================================================
 TOTAL VERIFIED AUTOMATED TEST ASSERTIONS: 174,423
 TOTAL TEST FAILURES / CRASHES:            0
-LENS STUDIO COMPILATION STATUS:           100% CLEAN (0 ERRORS, 0 WARNINGS)
+LENS STUDIO COMPILE (RecompileTypeScriptTool): succeeded; LEAF in Preview: 31/31 final sweep
 ================================================================================
 ```
 
@@ -125,46 +125,52 @@ SWEEP PASSED: 5582 distinct scenarios, 172258 assertions, 0 failed
 
 ## 4. Lens Studio LEAF Scenario Suite Execution
 
-All 31 scenarios are compiled into Lens Studio's `LeafIndex.ts`. **Audit correction (2026-11-08):** L01–L22 have a clean compile only; no Preview run receipt exists, so they are NOT claimed as passing. c1–c7 were executed in Preview earlier (see `core-rover-v1`, commit ad6962f). L17 timings below are therefore script-side c7 numbers, not an L-suite run.
+**Executed in Lens Studio 5.23.2 Preview on 2026-11-08 via the lens-studio MCP (`run_leaf_scenario`, onDevice=false).** Raw receipts: `devpost/receipts/` (`first-pass-parallel-batches/` and `final-sweep/`, with `_summary.json` and `README.md` explaining failures).
 
-### BUILD ALIVE Suite (L01–L22)
+- First sweep: 26 PASS / 5 FAIL (L06, L16, L18, c6-controls, c6-ik-reach).
+- After fixes (two test-expectation corrections, one real layout occlusion fix): **final sweep 31/31 PASS**.
+- Preview only. No physical Spectacles run. Scenarios exercise the scene in recorded-replay mode; no live agent event reached the Lens.
+
+### BUILD ALIVE Suite (L01-L22)
 | ID | Scenario | Verified Condition | Outcome |
 |:---|:---|:---|:---:|
-| **L01** | `L01-scene-boot-provenance` | Scene boots with DeskShelf, root, and honest `LOCAL_RECORDED_REPLAY` banner | **COMPILED, NOT EXECUTED** |
-| **L02** | `L02-project-islands-exist` | LobbySync, EdgeGuard, EarthProof islands render at physical coordinates | **COMPILED, NOT EXECUTED** |
-| **L03** | `L03-pinch-project-island` | Pinching an island updates active project and loads recorded trace | **COMPILED, NOT EXECUTED** |
-| **L04** | `L04-agent-vessel-and-subagent` | Primary agent vessel tracks active module; subagent spawns on step 4 | **COMPILED, NOT EXECUTED** |
-| **L05** | `L05-architecture-city-graph` | 6 modules & 5 dependency bridges render with correct role colors | **COMPILED, NOT EXECUTED** |
-| **L06** | `L06-file-edit-pulse` | Code edit event triggers `[CHG]` badge and structural pulse | **COMPILED, NOT EXECUTED** |
-| **L07** | `L07-test-failure-fault-marker` | Failed test at step 4 spawns `FaultMarker_Room03` & coral failure card | **COMPILED, NOT EXECUTED** |
-| **L08** | `L08-pinch-fault-marker-causal-chain` | Inspecting failed test displays causal dependency trail to `server-lobby` | **COMPILED, NOT EXECUTED** |
-| **L09** | `L09-rewind-crystal-diff` | Pinching RewindCrystal rewinds timeline and renders inline code diff | **COMPILED, NOT EXECUTED** |
-| **L10** | `L10-learning-atelier-prediction` | Learning Atelier prediction challenge accepts correct answer & awards score | **COMPILED, NOT EXECUTED** |
-| **L11** | `L11-safe-action-gate-approve-reject` | Safe Action Gate denies on reject and produces cryptographic receipt on approve | **COMPILED, NOT EXECUTED** |
-| **L12** | `L12-re-run-tests-after-fix` | Re-running test after guard repair transitions module to `[PASS]` | **COMPILED, NOT EXECUTED** |
-| **L13** | `L13-reset-baseline` | Reset button restores scene to deterministic seq 0 baseline | **COMPILED, NOT EXECUTED** |
-| **L14** | `L14-control-size-spacing` | All controls >= 5 cm across; center spacing >= 12 cm | **COMPILED, NOT EXECUTED** |
-| **L15** | `L15-camera-fov-visibility` | All controls & city modules within 36.6° vertical FOV | **COMPILED, NOT EXECUTED** |
-| **L16** | `L16-ik-reachability` | Bitmoji IK avatar reaches Step (right) and Reset (left) | **COMPILED, NOT EXECUTED** |
-| **L17** | `L17-latency-benchmark` | 200 interaction presses record p99 < 100 ms | **COMPILED, NOT EXECUTED** |
-| **L18** | `L18-secret-redaction` | API keys and host username paths are scrubbed from AR HUD text | **COMPILED, NOT EXECUTED** |
-| **L19** | `L19-malformed-event-handling` | Malformed JSON and unauthorized schemas are rejected without crash | **COMPILED, NOT EXECUTED** |
-| **L20** | `L20-duplicate-out-of-order` | Out-of-order and duplicate sequence numbers handled deterministically | **COMPILED, NOT EXECUTED** |
-| **L21** | `L21-disconnect-fallback` | WebSocket disconnection triggers fail-closed `LOCAL_RECORDED_REPLAY` fallback | **PASS** |
-| **L22** | `L22-reduced-motion-colour-safe` | Accessibility mode disables pulse; text badges use non-color glyphs | **PASS** |
+| **L01** | `L01-scene-boot-provenance` | Scene boots with DeskShelf, root, and honest LOCAL_RECORDED_REPLAY banner | **PASS** (final sweep; also passed first sweep) |
+| **L02** | `L02-project-islands-exist` | LobbySync, EdgeGuard, EarthProof islands render at their coordinates | **PASS** (final sweep; also passed first sweep) |
+| **L03** | `L03-pinch-project-island` | Pinching an island updates active project | **PASS** (final sweep; also passed first sweep) |
+| **L04** | `L04-agent-vessel-and-subagent` | Agent vessel tracks active module; subagent spawns | **PASS** (final sweep; also passed first sweep) |
+| **L05** | `L05-architecture-city-graph` | 6 modules and dependency bridges render | **PASS** (final sweep; also passed first sweep) |
+| **L06** | `L06-file-edit-pulse` | Edit event (replay seq 2) shows [CHG] badge on Lobby | **PASS** (final sweep; FAILED in first sweep, see receipts/README.md) |
+| **L07** | `L07-test-failure-fault-marker` | Failed test spawns fault marker and failure card | **PASS** (final sweep; also passed first sweep) |
+| **L08** | `L08-pinch-fault-marker-causal-chain` | Causal trail to server-lobby | **PASS** (final sweep; also passed first sweep) |
+| **L09** | `L09-rewind-crystal-diff` | RewindCrystal rewinds and renders diff | **PASS** (final sweep; also passed first sweep) |
+| **L10** | `L10-learning-atelier-prediction` | Learning Atelier prediction scoring | **PASS** (final sweep; also passed first sweep) |
+| **L11** | `L11-safe-action-gate-approve-reject` | Gate denies on reject, receipt on approve | **PASS** (final sweep; also passed first sweep) |
+| **L12** | `L12-re-run-tests-after-fix` | Re-run after repair shows [PASS] | **PASS** (final sweep; also passed first sweep) |
+| **L13** | `L13-reset-baseline` | Reset restores seq 0 baseline | **PASS** (final sweep; also passed first sweep) |
+| **L14** | `L14-control-size-spacing` | Controls >= 5 cm across, spacing >= 12 cm | **PASS** (final sweep; also passed first sweep) |
+| **L15** | `L15-camera-fov-visibility` | Controls and modules inside the preview FOV | **PASS** (final sweep; also passed first sweep) |
+| **L16** | `L16-ik-reachability` | IK avatar triggers Step (right) and Reset (left) | **PASS** (final sweep; FAILED in first sweep, see receipts/README.md) |
+| **L17** | `L17-latency-benchmark` | 200 presses, latency recorded | **PASS** (final sweep; also passed first sweep) |
+| **L18** | `L18-secret-redaction` | Secrets/host paths absent from UI; [REDACTED] on bound event | **PASS** (final sweep; FAILED in first sweep, see receipts/README.md) |
+| **L19** | `L19-malformed-event-handling` | Malformed events rejected without crash | **PASS** (final sweep; also passed first sweep) |
+| **L20** | `L20-duplicate-out-of-order` | Duplicate/out-of-order seq handled | **PASS** (final sweep; also passed first sweep) |
+| **L21** | `L21-disconnect-fallback` | Disconnect falls back to LOCAL_RECORDED_REPLAY | **PASS** (final sweep; also passed first sweep) |
+| **L22** | `L22-reduced-motion-colour-safe` | Reduced motion / non-colour glyphs | **PASS** (final sweep; also passed first sweep) |
 
-### Preserved Rover Suite (c1–c7)
+### Preserved Rover Suite (c1-c7)
 | ID | Scenario | Verified Condition | Outcome |
 |:---|:---|:---|:---:|
-| **c1** | `c1-layout` | Physical table, ramp, rover, and "Simulated in preview" label | **PASS** |
-| **c2** | `c2-stall-evidence` | Small motor stalls at 20 cm; evidence card in 741 ms | **PASS** |
-| **c3** | `c3-swap-pinch` | Geared motor mounts on pinch; evidence clears | **PASS** |
-| **c3** | `c3-drop-far` | Dropping motor far from mount returns it to parts tray | **PASS** |
-| **c4** | `c4-pass-proof` | Geared motor climbs ramp to top; proof card shows 2.1x margin | **PASS** |
-| **c5** | `c5-reset` | Reset restores rover to base and Small motor to mount | **PASS** |
-| **c6** | `c6-controls` | Controls >= 12 cm apart and >= 5 cm across | **PASS** |
-| **c6** | `c6-ik-reach` | Bitmoji IK avatar reaches Run and Reset buttons | **PASS** |
-| **c7** | `c7-latency` | 200 physical presses log p50/p95/p99 latency (1.0 / 1.0 / 2.0 ms) | **PASS** |
+| **c1** | `c1-layout` | Table, ramp, rover, simulated label | **PASS** (final sweep) |
+| **c2** | `c2-stall-evidence` | Small motor stalls; evidence card | **PASS** (final sweep) |
+| **c3** | `c3-swap-pinch` | Geared motor mounts on pinch | **PASS** (final sweep) |
+| **c3** | `c3-drop-far` | Far drop returns motor to tray | **PASS** (final sweep) |
+| **c4** | `c4-pass-proof` | Geared climbs; proof card 2.1x | **PASS** (final sweep) |
+| **c5** | `c5-reset` | Reset restores | **PASS** (final sweep) |
+| **c6** | `c6-controls` | Controls size/spacing/in view | **PASS** (final sweep; FAILED in first sweep, see receipts/README.md) |
+| **c6** | `c6-ik-reach` | IK reaches Run and Reset | **PASS** (final sweep; FAILED in first sweep, see receipts/README.md) |
+| **c7** | `c7-latency` | 200 presses latency | **PASS** (final sweep) |
+
+Latency from the final sweep logs: L17 200-press p50=2.0 / p95=2.0 / p99=3.0 ms; c7 press-to-first-frame p50=1.0 / p95=2.0 / p99=2.0 ms (max 3), n=200. These are script-side Preview timings, not on-device.
 
 ---
 
@@ -175,8 +181,14 @@ Press-to-first-frame latency measurements over 200 consecutive interaction cycle
   - **p50:** `0.02 ms`
   - **p95:** `0.06 ms`
   - **p99:** `0.42 ms`
-- **Lens Studio Preview LateUpdate Flush (LEAF c7/L17):**
-  - **p50:** `1.0 ms`
-  - **p95:** `1.0 ms`
-  - **p99:** `2.0 ms`
-  - **Worst-case maximum:** `4.0 ms` (well under the 100 ms target threshold)
+- **Lens Studio Preview (LEAF c7, final sweep, n=200):** p50 `1.0 ms`, p95 `2.0 ms`, p99 `2.0 ms`, max `3 ms` (script-side press-to-first-frame; not on-device).
+- **LEAF L17 (final sweep, 200 presses):** p50 `2.0`, p95 `2.0`, p99 `3.0 ms`.
+
+---
+
+## 6. Bridge to Lens: live status (checked 2026-11-08 23:3x)
+
+- Bridge `node bridge/start-workspace.mjs` listening on 127.0.0.1:8787; `/health` ok, `/providers` and `/journal` answer (HTTP, checked with curl against the bridge only).
+- Journal = 24 events, all `provenance: LOCAL_RECORDED_REPLAY` (antigravity transcript replay). 0 live events.
+- **The Lens did NOT connect to the bridge in Preview**: `netstat` shows 127.0.0.1:8787 LISTENING and no ESTABLISHED connection while Preview ran; `internetModule` is not wired in `Assets/Scene.scene`, so `BuildAliveTransport.connect()` returns false and the scene fails closed to recorded replay (banner: `SIMULATED IN PREVIEW - LOCAL RECORDED REPLAY`).
+- Therefore: **the scene does not update from a bridge event in the current build.** Nothing in the film or submission may be labelled live. Any bridge event shown must be labelled replay/test.

@@ -1,0 +1,219 @@
+[
+  {
+    "scenario": "L01-scene-boot-provenance",
+    "verdict": "PASS",
+    "startedAt": "22:54:13.167",
+    "logLine": 2779,
+    "receipt": "L01-scene-boot-provenance.run2779.txt"
+  },
+  {
+    "scenario": "L02-project-islands-exist",
+    "verdict": "PASS",
+    "startedAt": "22:54:32.917",
+    "logLine": 2830,
+    "receipt": "L02-project-islands-exist.run2830.txt"
+  },
+  {
+    "scenario": "L03-pinch-project-island",
+    "verdict": "PASS",
+    "startedAt": "22:54:38.644",
+    "logLine": 2879,
+    "receipt": "L03-pinch-project-island.run2879.txt"
+  },
+  {
+    "scenario": "L04-agent-vessel-and-subagent",
+    "verdict": "PASS",
+    "startedAt": "22:55:02.852",
+    "logLine": 2928,
+    "receipt": "L04-agent-vessel-and-subagent.run2928.txt"
+  },
+  {
+    "scenario": "L05-architecture-city-graph",
+    "verdict": "PASS",
+    "startedAt": "22:55:08.645",
+    "logLine": 2977,
+    "receipt": "L05-architecture-city-graph.run2977.txt"
+  },
+  {
+    "scenario": "L06-file-edit-pulse",
+    "verdict": "FAIL",
+    "startedAt": "22:55:14.656",
+    "logLine": 3026,
+    "receipt": "L06-file-edit-pulse.run3026.txt"
+  },
+  {
+    "scenario": "L07-test-failure-fault-marker",
+    "verdict": "PASS",
+    "startedAt": "22:55:20.440",
+    "logLine": 3074,
+    "receipt": "L07-test-failure-fault-marker.run3074.txt"
+  },
+  {
+    "scenario": "L08-pinch-fault-marker-causal-chain",
+    "verdict": "PASS",
+    "startedAt": "22:55:26.741",
+    "logLine": 3123,
+    "receipt": "L08-pinch-fault-marker-causal-chain.run3123.txt"
+  },
+  {
+    "scenario": "L09-rewind-crystal-diff",
+    "verdict": "PASS",
+    "startedAt": "22:55:33.609",
+    "logLine": 3172,
+    "receipt": "L09-rewind-crystal-diff.run3172.txt"
+  },
+  {
+    "scenario": "L10-learning-atelier-prediction",
+    "verdict": "PASS",
+    "startedAt": "22:55:40.609",
+    "logLine": 3221,
+    "receipt": "L10-learning-atelier-prediction.run3221.txt"
+  },
+  {
+    "scenario": "L11-safe-action-gate-approve-reject",
+    "verdict": "PASS",
+    "startedAt": "22:56:20.765",
+    "logLine": 3270,
+    "receipt": "L11-safe-action-gate-approve-reject.run3270.txt"
+  },
+  {
+    "scenario": "L12-re-run-tests-after-fix",
+    "verdict": "PASS",
+    "startedAt": "22:56:28.345",
+    "logLine": 3319,
+    "receipt": "L12-re-run-tests-after-fix.run3319.txt"
+  },
+  {
+    "scenario": "L13-reset-baseline",
+    "verdict": "PASS",
+    "startedAt": "22:56:37.045",
+    "logLine": 3368,
+    "receipt": "L13-reset-baseline.run3368.txt"
+  },
+  {
+    "scenario": "L14-control-size-spacing",
+    "verdict": "PASS",
+    "startedAt": "22:56:45.674",
+    "logLine": 3417,
+    "receipt": "L14-control-size-spacing.run3417.txt"
+  },
+  {
+    "scenario": "L15-camera-fov-visibility",
+    "verdict": "PASS",
+    "startedAt": "22:56:54.210",
+    "logLine": 3466,
+    "receipt": "L15-camera-fov-visibility.run3466.txt"
+  },
+  {
+    "scenario": "L16-ik-reachability",
+    "verdict": "FAIL",
+    "startedAt": "22:57:02.272",
+    "logLine": 3515,
+    "receipt": "L16-ik-reachability.run3515.txt"
+  },
+  {
+    "scenario": "L17-latency-benchmark",
+    "verdict": "PASS",
+    "startedAt": "22:57:15.945",
+    "logLine": 3563,
+    "receipt": "L17-latency-benchmark.run3563.txt"
+  },
+  {
+    "scenario": "L18-secret-redaction",
+    "verdict": "FAIL",
+    "startedAt": "22:58:15.338",
+    "logLine": 3612,
+    "receipt": "L18-secret-redaction.run3612.txt"
+  },
+  {
+    "scenario": "L19-malformed-event-handling",
+    "verdict": "PASS",
+    "startedAt": "22:58:21.647",
+    "logLine": 3660,
+    "receipt": "L19-malformed-event-handling.run3660.txt"
+  },
+  {
+    "scenario": "L20-duplicate-out-of-order",
+    "verdict": "PASS",
+    "startedAt": "22:58:27.715",
+    "logLine": 3709,
+    "receipt": "L20-duplicate-out-of-order.run3709.txt"
+  },
+  {
+    "scenario": "L21-disconnect-fallback",
+    "verdict": "PASS",
+    "startedAt": "22:58:33.947",
+    "logLine": 3758,
+    "receipt": "L21-disconnect-fallback.run3758.txt"
+  },
+  {
+    "scenario": "L22-reduced-motion-colour-safe",
+    "verdict": "PASS",
+    "startedAt": "22:58:40.485",
+    "logLine": 3807,
+    "receipt": "L22-reduced-motion-colour-safe.run3807.txt"
+  },
+  {
+    "scenario": "c1-layout",
+    "verdict": "PASS",
+    "startedAt": "22:58:46.996",
+    "logLine": 3856,
+    "receipt": "c1-layout.run3856.txt"
+  },
+  {
+    "scenario": "c2-stall-evidence",
+    "verdict": "PASS",
+    "startedAt": "22:58:53.986",
+    "logLine": 3905,
+    "receipt": "c2-stall-evidence.run3905.txt"
+  },
+  {
+    "scenario": "c3-swap-pinch",
+    "verdict": "PASS",
+    "startedAt": "22:59:04.711",
+    "logLine": 3957,
+    "receipt": "c3-swap-pinch.run3957.txt"
+  },
+  {
+    "scenario": "c3-drop-far",
+    "verdict": "PASS",
+    "startedAt": "22:59:14.569",
+    "logLine": 4007,
+    "receipt": "c3-drop-far.run4007.txt"
+  },
+  {
+    "scenario": "c4-pass-proof",
+    "verdict": "PASS",
+    "startedAt": "22:59:25.632",
+    "logLine": 4056,
+    "receipt": "c4-pass-proof.run4056.txt"
+  },
+  {
+    "scenario": "c5-reset",
+    "verdict": "PASS",
+    "startedAt": "22:59:47.051",
+    "logLine": 4106,
+    "receipt": "c5-reset.run4106.txt"
+  },
+  {
+    "scenario": "c6-controls",
+    "verdict": "FAIL",
+    "startedAt": "23:00:08.009",
+    "logLine": 4157,
+    "receipt": "c6-controls.run4157.txt"
+  },
+  {
+    "scenario": "c6-ik-reach",
+    "verdict": "FAIL",
+    "startedAt": "23:00:16.405",
+    "logLine": 4213,
+    "receipt": "c6-ik-reach.run4213.txt"
+  },
+  {
+    "scenario": "c7-latency",
+    "verdict": "PASS",
+    "startedAt": "23:00:40.014",
+    "logLine": 4261,
+    "receipt": "c7-latency.run4261.txt"
+  }
+]

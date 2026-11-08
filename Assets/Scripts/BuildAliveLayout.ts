@@ -106,12 +106,15 @@ export const RAIL_CONTROLS: readonly ControlSpec[] = [
 
 // Project Archipelago shelf (z = -52 cm, y = -24.5 cm): 3 islands spaced 12.0 cm apart (-12, 0, +12)
 export const ISLAND_SIZE: BoxSizeCm = {w: 5.8, h: 2.4, d: 5.8}
+// Islands sit on the desk (top -28.5 + half height) so they do not occlude the row-1 rail buttons behind them:
+// the Preview camera (z = +150) saw Island_LobbySync blocking BA_StepButton at the old y = -24.5 (PreviewInteractTool "obstructed").
+export const ISLAND_Y = DESK_TOP_Y + ISLAND_SIZE.h / 2 // -27.3 cm
 export const PROJECT_ISLANDS: readonly ControlSpec[] = [
   {
     id: "lobby-sync",
     sceneName: "Island_LobbySync",
     label: "LobbySync",
-    center: {x: -12, y: -24.5, z: -52},
+    center: {x: -12, y: ISLAND_Y, z: -52},
     size: ISLAND_SIZE,
     group: "island",
   },
@@ -119,7 +122,7 @@ export const PROJECT_ISLANDS: readonly ControlSpec[] = [
     id: "edge-guard",
     sceneName: "Island_EdgeGuard",
     label: "EdgeGuard",
-    center: {x: 0, y: -24.5, z: -52},
+    center: {x: 0, y: ISLAND_Y, z: -52},
     size: ISLAND_SIZE,
     group: "island",
   },
@@ -127,7 +130,7 @@ export const PROJECT_ISLANDS: readonly ControlSpec[] = [
     id: "earthproof-rover",
     sceneName: "Island_EarthProof",
     label: "EarthProof",
-    center: {x: 12, y: -24.5, z: -52},
+    center: {x: 12, y: ISLAND_Y, z: -52},
     size: ISLAND_SIZE,
     group: "island",
   },

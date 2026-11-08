@@ -33,16 +33,16 @@ BUILD ALIVE turns your desk into a physical spatial workbench for AI software en
 7. **Safe Action Gate & Physical Approval Dock:** Human-in-the-loop safety enforced by design. High-stakes actions (like applying patches or running tests) are staged in a physical approval dock requiring an explicit pinch confirmation and generating cryptographic SHA-256 audit receipts. No arbitrary shell commands can ever run.
 
 ### How We Built It
-- **Lens Studio 5.23.2 & TypeScript:** Built with clean, type-safe TypeScript using the Spectacles Interaction Kit (SIK) and Spectacles UIKit. Zero memory allocation per frame in the rendering loop.
-- **CLAD & LEAF Automated Testing:** Authored 22 comprehensive LEAF scenarios (`L01`–`L22`) covering UI boot, spatial ergonomics, IK avatar reachability, secret scrubbing, and latency benchmarks, alongside the 9 preserved `c1`–`c7` rover scenarios.
-- **Deterministic Test Sweep:** A pure Node.js test engine executing 2,165 automated assertions covering the full 72-feature matrix (F01–F72), plus 172,258 physical climbing assertions from the preserved rover trial. Total verified test assertions: **174,463**.
-- **Zero-Dependency Native Bridge:** A local WebSocket bridge (`ws://127.0.0.1:8787/build-alive`) built with pure Node.js stdlib that listens to Claude Code lifecycle hooks (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SubagentStart`), scrubs all secrets, journals events to append-only JSONL, and streams them to the Lens.
+- **Lens Studio 5.23.2 & TypeScript:** Built with clean, type-safe TypeScript using the Spectacles Interaction Kit (SIK) and Spectacles UIKit. Per-frame scratch vectors are reused (no allocation profiling was done).
+- **CLAD & LEAF Automated Testing:** Authored 22 LEAF scenarios (`L01`–`L22`) covering UI boot, spatial ergonomics, IK avatar reachability, secret scrubbing, and latency, alongside the 9 preserved `c1`–`c7` rover scenarios. **Executed in Lens Studio Preview on 2026-11-08: final sweep 31/31 PASS** (first sweep 26/31; the failures exposed two wrong test expectations and one real defect, islands occluding the control rail, which we fixed). Raw receipts are in the repo under `devpost/receipts/`.
+- **Deterministic Test Sweep:** A pure Node.js engine test sweep (2,223 assertions, 0 failures, re-run 2026-11-08) plus the preserved rover physics sweep. The feature-matrix statuses (F01–F72) have not been re-audited against the running Lens.
+- **Zero-Dependency Native Bridge:** A local WebSocket bridge (`ws://127.0.0.1:8787/build-alive`) built with pure Node.js stdlib that can ingest Claude Code lifecycle hooks and recorded agent-session replays, scrubs secrets, and journals events. **Status: the bridge serves HTTP (/health, /workspace, /providers) and holds 24 recorded-replay events; the Lens did not open a WebSocket to it in Preview, so the scene plays recorded replay and no live agent event has driven it.**
 - **Optical Glass Design System:** Tailored for Snap's optical see-through waveguides using additive color palettes, non-color semantic double-coding (`[PASS]`, `[FAIL]`, `[CHG]`, `[AGT]`), and seated FOV ergonomics (>5 cm target size, >12 cm center separation).
 
 ### Challenges We Overcame
 1. **Preventing Secret Leakage:** Autonomous agents frequently print logs with API keys and host user paths. We engineered an aggressive multi-pattern redactor that scrubs Anthropic, GitHub, Slack, AWS, and Google keys, and neutralizes path traversal before payloads reach AR.
 2. **Optical Transparency in Waveguides:** Black is transparent on Spectacles. We designed navy/slate backplates (`#141824`) and high-contrast double-coded badges that remain legible across diverse real-world lighting environments.
-3. **Ergonomic Safety:** Strict adherence to Snap's seated FOV constraints: placing controls on the front desk rail (`z = -48 cm`, `y = -24.5 cm`) to prevent the dreaded "gorilla arm" fatigue.
+3. **Ergonomic Safety:** Strict adherence to Snap's seated FOV constraints: placing controls on the front desk rail (`z = -62 cm`, `y = -24.5 / -12.5 cm`) to prevent the dreaded "gorilla arm" fatigue.
 
 ### What We Learned
 Spatial computing transforms abstract distributed software architectures into intuitive spatial landscapes. When developers can point at a glowing red fault marker and trace a physical bridge to the exact line of code that caused it, software comprehension shifts from an exhausting mental simulation into immediate spatial intuition.
@@ -66,6 +66,6 @@ Spatial computing transforms abstract distributed software architectures into in
 ---
 
 ## 4. Honest Disclosures
-- **Working Prototype Status:** All features and LEAF scenarios were verified in the Snap Lens Studio 5.23.2 Spectacles 27 Preview environment with full interactive SIK/IK testing. Due to lack of physical Spectacles hardware, true on-glasses thermal comfort, waveguide battery life, and outdoor optical contrast are truthfully unproven.
+- **Working Prototype Status:** **Preview-only.** The Lens was exercised in Lens Studio 5.23.2 (SPECS 27 Interactive Preview): 31/31 LEAF scenarios in the final sweep, plus three real Preview screenshots and a Preview frame capture used in the film. The scene runs recorded replay data; live agent-to-Lens streaming is **not** demonstrated. Pinch inputs in the footage were injected by the Lens Studio Preview tooling, not a physical hand. There was **no physical Spectacles test**: on-glasses legibility, comfort, battery, and optics are unproven. Known defect: text labels are large and overlap in the free Preview camera view.
 - **AI Usage:** Code, tests, and documentation were pair-programmed with AI coding assistants (Google Antigravity / Claude Code) following strict verification and zero-fabrication guidelines.
 - **Zero Additional Spending:** Built with £0 / $0 additional expenditure, utilizing open-source tools, native platform primitives, and existing machine capabilities.

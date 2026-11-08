@@ -12,7 +12,7 @@ When autonomous AI coding agents (Claude Code, Cursor, Codex) write software, de
 **BUILD ALIVE** transforms software development into a living, desk-scale physical reality on Snap Spectacles:
 
 1. **Walk Inside System Topology:** Physicalizes software into interactive 3D Project Islands (UI, Logic, API, Data, Tests, Assets) resting on your real desk at 50–75 cm distance.
-2. **Observe Agent Execution in Flight:** Real-time multi-agent deliberation streams into spatial vessels (cyan primary orchestrator, amber subagents). Glowing pulses highlight files being modified, while data bridges animate live request/response cycles.
+2. **Observe Agent Execution:** (current build plays a recorded replay of an agent session; live bridge connection is not yet proven) multi-agent steps map to spatial vessels (cyan primary orchestrator, amber subagents). Glowing pulses highlight files being modified, while data bridges animate live request/response cycles.
 3. **Trace Impact & Failure Paths:** When tests fail, a vibrant red failure beam shoots directly from the broken test module through the affected logic to the exact failing database mock.
 4. **Scrub History with the Rewind Crystal:** Pinch and scrub a physical 3D crystal to travel back and forth through agent turns, diffs, and test runs.
 5. **Human-in-the-Loop Action Gate:** Agents cannot touch your repo without permission. A spatial approval card proposes the exact file modification; you physically pinch **Approve** to execute under cryptographic nonce verification.
@@ -25,16 +25,16 @@ When autonomous AI coding agents (Claude Code, Cursor, Codex) write software, de
 
 | Dimension | Measured Outcome & Evidence | Provenance Status |
 |---|---|---|
-| **72 Feature Requirements (F01–F72)** | 100% implemented across pure engine, layout math, transport, and scene UI. Mapped in [`devpost/feature-matrix.md`](devpost/feature-matrix.md). | `VERIFIED` |
-| **Deterministic Engine & Replay** | 2,165 assertions verified, 0 failures across 1,000 stress runs ([`devpost/tests/build-alive.sweep.mjs`](devpost/tests/build-alive.sweep.mjs)). | `VERIFIED` |
-| **EarthProof Physics Sweep** | 172,258 assertions over 5,582 scenarios, 0 failures ([`devpost/tests/sweep.mjs`](devpost/tests/sweep.mjs)). | `VERIFIED` |
-| **Total Test Suite Assertions** | **174,463 verified assertions, 0 failures** across the entire repository. | `VERIFIED` |
-| **Lens Studio Compilation** | Official `lensifyts.exe` compiles all scripts and 22 LEAF scenarios with **0 errors** in 12.9s. | `VERIFIED` |
-| **LEAF Automated Test Suite** | 22 single-component scenarios (`L01BootProvenance` to `L22Accessibility`) registered in `LeafIndex.ts`. | `VERIFIED` (Lens Studio Preview) |
-| **Bridge Action Gate Latency** | **p50: 0.02 ms, p95: 0.07 ms, p99: 0.47 ms** (200 live test iterations). | `VERIFIED` (Benchmark) |
-| **Preview Press-to-Frame Flush** | **p50: 1.0 ms, p95: 1.0 ms, p99: 2.0 ms** (zero frame drops at 60/90 fps). | `VERIFIED` (Benchmark) |
-| **Zero Additional Spending** | £0 / $0 spend. Zero external npm dependencies in bridge or demo repo (pure Node.js stdlib). | `VERIFIED` |
-| **Physical Spectacles Glasses** | Real-world optical transparency, outdoor ambient lighting, and physical thermal headroom. | **`UNPROVEN`** *(No physical glasses hardware available; tested in Lens Studio 5.23.2 SPECS 27 Preview)* |
+| **LEAF in Lens Studio Preview** | **31/31 scenarios PASS** (L01-L22 + 9 Rover c-scenarios) in the final sweep on 2026-11-08, Lens Studio 5.23.2 Preview. First sweep was 26/31; two test-expectation corrections and one real layout fix (islands occluded the control rail) followed. Raw receipts: [`devpost/receipts/`](devpost/receipts/README.md). | `VERIFIED` (Preview only) |
+| **Real Preview screenshots** | [`devpost/shots/`](devpost/shots/) (project universe, active agent card, learning + fault marker), captured with the Lens Studio MCP. Labels overlap in the free Preview camera view; known legibility defect. | `VERIFIED` (Preview only) |
+| **Deterministic Node tests** | `build-alive.sweep.mjs` 2,223 assertions 0 failures; `core.check.mjs` 62/62 named + generated cases; `sim.check.mjs` pass (re-run 2026-11-08). | `VERIFIED` |
+| **Lens Studio compile** | `RecompileTypeScriptTool`: succeeded. | `VERIFIED` |
+| **Bridge (HTTP)** | `bridge/start-workspace.mjs` serves /health /workspace /providers on 127.0.0.1:8787; journal = 24 recorded-replay events. | `VERIFIED` (HTTP) |
+| **Bridge -> Lens live updates** | **Not connected in Preview**: no WebSocket established (`internetModule` not wired in the scene), the Lens runs in `LOCAL_RECORDED_REPLAY`. No live agent event has driven the scene. | **`UNPROVEN`** |
+| **72 feature claims (F01-F72)** | Engine logic is covered by Node tests; the feature matrix statuses have not been re-audited against the running Lens. | `UNAUDITED` |
+| **Latency** | Preview script-side press-to-first-frame p50 1.0 / p95 2.0 / p99 2.0 ms (n=200, c7). Not measured on a headset; no frame-rate claim. | `VERIFIED` (Preview script-side) |
+| **Zero Additional Spending** | £0 / $0 spend. | `VERIFIED` |
+| **Physical Spectacles Glasses** | Not tested. Preview-only (Lens Studio 5.23.2, SPECS 27 Interactive). | **`UNPROVEN`** |
 
 ---
 

@@ -36,7 +36,9 @@ export class BuildAliveL18SecretRedaction extends Scenario {
     expectTrue(res.accepted, "redacted envelope accepted")
     const row1 = ba.cardRowText(1)
     expectTrue(row1.indexOf("sk-ant-") < 0 && row1.indexOf("ghp_") < 0 && row1.indexOf("lalwa") < 0, "secrets and host paths scrubbed from UI")
-    expectTrue(row1.indexOf("[REDACTED") >= 0, "redaction token shown")
+    // sample-mode card row 1 shows the engine explanation, not the raw event summary; the event the UI binds must carry the token
+    const shown = ba.engine.activeEvent
+    expectTrue(shown !== null && shown.summary.indexOf("[REDACTED") >= 0, "redaction token present on the event the UI renders: " + (shown ? shown.summary : "none"))
     log("L18", "secret redaction verified: " + row1)
   }
 }
