@@ -133,7 +133,7 @@ const COLOR_AMBER = new vec4(1.0, 0.8, 0.35, 1.0)
 const COLOR_CORAL = new vec4(1.0, 0.45, 0.4, 1.0)
 const COLOR_VIOLET = new vec4(0.8, 0.66, 1.0, 1.0)
 const COLOR_WHITE = new vec4(1.0, 0.98, 0.94, 1.0)
-const COLOR_CAPTION = new vec4(0.9, 0.94, 1.0, 1.0)
+const COLOR_CAPTION = new vec4(0.85, 0.88, 0.93, 1.0)
 const COLOR_DIM = new vec4(0.4, 0.42, 0.48, 1.0)
 const COLOR_OFFLINE = new vec4(0.62, 0.74, 0.86, 1.0) // additive display: dim text vanishes, so OFFLINE stays readable
 const TINT_NORMAL = new vec4(1, 1, 1, 1)
@@ -141,7 +141,14 @@ const TINT_CHANGED = new vec4(1.25, 1.25, 1.25, 1) // slight overdrive on the ch
 const TINT_FAILED = new vec4(1.25, 1.25, 1.25, 1)
 const TINT_OFF = new vec4(0.5, 0.78, 1.0, 1)
 const COLOR_GOLD = new vec4(1.0, 0.82, 0.42, 1.0)
-const COLOR_BLOCK = new vec4(1.0, 1.3, 1.6, 1)
+// dark graphite family (additive display: pure black is transparent, so never #000)
+const GRAPHITE = new vec4(0.165, 0.176, 0.2, 1)
+const GRAPHITE_RIM = new vec4(0.3, 0.32, 0.37, 1)
+const GRAPHITE_TILE = new vec4(0.235, 0.255, 0.28, 1)
+const GRAPHITE_TILE_HI = new vec4(0.33, 0.36, 0.41, 1)
+const ACCENT_CLAUDE = new vec4(0.851, 0.467, 0.341, 1) // brand accent, replaced by the official simple-icons hex in the logo step
+const ACCENT_CYAN = new vec4(0.38, 0.85, 0.95, 1)
+const COLOR_BLOCK = new vec4(1.2, 1.28, 1.42, 1)
 const COLOR_BLOCK_GOLD = new vec4(1.6, 1.25, 0.5, 1)
 const COLOR_BLOCK_FAIL = new vec4(1.6, 0.5, 0.45, 1)
 const TINT_ON = new vec4(1.3, 1.3, 1.3, 1)
@@ -199,6 +206,8 @@ export class BuildAliveSceneUI {
   private causalBeam!: SceneObject
   private causalBeamLen = 1
   private dataPacket!: SceneObject
+  private perfFrames = 0
+  private perfDt = 0
   private feedback: Record<string, FeedbackState> = {}
   private pingRing: SceneObject | null = null
   private pingMat: Material | null = null
@@ -212,6 +221,8 @@ export class BuildAliveSceneUI {
   private chipRR: Record<string, RoundedRectangle> = {}
   private sessionTitle: Text | null = null
   private sessionRows: Text[] = []
+  private sessionTiles: RoundedRectangle[] = []
+  private learnStageTiles: RoundedRectangle[] = []
   private learnTitle: Text | null = null
   private learnStages: Text[] = []
   private learnWhy: Text | null = null
@@ -483,6 +494,13 @@ export class BuildAliveSceneUI {
   tick(dt: number): void {
     this.pulseClock += dt
     this.autoDemoClock += dt
+    this.perfFrames++
+    this.perfDt += dt
+    if (this.perfFrames >= 240) {
+      print("[BuildAlive perf] avg frame dt " + ((this.perfDt / this.perfFrames) * 1000).toFixed(1) + " ms over " + this.perfFrames + " frames")
+      this.perfFrames = 0
+      this.perfDt = 0
+    }
     const t = this.pulseClock
     const snap = this.engine.snapshot()
     this.animateFeedback(dt)
@@ -695,20 +713,20 @@ export class BuildAliveSceneUI {
     const root = global.scene.createSceneObject(name)
     root.setParent(parent)
     root.getTransform().setLocalPosition(new vec3(x, y, z))
-    // soft light rim behind the body gives the frosted-glass edge
+    // thin lighter-graphite bezel behind the body (the "1 cm frame" of the reference language)
     const rimObj = global.scene.createSceneObject(name + "_Rim")
     rimObj.setParent(root)
     rimObj.getTransform().setLocalPosition(new vec3(0, 0, -0.15))
     const rim = rimObj.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
-    rim.size = new vec2(w + 0.45, h + 0.45)
-    rim.cornerRadius = 2.1
-    rim.backgroundColor = new vec4(0.85, 0.93, 1, 1)
+    rim.size = new vec2(w + 0.5, h + 0.5)
+    rim.cornerRadius = Math.min(3.1, h / 2)
+    rim.backgroundColor = GRAPHITE_RIM
     rim.blendMode = 1
-    rim.opacity = Math.min(0.5, opacity * 0.8)
+    rim.opacity = Math.min(0.97, opacity + 0.05)
     rim.initialize()
     const rr = root.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
     rr.size = new vec2(w, h)
-    rr.cornerRadius = 1.8
+    rr.cornerRadius = Math.min(2.7, h / 2)
     rr.backgroundColor = color
     rr.blendMode = 1
     rr.opacity = opacity
@@ -716,10 +734,37 @@ export class BuildAliveSceneUI {
     return {root, rr}
   }
 
+  /** A flat graphite tile inside a window (content-first grid): optional left accent strip. */
+  private tile(parent: SceneObject, name: string, x: number, y: number, w: number, h: number, color: vec4, accent: vec4 | null): RoundedRectangle {
+    const o = global.scene.createSceneObject(name)
+    o.setParent(parent)
+    o.getTransform().setLocalPosition(new vec3(x, y, 0.2))
+    const rr = o.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    rr.size = new vec2(w, h)
+    rr.cornerRadius = Math.min(1.1, h / 2)
+    rr.backgroundColor = color
+    rr.blendMode = 1
+    rr.opacity = 0.98
+    rr.initialize()
+    if (accent) {
+      const s = global.scene.createSceneObject(name + "_Accent")
+      s.setParent(o)
+      s.getTransform().setLocalPosition(new vec3(-w / 2 + 0.35, 0, 0.05))
+      const strip = s.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+      strip.size = new vec2(0.5, h - 0.5)
+      strip.cornerRadius = 0.25
+      strip.backgroundColor = accent
+      strip.blendMode = 1
+      strip.opacity = 1
+      strip.initialize()
+    }
+    return rr
+  }
+
   private panelText(parent: SceneObject, name: string, x: number, y: number, w: number, h: number, size: number, color: vec4, centered: boolean): Text {
     const o = global.scene.createSceneObject(name)
     o.setParent(parent)
-    o.getTransform().setLocalPosition(new vec3(x, y, 0.4))
+    o.getTransform().setLocalPosition(new vec3(x, y, 0.55))
     const t = o.createComponent("Component.Text") as Text
     t.text = ""
     t.size = size
@@ -733,33 +778,41 @@ export class BuildAliveSceneUI {
     return t
   }
 
-  /** Three floating glass windows at seated distance: Session (centre), Learn (left), Project (right, holds the module blocks). */
+  /** Three floating graphite windows at seated distance: Session (centre), Learn (left), Project (right, holds the module blocks). */
   private buildGlassWindows(land: SceneObject): void {
-    const glassCol = new vec4(0.13, 0.22, 0.46, 1)
-    const sess = this.glass("Glass_Session", land, 0, -11.6, WINDOW_Z, 19, 19, 0.86, glassCol)
-    const learn = this.glass("Glass_Learn", land, -16.5, -11.6, WINDOW_Z, 11.5, 19, 0.86, glassCol)
-    const proj = this.glass("Glass_Project", land, 16.5, -11.6, WINDOW_Z, 11.5, 19, 0.86, glassCol)
+    const sess = this.glass("Glass_Session", land, 0, -11.6, WINDOW_Z, 19, 19, 0.97, GRAPHITE)
+    const learn = this.glass("Glass_Learn", land, -16.5, -11.6, WINDOW_Z, 11.5, 19, 0.97, GRAPHITE)
+    const proj = this.glass("Glass_Project", land, 16.5, -11.6, WINDOW_Z, 11.5, 19, 0.97, GRAPHITE)
     learn.root.getTransform().setLocalRotation(quat.angleAxis(0.17, vec3.up()))
-    proj.root.getTransform().setLocalRotation(quat.angleAxis(-0.17, vec3.up()))
 
-    // Session window: provenance title + the five most recent steps as one plain sentence each
-    this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", 0, 7.7, 17, 2.6, 26, COLOR_WHITE, true)
+    // Session window: header tile (per-app accent strip) + one tile per recent step + a "Try" tile
+    this.tile(sess.root, "SessionHeaderTile", 0, 7.7, 17.6, 2.7, GRAPHITE_TILE, ACCENT_CLAUDE)
+    this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", 0.3, 7.7, 16.4, 2.5, 27, COLOR_WHITE, false)
     for (let i = 0; i < 4; i++) {
-      this.sessionRows.push(this.panelText(sess.root, "SessionRow_" + i, 0, 4.4 - i * 3.0, 17, 2.8, 28, COLOR_WHITE, false))
+      this.sessionTiles.push(this.tile(sess.root, "SessionTile_" + i, 0, 4.4 - i * 3.0, 17.6, 2.7, GRAPHITE_TILE, null))
+      this.sessionRows.push(this.panelText(sess.root, "SessionRow_" + i, 0.3, 4.4 - i * 3.0, 16.2, 2.5, 28, COLOR_WHITE, false))
     }
-    this.sessionTry = this.panelText(sess.root, "SessionTry", 0, -7.4, 17, 3.4, 23, COLOR_GOLD, false)
+    this.tile(sess.root, "SessionTryTile", 0, -7.5, 17.6, 3.2, GRAPHITE_TILE, COLOR_GOLD)
+    this.sessionTry = this.panelText(sess.root, "SessionTry", 0.3, -7.5, 16.2, 3.0, 23, COLOR_GOLD, false)
 
-    // Learn window: the flow from prompt to result (active step lit), why it matters, one thing to try
-    this.learnTitle = this.panelText(learn.root, "LearnTitle", 0, 7.7, 10, 2.2, 27, COLOR_WHITE, true)
+    // Learn window: header tile, one small tile per flow stage (active stage lit), why-it-matters tile
+    this.tile(learn.root, "LearnHeaderTile", 0, 7.7, 10.2, 2.4, GRAPHITE_TILE, ACCENT_CYAN)
+    this.learnTitle = this.panelText(learn.root, "LearnTitle", 0.3, 7.7, 9.0, 2.2, 26, COLOR_WHITE, false)
     this.learnTitle.text = "How it works"
     for (let i = 0; i < FLOW_STAGES.length; i++) {
-      this.learnStages.push(this.panelText(learn.root, "FlowStage_" + FLOW_STAGES[i], -0.4, 5.0 - i * 1.55, 9.2, 1.5, 27, COLOR_CAPTION, false))
+      this.learnStageTiles.push(this.tile(learn.root, "FlowStageTile_" + FLOW_STAGES[i], 0, 5.0 - i * 1.55, 10.2, 1.4, GRAPHITE_TILE, null))
+      this.learnStages.push(this.panelText(learn.root, "FlowStage_" + FLOW_STAGES[i], 0.2, 5.0 - i * 1.55, 8.8, 1.3, 26, COLOR_CAPTION, false))
     }
-    this.learnWhy = this.panelText(learn.root, "LearnWhy", 0, -6.3, 9.8, 5.0, 20, COLOR_WHITE, false)
+    this.tile(learn.root, "LearnWhyTile", 0, -6.4, 10.2, 5.2, GRAPHITE_TILE, null)
+    this.learnWhy = this.panelText(learn.root, "LearnWhy", 0, -6.4, 9.4, 4.8, 20, COLOR_WHITE, false)
 
-    // Project window title (blocks + names are the Module_* objects)
-    const projTitle = this.panelText(proj.root, "ProjectTitle", 0, 7.7, 10, 2.2, 27, COLOR_WHITE, true)
+    // Project window: header tile, and a graphite tile behind each module block (the blocks are the Module_* objects)
+    this.tile(proj.root, "ProjectHeaderTile", 0, 7.7, 10.2, 2.4, GRAPHITE_TILE, ACCENT_CYAN)
+    const projTitle = this.panelText(proj.root, "ProjectTitle", 0.3, 7.7, 9.0, 2.2, 26, COLOR_WHITE, false)
     projTitle.text = "Project"
+    for (const m of CITY_MODULES) {
+      this.tile(proj.root, "ModuleTile_" + m.moduleId, m.center.x - 16.5, m.center.y + 11.6, 5.5, 5.4, GRAPHITE_TILE, null)
+    }
   }
 
   /** Session / Learn windows follow honest state: the replayed (or live) events, the active step and its plain-words explanation. */
@@ -789,6 +842,7 @@ export class BuildAliveSceneUI {
       const isNow = i === shown.length - 1
       row.text = (isNow ? "Now: " : "") + ex.what
       row.textFill.color = step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : COLOR_WHITE
+      this.sessionTiles[i].backgroundColor = isNow ? GRAPHITE_TILE_HI : GRAPHITE_TILE
     }
     // learn window
     const last = shown.length > 0 ? shown[shown.length - 1] : null
@@ -798,6 +852,7 @@ export class BuildAliveSceneUI {
       const on = i === stage
       this.learnStages[i].text = (on ? "● " : "○ ") + FLOW_STAGES[i]
       this.learnStages[i].textFill.color = on ? COLOR_GOLD : COLOR_CAPTION
+      this.learnStageTiles[i].backgroundColor = on ? GRAPHITE_TILE_HI : GRAPHITE_TILE
     }
     if (this.learnWhy && this.sessionTry) {
       if (last) {
@@ -848,7 +903,7 @@ export class BuildAliveSceneUI {
     const island = this.islandObjects[slotId]
     const slot = PROJECT_ISLANDS.find((p) => p.id === slotId)
     const size = slot ? slot.size : {w: 10, h: 5, d: 3}
-    const chip = this.glass(island.name + "_Art", island, 0, 0, 0, size.w, size.h, 0.3, new vec4(0.13, 0.22, 0.46, 1))
+    const chip = this.glass(island.name + "_Art", island, 0, 0, 0, size.w, size.h, 0.3, GRAPHITE)
     this.chipRR[slotId] = chip.rr
     this.islandArt[slotId] = chip.root
   }
@@ -1153,7 +1208,7 @@ export class BuildAliveSceneUI {
       }
       this.setBaseScale(slot.id, isActiveProj ? 1.06 : 1.0)
       const chipRR = this.chipRR[slot.id]
-      if (chipRR) chipRR.opacity = isActiveProj ? 0.9 : this.hoveredId === slot.id ? 0.8 : 0.66
+      if (chipRR) chipRR.opacity = isActiveProj ? 0.99 : this.hoveredId === slot.id ? 0.97 : 0.9
     }
 
     for (const m of CITY_MODULES) {
