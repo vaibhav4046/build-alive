@@ -31,6 +31,8 @@ Millions of people now "vibe code": they ask an AI agent for a feature and watch
 - **Your real project, not a mock.** A Project window shows the real module folders of a repo you approved (this build: EarthProof and mnemosyne, scanned by the local bridge), each tile with a type icon.
 - **One window per agent, honest status.** A chip row shows each supported agent with its real status: LIVE, REPLAY, OFFLINE or UNSUPPORTED. Nothing is ever shown as LIVE unless a real event arrived. [VERIFY: v64-agents shot]
 - **You stay in charge.** Explain, Approve and Deny live on one small icon dock. Approve only runs an allowlisted read-only check, and every decision leaves a receipt.
+- **Talk to your session.** A mic on the dock takes questions ("what just happened", "why did it fail", "what should I try", "explain the command") and commands ("next step", "approve", "deny"), answered as tiles by the same plain-language layer. Approve is two-step and only ever runs the allowlisted read-only check. Verified in Preview with injected transcripts (LEAF L30); live speech uses Spectacles' built-in ASR, which in our Preview session returned an auth error, so real-microphone use is **untested**.
+- **Your history stays.** The bridge keeps a journal of every real agent event; when the Lens connects it receives the last sessions as one compact history frame, shown as RECORDED tiles ("earlier today · 14 steps"), never as LIVE. [VERIFY: L31 + live connection]
 - **Hands-first.** Pinch tiles and chips, minimise a window into its tab with the round X and pinch the tab to bring it back.
 
 ## How we built it
