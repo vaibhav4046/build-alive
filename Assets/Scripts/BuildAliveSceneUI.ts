@@ -796,9 +796,11 @@ export class BuildAliveSceneUI {
     learn.root.getTransform().setLocalRotation(quat.angleAxis(0.17, vec3.up()))
 
     // Session window: header tile (per-app accent strip) + one tile per recent step + a "Try" tile
-    this.tile(sess.root, "SessionHeaderTile", 0, 7.7, 17.6, 2.7, GRAPHITE_TILE, ACCENT_CLAUDE)
-    this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", -2.2, 7.7, 10.2, 2.5, 24, COLOR_WHITE, false)
-    this.sessionChip = this.panelText(sess.root, "SessionStatusChip", 4.7, 7.7, 4.4, 2.2, 18, COLOR_CAPTION, true)
+    this.tile(sess.root, "SessionHeaderTile", 0, 7.7, 17.6, 2.7, GRAPHITE_TILE, null)
+    const claudeLogo = requireAsset("../Textures/logos/claude-code.png") as Texture
+    this.logoImage(sess.root, "Logo_claude-code", -7.4, 7.7, 2.1, claudeLogo)
+    this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", -1.4, 7.7, 9.4, 2.5, 24, COLOR_WHITE, false)
+    this.sessionChip = this.panelText(sess.root, "SessionStatusChip", 5.0, 7.7, 4.0, 2.2, 16, COLOR_CAPTION, true)
     for (let i = 0; i < 4; i++) {
       this.sessionTiles.push(this.tile(sess.root, "SessionTile_" + i, 0, 4.4 - i * 3.0, 17.6, 2.7, GRAPHITE_TILE, null))
       this.sessionRows.push(this.panelText(sess.root, "SessionRow_" + i, -0.6, 4.4 - i * 3.0, 14.2, 2.5, 28, COLOR_WHITE, false))
@@ -1268,6 +1270,22 @@ export class BuildAliveSceneUI {
     rr.initialize()
   }
 
+  /** Brand mark (nominative use, unrecoloured, white badge baked into the texture) on a flat box face, so it uses the same material path as the module blocks. */
+  private logoImage(parent: SceneObject, name: string, x: number, y: number, size: number, tex: Texture): SceneObject | null {
+    if (!this.boxMesh || !this.baseMat) return null
+    const o = global.scene.createSceneObject(name)
+    o.setParent(parent)
+    o.getTransform().setLocalPosition(new vec3(x, y, 0.8))
+    o.getTransform().setLocalScale(new vec3(size, size, 0.1))
+    const rmv = o.createComponent("Component.RenderMeshVisual") as RenderMeshVisual
+    rmv.mesh = this.boxMesh
+    const mat = (this.baseMat as Material).clone()
+    mat.mainPass.baseTex = tex
+    mat.mainPass.baseColor = new vec4(1.15, 1.15, 1.15, 1)
+    rmv.mainMaterial = mat
+    return o
+  }
+
   /** Which simple line icon a module tile shows: from its name first (real folders), then its role (sample world). */
   private iconKindFor(name: string, role: BuildingRole): string {
     const n = name.toLowerCase()
@@ -1300,14 +1318,14 @@ export class BuildAliveSceneUI {
       L("d1", -0.6, 0.6, 1.7, 45); L("d2", 0.6, 0.6, 1.7, -45)
       L("d3", -0.6, -0.6, 1.7, -45); L("d4", 0.6, -0.6, 1.7, 45)
     } else if (kind === "bridge") {
-      L("deck", 0, -0.8, 3.0, 0); L("p1", -1.3, 0.1, 1.8, 90); L("p2", 1.3, 0.1, 1.8, 90)
-      L("a1", -0.65, 0.45, 1.7, -40); L("a2", 0.65, 0.45, 1.7, 40)
+      L("deck", 0, -0.9, 3.2, 0); L("al", -0.95, -0.05, 1.3, 63); L("at", 0, 0.6, 1.1, 0); L("ar", 0.95, -0.05, 1.3, -63)
+      L("h1", -0.35, -0.15, 1.5, 90); L("h2", 0.35, -0.15, 1.5, 90)
     } else if (kind === "docs") {
       L("t", 0, 0.9, 1.8, 0); L("b", 0, -0.9, 1.8, 0); L("l", -0.9, 0, 1.8, 90); L("r", 0.9, 0, 1.8, 90)
       L("x1", 0, 0.3, 1.0, 0); L("x2", 0, -0.2, 1.0, 0); L("x3", -0.2, -0.65, 0.6, 0)
     } else {
-      L("body", 0, -0.2, 2.6, 0); L("bot", 0, -1.0, 2.6, 0); L("fl", -1.3, -0.6, 0.9, 90); L("fr", 1.3, -0.6, 0.9, 90)
-      L("top", 0, 0.6, 2.6, 0); L("tabL", -0.9, 0.95, 0.8, 0)
+      L("top", 0, 0.5, 2.6, 0); L("bot", 0, -0.9, 2.6, 0); L("fl", -1.3, -0.2, 1.4, 90); L("fr", 1.3, -0.2, 1.4, 90)
+      L("tab", -0.85, 0.95, 0.9, 0); L("tabl", -1.3, 0.72, 0.45, 90); L("tabr", -0.4, 0.72, 0.45, 90)
     }
   }
 
