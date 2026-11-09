@@ -57,10 +57,10 @@ plan.segments.forEach((s, i) => {
   const isImg = [".png", ".jpg", ".jpeg"].includes(extname(src).toLowerCase())
   const dur = s.dur
   const fit = `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${BG},setsar=1`
-  // Stills get a gentle 4% push-in so the frame breathes; footage is left untouched.
-  const motion = isImg ? `,zoompan=z='1+0.04*on/${Math.round(dur * FPS)}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${Math.round(dur * FPS)}:s=${W}x${H}:fps=${FPS}` : `,fps=${FPS}`
+  // Stills are held static (zoompan push-ins mis-framed crops); motion comes from crossfades between segments.
+  const motion = `,fps=${FPS}`
   // Optional crop (x,y,w,h in source pixels) turns a full Preview frame into a close-up before fitting.
-  const crop = s.crop ? `crop=${s.crop.join(":")},` : ""
+  const crop = s.crop ? `crop=${s.crop[2]}:${s.crop[3]}:${s.crop[0]}:${s.crop[1]},` : "" // plan crop is [x, y, w, h]; ffmpeg wants w:h:x:y
   let vf = crop + fit + motion
   if (s.caption) {
     const tf = textFile(`cap${i}.txt`, s.caption)

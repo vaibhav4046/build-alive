@@ -1,0 +1,17 @@
+{
+  "out": "out/build-alive-fallback.mp4",
+  "score": "assets/score.wav",
+  "width": 1920, "height": 1080, "fps": 30,
+  "segments": [
+    {"src": "assets/coldopen.mp4", "dur": 12.4},
+    {"src": "assets/cards/title.png", "dur": 4},
+    {"src": "../devpost/shots/v65-mono-b.png", "crop": [190, 60, 1400, 788], "dur": 7, "caption": "Your AI agent's session, floating beside your real project.", "tag": "Lens Studio Preview · REPLAY"},
+    {"src": "../devpost/shots/v68-vivid-chips.png", "crop": [560, 300, 1000, 562], "dur": 6, "caption": "Every step in one plain sentence. Repeats fold into one tile.", "tag": "Lens Studio Preview · REPLAY"},
+    {"src": "../devpost/shots/v66-learn-tests.png", "crop": [560, 300, 1000, 562], "dur": 6, "caption": "A check failed. It says so, without jargon.", "tag": "Lens Studio Preview · REPLAY"},
+    {"src": "../devpost/shots/v66-learn-tests.png", "crop": [150, 320, 1000, 562], "dur": 7, "caption": "Learn lights the stage: why it matters, and what to try next.", "tag": "Lens Studio Preview · REPLAY"},
+    {"src": "../devpost/shots/v66-learn-tests.png", "crop": [968, 330, 800, 450], "dur": 5, "caption": "Your real modules. The broken test turns red.", "tag": "Lens Studio Preview · REPLAY"},
+    {"src": "../devpost/shots/v68-vivid-chips.png", "crop": [250, 600, 1300, 731], "dur": 6, "caption": "Every agent, with an honest status: live, replay, offline or unsupported.", "tag": "Lens Studio Preview"},
+    {"src": "../devpost/shots/v67-voice-dock.png", "crop": [250, 600, 1300, 731], "dur": 5, "caption": "Tap the mic: \"what just happened?\" \"why did it fail?\"", "tag": "Lens Studio Preview · voice tested with typed-in phrases"},
+    {"src": "assets/cards/end.png", "dur": 8}
+  ]
+}
