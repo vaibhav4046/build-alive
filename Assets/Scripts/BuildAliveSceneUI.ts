@@ -158,18 +158,25 @@ const STAGE_FILL = new vec4(0.16, 0.56, 0.66, 1) // the lit stage in the Learn w
 const STAGE_FILL_FAIL = new vec4(0.78, 0.28, 0.26, 1) // same, when the current step is the failed check
 /** 'monogram' (default; no third-party marks, safe for the submission film) or 'brand' (real simple-icons marks, for local use only). */
 const LOGO_MODE: "monogram" | "brand" = "monogram"
-/** Monogram per provider: one or two letters in a generic accent colour (not a brand logo). */
-const PROVIDER_MONO: Record<string, {letters: string; color: vec4}> = {
-  "claude-code": {letters: "CC", color: new vec4(0.95, 0.52, 0.38, 1)},
-  codex: {letters: "Cx", color: new vec4(0.52, 0.86, 0.62, 1)},
-  antigravity: {letters: "AG", color: new vec4(0.72, 0.62, 0.98, 1)},
-  opencode: {letters: "OC", color: new vec4(0.45, 0.78, 0.98, 1)},
-  hermes: {letters: "He", color: new vec4(0.98, 0.78, 0.42, 1)},
-  openclaw: {letters: "Cl", color: new vec4(0.98, 0.55, 0.62, 1)},
-  "chatgpt-app": {letters: "Cg", color: new vec4(0.62, 0.9, 0.82, 1)},
-  "grok-bots": {letters: "Gr", color: new vec4(0.85, 0.85, 0.9, 1)},
-  instinct: {letters: "In", color: new vec4(0.98, 0.7, 0.85, 1)},
-  muse: {letters: "Mu", color: new vec4(0.8, 0.9, 0.5, 1)},
+const MODULE_ICON_INK: Record<string, vec4> = {
+  script: new vec4(0.1, 0.4, 1.0, 1), // blue </>
+  material: new vec4(0.9, 0.15, 0.7, 1), // magenta diamond
+  bridge: new vec4(1.0, 0.5, 0.0, 1), // orange arch
+  docs: new vec4(0.05, 0.65, 0.35, 1), // green page
+  folder: new vec4(0.55, 0.3, 0.95, 1), // violet folder
+}
+/** Punchy original badge per provider (NOT a brand logo): a vivid solid fill, its own corner shape, and bold letters in a readable ink. */
+const PROVIDER_MONO: Record<string, {letters: string; color: vec4; fill: vec4; radius: number}> = {
+  "claude-code": {letters: "CC", color: new vec4(1, 1, 1, 1), fill: new vec4(1.0, 0.36, 0.22, 1), radius: 0.55}, // flame orange squircle
+  codex: {letters: "Cx", color: new vec4(0.03, 0.12, 0.08, 1), fill: new vec4(0.1, 0.9, 0.5, 1), radius: 1.15}, // emerald circle
+  antigravity: {letters: "AG", color: new vec4(1, 1, 1, 1), fill: new vec4(0.55, 0.35, 1.0, 1), radius: 0.22}, // violet sharp tile
+  opencode: {letters: "OC", color: new vec4(1, 1, 1, 1), fill: new vec4(0.1, 0.6, 1.0, 1), radius: 0.9}, // electric blue
+  hermes: {letters: "He", color: new vec4(0.16, 0.1, 0.0, 1), fill: new vec4(1.0, 0.78, 0.1, 1), radius: 1.15}, // sun-gold circle
+  openclaw: {letters: "Cl", color: new vec4(1, 1, 1, 1), fill: new vec4(1.0, 0.2, 0.5, 1), radius: 0.35}, // hot pink
+  "chatgpt-app": {letters: "Cg", color: new vec4(0.0, 0.14, 0.14, 1), fill: new vec4(0.1, 0.9, 0.85, 1), radius: 1.15}, // aqua circle
+  "grok-bots": {letters: "Gr", color: new vec4(0.1, 0.12, 0.0, 1), fill: new vec4(0.8, 0.95, 0.15, 1), radius: 0.22}, // lime tile
+  instinct: {letters: "In", color: new vec4(1, 1, 1, 1), fill: new vec4(0.95, 0.3, 0.85, 1), radius: 0.9}, // magenta
+  muse: {letters: "Mu", color: new vec4(1, 1, 1, 1), fill: new vec4(1.0, 0.5, 0.05, 1), radius: 0.55}, // tangerine
 }
 const COLOR_BLOCK = new vec4(1.2, 1.28, 1.42, 1)
 const COLOR_BLOCK_GOLD = new vec4(1.6, 1.25, 0.5, 1)
@@ -259,6 +266,8 @@ export class BuildAliveSceneUI {
   private headerLogoMat: Material | null = null
   private headerLogoShown = ""
   private headerMonoText: Text | null = null
+  private headerMonoTile: RoundedRectangle | null = null
+  private providerHalos: Record<string, RoundedRectangle> = {}
   private chipMarks: Record<string, {text: Text | null; mat: Material | null}> = {}
   private providerRings: Record<string, RoundedRectangle> = {}
   private providerDots: Record<string, RoundedRectangle> = {}
@@ -827,7 +836,7 @@ export class BuildAliveSceneUI {
   /** Bold monogram letters: dark outline keeps them readable on a bright room (dark is see-through on an additive display, which is harmless). */
   private monoText(parent: SceneObject, name: string, x: number, y: number, w: number, h: number, size: number, color: vec4): Text {
     const t = this.panelText(parent, name, x, y, w, h, size, color, true)
-    t.outlineSettings.enabled = true
+    t.outlineSettings.enabled = false
     t.outlineSettings.size = 0.4
     t.outlineSettings.fill.color = new vec4(0.04, 0.05, 0.07, 1)
     return t
@@ -848,8 +857,10 @@ export class BuildAliveSceneUI {
       this.headerLogoMat = headerLogo ? (headerLogo.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
       this.headerLogoShown = PROVIDER_STATIONS[0].id
     } else {
-      this.tile(sess.root, "HeaderMonoTile", -7.4, 7.7, 2.1, 2.1, GRAPHITE, null).cornerRadius = 0.6
-      this.headerMonoText = this.monoText(sess.root, "HeaderMonoText", -7.4, 7.7, 2.1, 1.9, 38, PROVIDER_MONO[PROVIDER_STATIONS[0].id].color)
+      const firstMono = PROVIDER_MONO[PROVIDER_STATIONS[0].id]
+      this.headerMonoTile = this.tile(sess.root, "HeaderMonoTile", -7.4, 7.7, 2.1, 2.1, firstMono.fill, null)
+      this.headerMonoTile.cornerRadius = firstMono.radius
+      this.headerMonoText = this.monoText(sess.root, "HeaderMonoText", -7.4, 7.7, 2.1, 1.9, 38, firstMono.color)
       this.headerMonoText.text = PROVIDER_MONO[PROVIDER_STATIONS[0].id].letters
     }
     this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", -1.4, 7.7, 9.4, 2.5, 24, COLOR_WHITE, false)
@@ -1015,6 +1026,10 @@ export class BuildAliveSceneUI {
       const mono = PROVIDER_MONO[this.selectedProvider] // the header mark always belongs to the provider it describes
       this.headerMonoText.text = mono.letters
       this.headerMonoText.textFill.color = mono.color
+      if (this.headerMonoTile) {
+        this.headerMonoTile.backgroundColor = mono.fill
+        this.headerMonoTile.cornerRadius = mono.radius
+      }
     }
     for (const st of PROVIDER_STATIONS) {
       const dot = this.providerDots[st.id]
@@ -1027,11 +1042,11 @@ export class BuildAliveSceneUI {
       if (mark.text) {
         const c = PROVIDER_MONO[st.id].color
         mark.text.textFill.color = new vec4(c.x, c.y, c.z, dim) // ~50% faded chip for UNSUPPORTED
-        mark.text.outlineSettings.fill.color = new vec4(0.04, 0.05, 0.07, dim)
+        mark.text.outlineSettings.enabled = false // the vivid fill already gives the letters contrast
       }
       this.providerRings[st.id].opacity = dim
       if (mark.mat) mark.mat.mainPass.baseColor = new vec4(1.15 * dim, 1.15 * dim, 1.15 * dim, 1)
-      this.providerRings[st.id].backgroundColor = st.id === this.selectedProvider ? GRAPHITE_TILE_HI : GRAPHITE
+      this.providerHalos[st.id].getSceneObject().enabled = st.id === this.selectedProvider // white halo marks the selected chip
     }
   }
 
@@ -1060,9 +1075,22 @@ export class BuildAliveSceneUI {
       chip.setParent(land)
       chip.getTransform().setLocalPosition(new vec3((i - (PROVIDER_STATIONS.length - 1) / 2) * pitch, AGENT_ROW_Y, AGENT_ROW_Z))
       const ring = chip.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+      const look = PROVIDER_MONO[st.id]
+      const haloObj = global.scene.createSceneObject("AgentChipHalo_" + st.id)
+      haloObj.setParent(chip)
+      haloObj.getTransform().setLocalPosition(new vec3(0, 0, -0.15))
+      const halo = haloObj.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+      halo.size = new vec2(2.75, 2.75)
+      halo.cornerRadius = Math.min(1.375, look.radius + 0.25)
+      halo.backgroundColor = COLOR_WHITE
+      halo.blendMode = 1
+      halo.opacity = 1
+      halo.initialize()
+      haloObj.enabled = false
+      this.providerHalos[st.id] = halo
       ring.size = new vec2(2.3, 2.3)
-      ring.cornerRadius = 0.7
-      ring.backgroundColor = GRAPHITE
+      ring.cornerRadius = look.radius
+      ring.backgroundColor = look.fill
       ring.blendMode = 1
       ring.opacity = 1
       ring.initialize()
@@ -1585,7 +1613,8 @@ export class BuildAliveSceneUI {
     holder.getTransform().setLocalPosition(new vec3(0, 0, 2.05))
     holder.getTransform().setLocalScale(new vec3(1.15, 1.15, 1.15))
     vis.iconHolder = holder
-    const L = (n: string, x: number, y: number, len: number, a: number) => this.iconLine(holder, n, x, y, len, a, 0.32, GRAPHITE)
+    const ink = MODULE_ICON_INK[kind] || GRAPHITE // each type has its own saturated colour so the tiles are not a wall of grey
+    const L = (n: string, x: number, y: number, len: number, a: number) => this.iconLine(holder, n, x, y, len, a, 0.34, ink)
     if (kind === "script") {
       L("l1", -0.85, 0.35, 0.95, 40); L("l2", -0.85, -0.35, 0.95, -40)
       L("r1", 0.85, 0.35, 0.95, -40); L("r2", 0.85, -0.35, 0.95, 40)

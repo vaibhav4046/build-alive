@@ -21,6 +21,7 @@ import {runDemoRepoSuite} from "../demo-repo/tests/room-capacity.test.mjs"
 import {discoverWorlds, makeResolver, toLensWorld} from "./project-discovery.mjs"
 import {watchAntigravity} from "./session-coordinator.mjs"
 import {detectProviders} from "./provider-registry.mjs"
+import {buildHistory} from "./journal.mjs"
 
 const WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -427,9 +428,14 @@ export function createBridgeServer({
     // v3: the scanned real workspace is always sent first so events resolve against it
     if (workspace) socket.write(encodeTextFrame(workspace.message))
 
-    // Replay journal history so connected client gets current timeline
-    for (const ev of journal.getAllEvents()) {
-      socket.write(encodeTextFrame(JSON.stringify(ev)))
+    // History: a Lens asking for ?history=1 gets ONE compact RECORDED history frame (last sessions, grouped); it never mistakes old events for
+    // live ones. Other clients keep the legacy full replay of the journal.
+    if (/[?&]history=1/.test(req.url || "")) {
+      socket.write(encodeTextFrame(JSON.stringify(buildHistory(journal.getAllEvents()))))
+    } else {
+      for (const ev of journal.getAllEvents()) {
+        socket.write(encodeTextFrame(JSON.stringify(ev)))
+      }
     }
 
     let buf = head && head.length > 0 ? head : Buffer.alloc(0)

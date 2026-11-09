@@ -67,3 +67,40 @@ export class EventJournal {
     return this.lastHash
   }
 }
+
+/**
+ * History for a reconnecting client (persistent workspace): the last few sessions from the journal, newest first, each with a handful of its
+ * latest events in a compact form. Everything in it is RECORDED history, never live: the client must not treat it as new activity.
+ * Pure function (no I/O) so it can be unit-tested.
+ */
+export function buildHistory(events, opts = {}) {
+  const maxSessions = opts.maxSessions ?? 3
+  const maxPerSession = opts.maxPerSession ?? 10
+  const bySession = new Map()
+  for (const ev of events) {
+    if (!ev || typeof ev.sessionId !== "string" || typeof ev.kind !== "string") continue
+    const ts = typeof ev.ts === "number" ? ev.ts : Date.parse(ev.timestamp || "")
+    if (!Number.isFinite(ts)) continue
+    let s = bySession.get(ev.sessionId)
+    if (!s) {
+      s = {sessionId: ev.sessionId, projectId: String(ev.projectId || ""), startedAt: ts, lastAt: ts, count: 0, events: []}
+      bySession.set(ev.sessionId, s)
+    }
+    s.startedAt = Math.min(s.startedAt, ts)
+    s.lastAt = Math.max(s.lastAt, ts)
+    s.count++
+    s.events.push({
+      kind: ev.kind,
+      status: String(ev.status || ""),
+      summary: String(ev.summary || "").slice(0, 160),
+      actor: String(ev.actor || ""),
+      fileAliases: Array.isArray(ev.fileAliases) ? ev.fileAliases.slice(0, 3).map(String) : [],
+      ts,
+    })
+  }
+  const sessions = [...bySession.values()]
+    .sort((a, b) => b.lastAt - a.lastAt)
+    .slice(0, maxSessions)
+    .map((s) => ({...s, events: s.events.slice(-maxPerSession)}))
+  return {type: "history", label: "RECORDED", generatedAt: Date.now(), sessions}
+}
