@@ -15,6 +15,8 @@ import {exists, expectNear, expectTrue, getMain, interactable, log, pos, press, 
 
 async function toBuildAliveStart() {
   const main = getMain()
+  // The Lens boots into the REAL scanned workspace; the scripted L01-L22 story lives in the selectable Sample World.
+  main.buildAlive.useSampleWorld()
   main.buildAlive.handleReset()
   await sleep(120)
   return main.buildAlive
@@ -26,10 +28,13 @@ export class BuildAliveL03PinchIsland extends Scenario {
     await sleep(1000)
     const ba = await toBuildAliveStart()
     const interactor = new DefaultLeafInteractor()
+    // Island slots hold the real scan (slot 1 EarthProof, slot 2 mnemosyne) and the Sample World (slot 3).
     await press(interactor, "Island_EdgeGuard")
-    expectTrue(ba.engine.snapshot().projectId === "edge-guard", "selected edge-guard island")
+    expectTrue(ba.engine.snapshot().projectId === "mnemosyne", "slot 2 island selects the real mnemosyne world")
     await press(interactor, "Island_LobbySync")
-    expectTrue(ba.engine.snapshot().projectId === "lobby-sync", "selected lobby-sync island")
-    log("L03", "project island pinch selection verified")
+    expectTrue(ba.engine.snapshot().projectId === "earthproof", "slot 1 island selects the real EarthProof world")
+    await press(interactor, "Island_EarthProof")
+    expectTrue(ba.engine.snapshot().projectId === "lobby-sync", "slot 3 island selects the Sample World")
+    log("L03", "project island pinch selection verified (real, real, sample)")
   }
 }

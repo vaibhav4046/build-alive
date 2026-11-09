@@ -1,0 +1,44 @@
+[
+  {
+    "scenario": "L23-real-workspace-islands",
+    "verdict": "PASS",
+    "startedAt": "00:26:42.314",
+    "logLine": 11626,
+    "receipt": "L23-real-workspace-islands.run11626.txt"
+  },
+  {
+    "scenario": "L24-pinch-real-module-path",
+    "verdict": "PASS",
+    "startedAt": "00:27:04.684",
+    "logLine": 11690,
+    "receipt": "L24-pinch-real-module-path.run11690.txt"
+  },
+  {
+    "scenario": "L03-pinch-project-island",
+    "verdict": "PASS",
+    "startedAt": "00:27:18.802",
+    "logLine": 11743,
+    "receipt": "L03-pinch-project-island.run11743.txt"
+  },
+  {
+    "scenario": "L02-project-islands-exist",
+    "verdict": "PASS",
+    "startedAt": "00:27:33.941",
+    "logLine": 11795,
+    "receipt": "L02-project-islands-exist.run11795.txt"
+  },
+  {
+    "scenario": "L01-scene-boot-provenance",
+    "verdict": "FAIL",
+    "startedAt": "00:28:10.180",
+    "logLine": 11847,
+    "receipt": "L01-scene-boot-provenance.run11847.txt"
+  },
+  {
+    "scenario": "L01-scene-boot-provenance",
+    "verdict": "PASS",
+    "startedAt": "00:29:56.185",
+    "logLine": 11987,
+    "receipt": "L01-scene-boot-provenance.run11987.txt"
+  }
+]

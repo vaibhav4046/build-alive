@@ -21,7 +21,17 @@ import {ElementContent} from "SpectaclesUIKit.lspkg/Scripts/Components/Content/E
 import {FlexItem} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexItem"
 import {FlexLayout} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexLayout"
 import {FlexAlign, FlexDirection, FlexJustify} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexTypes"
-import {AllowlistedActionId, BuildAliveEngine, DEMO_PROJECTS, WorkspaceWorldPayload} from "./BuildAliveCore"
+import {
+  AllowlistedActionId,
+  BuildAliveEngine,
+  DEMO_PROJECTS,
+  validateWorkspaceWorlds,
+  WorkspaceWorldPayload,
+} from "./BuildAliveCore"
+import {WORKSPACE_SNAPSHOT, WORKSPACE_SNAPSHOT_META} from "./BuildAliveWorkspaceSnapshot"
+
+/** The scripted recorded-replay project that stays selectable as "Sample World". */
+const DEMO_SAMPLE_PROJECT_ID = "lobby-sync"
 import {
   AGENT_PRIMARY_HOME,
   AGENT_SUB_HOME,
@@ -126,7 +136,12 @@ export class BuildAliveSceneUI {
   private autoDemoClock = 0
   private autoDemoPhase = 0
   private leafOrUserTouched = false
-  private workspaceBound = false
+  private workspaceLoaded = false
+  private workspaceSourceLabel = ""
+  /** True only while a REAL scanned project is the current world; the bundled Sample World uses the scripted-story path. */
+  private get workspaceBound(): boolean {
+    return this.workspaceLoaded && this.engine.currentProject.provenance === "REAL_SCAN"
+  }
   private slotProject: Record<string, string> = {}
   private islandLabels: Record<string, Text> = {}
   private extraRoads: {id: string; from: string; to: string; obj: SceneObject}[] = []
@@ -144,6 +159,7 @@ export class BuildAliveSceneUI {
     onSelectEarthProofFallback?: () => void,
     internetModule: InternetModule | null = null,
     onPlayAudio?: () => void,
+    useWorkspaceSnapshot: boolean = true,
   ): void {
     this.host = host
     this.onPlayAudio = onPlayAudio || null
@@ -166,6 +182,15 @@ export class BuildAliveSceneUI {
     this.buildVesselsAndMarkers()
     this.buildControlRail()
     this.buildGlassCard()
+    if (useWorkspaceSnapshot) {
+      // REAL scan of the approved repos, bundled at build time (see BuildAliveWorkspaceSnapshot.ts). Not a live feed.
+      const checked = validateWorkspaceWorlds(WORKSPACE_SNAPSHOT)
+      if (checked.ok) {
+        this.bindWorkspace(checked.worlds, "REAL REPO SCAN (snapshot " + WORKSPACE_SNAPSHOT_META.scannedAt.slice(0, 10) + ")")
+      } else {
+        print("[BuildAlive] workspace snapshot rejected: " + (checked.error || "invalid"))
+      }
+    }
     if (internetModule) {
       this.transport.connect(internetModule)
     }
@@ -270,9 +295,10 @@ export class BuildAliveSceneUI {
   }
 
   /** Binds real scanned projects (from the bridge) to the island shelf and the architecture slots. */
-  bindWorkspace(worlds: WorkspaceWorldPayload[]): void {
+  bindWorkspace(worlds: WorkspaceWorldPayload[], sourceLabel: string = "LIVE BRIDGE SCAN"): void {
     const ids = this.engine.loadWorkspace(worlds)
-    this.workspaceBound = true
+    this.workspaceLoaded = true
+    this.workspaceSourceLabel = sourceLabel
     this.leafOrUserTouched = true // stop the scripted sample tour: real data only
     this.disclosureTier = "WORLD"
     for (let k = 0; k < PROJECT_ISLANDS.length; k++) {
@@ -282,6 +308,19 @@ export class BuildAliveSceneUI {
       const lbl = this.islandLabels[slot.id]
       if (lbl) lbl.text = real ? worlds[k].name : "Sample World"
     }
+    this.syncVisuals()
+  }
+
+  /** Switches to one of the real scanned worlds by project id (e.g. "earthproof", "mnemosyne"). */
+  useRealWorld(projectId: string): boolean {
+    const ok = this.engine.selectProject(projectId)
+    this.syncVisuals()
+    return ok
+  }
+
+  /** Switches to the bundled sample project (scripted LobbySync story) without unbinding the real worlds. */
+  useSampleWorld(): void {
+    this.engine.selectProject(DEMO_SAMPLE_PROJECT_ID)
     this.syncVisuals()
   }
 
@@ -538,6 +577,7 @@ export class BuildAliveSceneUI {
     )
     bannerObj.createComponent(Billboard.getTypeName())
     this.provenanceText = this.addText(bannerObj, "SIMULATED IN PREVIEW • LOCAL_RECORDED_REPLAY", 24, COLOR_CYAN)
+    bannerObj.getTransform().setLocalScale(new vec3(1.3, 1.3, 1.3))
     void shelf
   }
 
@@ -572,13 +612,14 @@ export class BuildAliveSceneUI {
       // Crisp floating island title above the portal arch
       const labelObj = global.scene.createSceneObject(slot.sceneName + "_Label")
       labelObj.setParent(island)
-      labelObj.getTransform().setLocalPosition(new vec3(0, 1.55, 0))
+      // On the desk in front of the island: above it the title sat exactly behind the control-rail plates in the wearer's view.
+      labelObj.getTransform().setLocalPosition(new vec3(0, -0.22, 0.9))
       this.islandLabels[slot.id] = this.addText(labelObj, proj.title, 26, COLOR_WHITE)
       this.compensateLabelScale(labelObj, slot.size, LABEL_WORLD_SCALE_CM)
 
       this.makeInteractable(island, () => {
         this.handleSelectProject(slot.id, Date.now())
-        if (slot.id === "earthproof-rover" && onSelectEarthProofFallback && !this.workspaceBound) {
+        if (slot.id === "earthproof-rover" && onSelectEarthProofFallback && !this.workspaceLoaded) {
           onSelectEarthProofFallback()
         }
       })
@@ -930,7 +971,12 @@ export class BuildAliveSceneUI {
   syncVisuals(): void {
     const snap = this.engine.snapshot()
     const prov = this.engine.getProvenanceSummary()
-    this.provenanceText.text = prov.bannerText + " (" + snap.provenance + ")"
+    this.provenanceText.text = this.workspaceBound
+      ? this.workspaceSourceLabel + " | " + this.engine.currentProject.title + " | " +
+        (prov.connectionState === "LIVE" ? "LIVE_CONNECTED" : "no live agent event")
+      : this.workspaceLoaded
+        ? "SAMPLE WORLD | " + prov.bannerText + " (" + snap.provenance + ")"
+        : prov.bannerText + " (" + snap.provenance + ")"
 
     const hasFailures = snap.activeFailures.length > 0
     const ev = this.engine.activeEvent

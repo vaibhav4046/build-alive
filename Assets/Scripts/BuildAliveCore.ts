@@ -1387,7 +1387,11 @@ export class BuildAliveEngine {
     this.sessionTraces.clear()
     this.otherProjectEventCount = {}
     const slotIds: string[] = []
-    for (let k = 0; k < 3; k++) slotIds.push(real[k] ? real[k].projectId : samples[k].projectId)
+    // Slots without a real world get the sample worlds in order, so the scripted LobbySync story stays selectable as "Sample World".
+    let nextSample = 0
+    for (let k = 0; k < 3; k++) {
+      slotIds.push(real[k] ? real[k].projectId : samples[Math.min(nextSample++, samples.length - 1)].projectId)
+    }
     this.lastWorkspaceSlotIds = slotIds
     this.selectProject(real[0].projectId)
     return slotIds
@@ -1434,7 +1438,7 @@ export class BuildAliveEngine {
     }
     return [
       m.label + " [" + m.role + "] in " + p.title,
-      m.summary,
+      (m.clusterId === ROOT_CLUSTER_ID ? "repo root" : m.clusterId + "/") + " : " + m.summary,
       "Imports: " + (imports.length ? imports.join(", ") : "none resolved") + " | Used by: " + (usedBy.length ? usedBy.join(", ") : "none resolved"),
       last
         ? "Last event " + last.eventId + " " + last.kind + " " + last.status + " [" + last.provenance + "] " + last.timestamp.slice(11, 19)

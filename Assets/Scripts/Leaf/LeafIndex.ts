@@ -33,6 +33,8 @@ import {BuildAliveL19MalformedEvent} from "./L19MalformedEvent"
 import {BuildAliveL20DuplicateOutOfOrder} from "./L20DuplicateOutOfOrder"
 import {BuildAliveL21DisconnectFallback} from "./L21DisconnectFallback"
 import {BuildAliveL22Accessibility} from "./L22Accessibility"
+import {BuildAliveL23RealWorkspaceIslands} from "./L23RealWorkspaceIslands"
+import {BuildAliveL24PinchRealModule} from "./L24PinchRealModule"
 
 @component
 export class LeafIndex extends BaseScriptComponent {
@@ -69,5 +71,7 @@ export class LeafIndex extends BaseScriptComponent {
     {id: "L20-duplicate-out-of-order", typename: BuildAliveL20DuplicateOutOfOrder.getTypeName()},
     {id: "L21-disconnect-fallback", typename: BuildAliveL21DisconnectFallback.getTypeName()},
     {id: "L22-reduced-motion-colour-safe", typename: BuildAliveL22Accessibility.getTypeName()},
+    {id: "L23-real-workspace-islands", typename: BuildAliveL23RealWorkspaceIslands.getTypeName()},
+    {id: "L24-pinch-real-module-path", typename: BuildAliveL24PinchRealModule.getTypeName()},
   ]
 }

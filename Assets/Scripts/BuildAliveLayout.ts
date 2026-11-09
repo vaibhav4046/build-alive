@@ -251,7 +251,7 @@ export const BUILD_ALIVE_CARD_WIDTH_CM = 22
 export const BUILD_ALIVE_CARD_HEIGHT_CM = 12.5
 
 // Provenance banner on desk front-left edge
-export const PROVENANCE_BANNER_POS: Vec3Cm = {x: -22, y: DESK_TOP_Y + 0.4, z: -51}
+export const PROVENANCE_BANNER_POS: Vec3Cm = {x: 0, y: DESK_TOP_Y - 0.4, z: -43.5}
 
 export function dist3D(a: Vec3Cm, b: Vec3Cm): number {
   const dx = a.x - b.x

@@ -15,6 +15,8 @@ import {exists, expectNear, expectTrue, getMain, interactable, log, pos, press, 
 
 async function toBuildAliveStart() {
   const main = getMain()
+  // The Lens boots into the REAL scanned workspace; the scripted L01-L22 story lives in the selectable Sample World.
+  main.buildAlive.useSampleWorld()
   main.buildAlive.handleReset()
   await sleep(120)
   return main.buildAlive
