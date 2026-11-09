@@ -30,7 +30,7 @@ export class BuildAliveL06FileEditPulse extends Scenario {
     // sample replay: seq 2 is the tool_finished (file edit) event on server-lobby; seq 3 moves on to subagent_started
     while (ba.engine.snapshot().cursorSeq < 2) ba.handleStep()
     const badge = textOf(findSceneObjectByName("Module_Lobby_Badge"))
-    expectTrue(badge.indexOf("[CHG]") >= 0, "lobby badge shows [CHG]: " + badge)
-    log("L06", "file edit pulse and [CHG] badge verified: " + badge)
+    expectTrue(badge.indexOf("Changed") >= 0, "lobby badge says Changed: " + badge)
+    log("L06", "file edit pulse and Changed badge verified: " + badge)
   }
 }

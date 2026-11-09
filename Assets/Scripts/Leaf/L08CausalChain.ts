@@ -32,7 +32,7 @@ export class BuildAliveL08CausalChain extends Scenario {
     await press(interactor, "Module_TestSuite")
     const snap = ba.engine.snapshot()
     expectTrue(snap.selectedModuleId === "test-suite", "Module_TestSuite selected")
-    expectTrue(ba.cardRowText(2).indexOf("Causal:") >= 0, "card row 2 shows Causal chain: " + ba.cardRowText(2))
+    expectTrue(ba.cardRowText(2).indexOf("Likely cause") >= 0, "card row 2 shows the (hypothesis-labelled) likely cause: " + ba.cardRowText(2))
     log("L08", "causal chain inspection verified: " + ba.cardRowText(2))
   }
 }

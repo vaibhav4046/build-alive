@@ -8,6 +8,7 @@ import {
   CITY_MODULES,
   PROJECT_ISLANDS,
   RAIL_CONTROLS,
+  MIN_RAIL_SEPARATION_CM,
   auditControlErgonomics,
 } from "../BuildAliveLayout"
 import {makeSyntheticLiveEnvelope} from "../BuildAliveTransport"
@@ -29,7 +30,7 @@ export class BuildAliveL14ControlSizeSpacing extends Scenario {
     await toBuildAliveStart()
     const audit = auditControlErgonomics()
     expectTrue(audit.minWidthCm >= 5, "all controls >= 5 cm across (" + audit.minWidthCm + " cm)")
-    expectTrue(audit.minRailSpacingCm >= 12, "all rail controls >= 12 cm apart (" + audit.minRailSpacingCm.toFixed(1) + " cm)")
+    expectTrue(audit.minRailSpacingCm >= MIN_RAIL_SEPARATION_CM, "all dock controls >= 6 cm apart (" + audit.minRailSpacingCm.toFixed(1) + " cm)")
     expectTrue(audit.passed, "auditControlErgonomics passed")
     for (const b of RAIL_CONTROLS) {
       expectTrue(exists(b.sceneName), "button exists in scene: " + b.sceneName)

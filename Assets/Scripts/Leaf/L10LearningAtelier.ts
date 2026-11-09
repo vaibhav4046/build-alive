@@ -30,7 +30,7 @@ export class BuildAliveL10LearningAtelier extends Scenario {
     const interactor = new DefaultLeafInteractor()
     await press(interactor, "BA_LearnButton")
     expectTrue(ba.engine.snapshot().sceneMode === "LEARN", "entered LEARN mode")
-    expectTrue(ba.cardRowText(0).indexOf("LEARNING ATELIER") >= 0, "card shows LEARNING ATELIER")
+    expectTrue(ba.cardRowText(0).indexOf("Lesson") >= 0, "card shows the Lesson: " + ba.cardRowText(0))
     await press(interactor, "BA_LearnButton")
     const snap = ba.engine.snapshot()
     expectTrue(snap.lastPrediction !== null && snap.lastPrediction.correct, "learning prediction answered correctly")

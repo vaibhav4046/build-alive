@@ -31,7 +31,7 @@ export class BuildAliveL01BootProvenance extends Scenario {
     expectTrue(exists("DeskShelf"), "DeskShelf exists")
     expectTrue(exists("ProvenanceBanner"), "ProvenanceBanner exists")
     const banner = textOf(findSceneObjectByName("ProvenanceBanner"))
-    expectTrue(banner.indexOf("LOCAL_RECORDED_REPLAY") >= 0, "provenance banner shows LOCAL_RECORDED_REPLAY: " + banner)
+    expectTrue(banner.indexOf("REPLAY") >= 0 && banner.indexOf("Sample world") >= 0, "plain provenance caption says Sample world + REPLAY: " + banner)
     expectTrue(ba.engine.snapshot().cursorSeq === 0, "boot cursor starts at seq 0")
     log("L01", "boot provenance ok: " + banner)
   }

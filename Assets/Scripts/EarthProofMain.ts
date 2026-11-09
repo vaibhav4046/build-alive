@@ -62,6 +62,10 @@ export class EarthProofMain extends BaseScriptComponent {
   @input
   @allowUndefined
   internetModule: InternetModule | null = null
+  /** Unlit palette material (BA_Voxel.mat + BA_Palette.png) for the voxel world meshes. */
+  @input
+  @allowUndefined
+  voxelMaterial: Material | null = null
 
   /** Press-to-first-frame log for done criterion 7. Read by the LEAF scenario. */
   readonly latencyLog: PressRecord[] = []
@@ -100,6 +104,8 @@ export class EarthProofMain extends BaseScriptComponent {
       () => this.handleReset(),
       this.internetModule,
       () => this.playChime(),
+      true,
+      this.voxelMaterial || loadVoxelMaterial(),
     )
 
     this.createEvent("OnStartEvent").bind(() => this.start())
@@ -392,4 +398,17 @@ export class EarthProofMain extends BaseScriptComponent {
     }
     this.pending.length = 0
   }
+}
+
+/** BA_Voxel.mat (palette texture) loaded from script when the scene input is not wired. */
+function loadVoxelMaterial(): Material | null {
+  for (const path of ["../Materials/BA_Voxel.mat", "Materials/BA_Voxel.mat", "BA_Voxel.mat", "BA_Voxel", "./BA_Voxel.mat"]) {
+    try {
+      const m = requireAsset(path) as Material
+      if (m) return m
+    } catch (e) {
+      print("[BuildAlive] requireAsset(" + path + ") failed: " + e)
+    }
+  }
+  return null
 }

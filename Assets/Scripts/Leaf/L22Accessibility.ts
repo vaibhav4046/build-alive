@@ -33,8 +33,8 @@ export class BuildAliveL22Accessibility extends Scenario {
     expectTrue(snap.reducedMotion && snap.highContrast, "accessibility flags enabled")
     const testBadge = textOf(findSceneObjectByName("Module_TestSuite_Badge"))
     const stateBadge = textOf(findSceneObjectByName("Module_SharedState_Badge"))
-    expectTrue(testBadge.indexOf("[FAIL]") >= 0, "failing module has non-color [FAIL] prefix")
-    expectTrue(stateBadge.indexOf("[PASS]") >= 0, "passing module has non-color [PASS] prefix")
+    expectTrue(testBadge.indexOf("Broken") >= 0, "failing module has non-colour word Broken: " + testBadge)
+    expectTrue(stateBadge.indexOf("OK") >= 0, "passing module has non-colour word OK: " + stateBadge)
     log("L22", "reduced-motion and colour-blind safe double-coded badges verified")
   }
 }

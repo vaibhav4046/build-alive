@@ -1,6 +1,12 @@
-// BuildAliveLayout: Desk-scale centimeter geometry, FOV checks, and control separation math
-// for BUILD ALIVE on Snap SPECS (Lens Studio 5.23.2, seated eye origin (0,0,0) facing -Z).
-// Pure module: zero Lens Studio runtime globals so both Node tests and LEAF scenarios share exact numbers.
+// BuildAliveLayout: world-scale centimetre geometry, FOV checks, and control separation math
+// for BUILD ALIVE on Snap SPECS (Lens Studio 5.23.2). Pure module: zero Lens Studio runtime globals so both Node tests
+// and LEAF scenarios share exact numbers.
+//
+// v4 "living valley" layout. The world is a voxel valley that runs past the edges of the view (no desk slab): a near
+// ledge with a waterfall, a village plateau in the middle, rolling hills and mountains far back, and the real-repo
+// islands floating in the sky above. Controls live in a slim dock BELOW the world so nothing sits on a sight line
+// to a building (v3 bug, proven with PreviewInteractTool: pinching Module_Lobby failed with
+// "Interaction failed (obstructed): Blocked by "Collider"" = the BA_InspectButton UIKit collider at (-6,-12.5,-62)).
 
 export interface Vec3Cm {
   readonly x: number
@@ -42,216 +48,97 @@ export interface BridgeLayoutSpec {
 
 const DEG_TO_RAD = Math.PI / 180
 
-// Virtual desk surface (matches EarthProof TABLE_CENTER / TABLE_SIZE so both modes share the physical desk)
+// Kept for LEAF L01 / the rover fallback: "DeskShelf" is now the empty root of the terrain.
 export const DESK_CENTER: Vec3Cm = {x: 0, y: -30, z: -75}
 export const DESK_SIZE: BoxSizeCm = {w: 100, h: 3, d: 60}
 export const DESK_TOP_Y = DESK_CENTER.y + DESK_SIZE.h / 2 // -28.5 cm
 
-// Preview camera constants observed in Lens Studio 5.23.2 SPECS 27 Preview
+/** Top of the village plateau the buildings stand on. */
+export const PLATEAU_Y = -26
+
+// Lens Studio 5.23.2 SPECS 27 Preview camera, read from the running Preview (Camera Object world pose):
+// position (0, -2, 14), pitched 14 deg down. FOV/aspect as observed in earlier sessions.
 export const PREVIEW_VFOV_DEG = 36.6
 export const PREVIEW_ASPECT = 0.875
-export const SEATED_GAZE_TARGET: Vec3Cm = {x: 0, y: -19, z: -66}
+export const PREVIEW_EYE: Vec3Cm = {x: 0, y: -2, z: 14}
+export const PREVIEW_PITCH_DEG = -14
+export const SEATED_GAZE_TARGET: Vec3Cm = {
+  x: 0,
+  y: PREVIEW_EYE.y + 80 * Math.tan(PREVIEW_PITCH_DEG * DEG_TO_RAD),
+  z: PREVIEW_EYE.z - 80,
+}
 
-// Minimum ergonomic constraints (plan-lens & Master Brief Section 8/9)
+// Ergonomics. Dock pills are 5.4 x 2.8 cm at ~56 cm from the eye (about 5.5 deg wide); centres 6.2 cm apart leave a
+// 0.8 cm gap. v3 used 12 cm spacing, which forced the buttons into the world itself; this is the deliberate trade-off.
 export const MIN_TARGET_SIZE_CM = 5.0
-export const MIN_RAIL_SEPARATION_CM = 12.0
+export const MIN_RAIL_SEPARATION_CM = 6.0
 
-// Front control rail, two staggered rows at z = -62 cm. The preview camera sees only about +-14 cm
-// sideways at this depth (36.6 deg vertical FOV, 0.875 aspect), so a single 5-button row 12 cm apart
-// (48 cm wide) cannot fit. Row 1 (y = -24.5): Step, Learn, Approve at x = -12, 0, +12.
-// Row 2 (y = -12.5): Inspect, Reset at x = -6, +6. Every pair is >= 12 cm apart in 3D (row to row 13.4 cm).
-export const RAIL_BUTTON_SIZE: BoxSizeCm = {w: 7.5, h: 5.0, d: 1.2}
+export const RAIL_BUTTON_SIZE: BoxSizeCm = {w: 5.4, h: 2.8, d: 1.0}
+const DOCK_Y = -32
+const DOCK_Z = -42
 export const RAIL_CONTROLS: readonly ControlSpec[] = [
-  {
-    id: "step",
-    sceneName: "BA_StepButton",
-    label: "Step >",
-    center: {x: -12, y: -24.5, z: -62},
-    size: RAIL_BUTTON_SIZE,
-    group: "rail",
-  },
-  {
-    id: "inspect",
-    sceneName: "BA_InspectButton",
-    label: "Inspect",
-    center: {x: -6, y: -12.5, z: -62},
-    size: RAIL_BUTTON_SIZE,
-    group: "rail",
-  },
-  {
-    id: "learn",
-    sceneName: "BA_LearnButton",
-    label: "Learn ?",
-    center: {x: 0, y: -24.5, z: -62},
-    size: RAIL_BUTTON_SIZE,
-    group: "rail",
-  },
-  {
-    id: "approve",
-    sceneName: "BA_ApproveButton",
-    label: "Approve",
-    center: {x: 12, y: -24.5, z: -62},
-    size: RAIL_BUTTON_SIZE,
-    group: "rail",
-  },
-  {
-    id: "reset",
-    sceneName: "BA_ResetButton",
-    label: "Reset",
-    center: {x: 6, y: -12.5, z: -62},
-    size: RAIL_BUTTON_SIZE,
-    group: "rail",
-  },
+  {id: "reset", sceneName: "BA_ResetButton", label: "Start over", center: {x: -12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "inspect", sceneName: "BA_InspectButton", label: "Details", center: {x: -6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "step", sceneName: "BA_StepButton", label: "Next", center: {x: 0, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "learn", sceneName: "BA_LearnButton", label: "Explain", center: {x: 6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "approve", sceneName: "BA_ApproveButton", label: "Approve", center: {x: 12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
 ]
 
-// Project Archipelago shelf (z = -52 cm, y = -24.5 cm): 3 islands spaced 12.0 cm apart (-12, 0, +12)
-export const ISLAND_SIZE: BoxSizeCm = {w: 5.8, h: 2.4, d: 5.8}
-// Islands sit on the desk (top -28.5 + half height) so they do not occlude the row-1 rail buttons behind them:
-// the Preview camera (z = +150) saw Island_LobbySync blocking BA_StepButton at the old y = -24.5 (PreviewInteractTool "obstructed").
-export const ISLAND_Y = DESK_TOP_Y + ISLAND_SIZE.h / 2 // -27.3 cm
+// Real-repo islands float in the sky above the far valley. Collider box = ISLAND_SIZE (grass top + rocky underside).
+export const ISLAND_SIZE: BoxSizeCm = {w: 12, h: 8, d: 12}
+export const ISLAND_Y = -3
 export const PROJECT_ISLANDS: readonly ControlSpec[] = [
-  {
-    id: "lobby-sync",
-    sceneName: "Island_LobbySync",
-    label: "LobbySync",
-    center: {x: -12, y: ISLAND_Y, z: -52},
-    size: ISLAND_SIZE,
-    group: "island",
-  },
-  {
-    id: "edge-guard",
-    sceneName: "Island_EdgeGuard",
-    label: "EdgeGuard",
-    center: {x: 0, y: ISLAND_Y, z: -52},
-    size: ISLAND_SIZE,
-    group: "island",
-  },
-  {
-    id: "earthproof-rover",
-    sceneName: "Island_EarthProof",
-    label: "EarthProof",
-    center: {x: 12, y: ISLAND_Y, z: -52},
-    size: ISLAND_SIZE,
-    group: "island",
-  },
+  {id: "lobby-sync", sceneName: "Island_LobbySync", label: "LobbySync", center: {x: -21, y: ISLAND_Y, z: -96}, size: ISLAND_SIZE, group: "island"},
+  {id: "edge-guard", sceneName: "Island_EdgeGuard", label: "EdgeGuard", center: {x: 0, y: ISLAND_Y + 2, z: -104}, size: ISLAND_SIZE, group: "island"},
+  {id: "earthproof-rover", sceneName: "Island_EarthProof", label: "EarthProof", center: {x: 21, y: ISLAND_Y, z: -96}, size: ISLAND_SIZE, group: "island"},
 ]
 
-// Rewind crystal & Fault marker (interactive 3D artifacts above city)
+// Rewind: a small amber hourglass hovering at the left edge of the village.
 export const REWIND_CRYSTAL: ControlSpec = {
   id: "rewind-crystal",
   sceneName: "RewindCrystal",
   label: "Rewind",
-  center: {x: -18, y: -11, z: -66},
-  size: {w: 5.2, h: 5.2, d: 5.2},
+  center: {x: -22, y: -16, z: -72},
+  size: {w: 5.0, h: 5.0, d: 5.0},
   group: "crystal",
 }
 
-export const FAULT_MARKER_POS: Vec3Cm = {x: 16, y: -10.5, z: -68}
-export const FAULT_MARKER_SIZE: BoxSizeCm = {w: 5.2, h: 5.2, d: 5.2}
-
-// Architecture City modules (6 district roles, >= 5.2 cm across, >= 12 cm apart)
+// Six village plots on the plateau. Each plot shows the building for the REAL module's role (UI cottage, Logic
+// workshop, API windmill, Data granary, Assets barn, Tests watchtower); centre y is the middle of the collider box.
+const PLOT: BoxSizeCm = {w: 7.5, h: 9, d: 7.5}
+const PLOT_Y = PLATEAU_Y + PLOT.h / 2
 export const CITY_MODULES: readonly ModuleLayoutSpec[] = [
-  {
-    moduleId: "client-ui",
-    sceneName: "Module_Client",
-    label: "UI:Client",
-    role: "UI",
-    center: {x: -16, y: -18, z: -70},
-    size: {w: 5.4, h: 5.4, d: 5.4},
-  },
-  {
-    moduleId: "server-lobby",
-    sceneName: "Module_Lobby",
-    label: "Logic:Lobby",
-    role: "Logic",
-    center: {x: -4, y: -16, z: -70},
-    size: {w: 6.0, h: 6.5, d: 6.0},
-  },
-  {
-    moduleId: "ws-gateway",
-    sceneName: "Module_WSServer",
-    label: "API:WS",
-    role: "API",
-    center: {x: 8, y: -18, z: -70},
-    size: {w: 5.4, h: 5.4, d: 5.4},
-  },
-  {
-    moduleId: "shared-state",
-    sceneName: "Module_SharedState",
-    label: "Data:State",
-    role: "Data",
-    center: {x: -10, y: -21, z: -80},
-    size: {w: 5.4, h: 5.2, d: 5.4},
-  },
-  {
-    moduleId: "db-mock",
-    sceneName: "Module_DBMock",
-    label: "Assets:DB",
-    role: "Assets",
-    center: {x: 4, y: -21, z: -80},
-    size: {w: 5.2, h: 5.0, d: 5.2},
-  },
-  {
-    moduleId: "test-suite",
-    sceneName: "Module_TestSuite",
-    label: "Tests:Room03",
-    role: "Tests",
-    center: {x: 16, y: -16, z: -68},
-    size: {w: 5.8, h: 5.8, d: 5.8},
-  },
+  {moduleId: "client-ui", sceneName: "Module_Client", label: "Screens", role: "UI", center: {x: -16, y: PLOT_Y, z: -66}, size: PLOT},
+  {moduleId: "server-lobby", sceneName: "Module_Lobby", label: "Game rules", role: "Logic", center: {x: -3, y: PLOT_Y, z: -70}, size: PLOT},
+  {moduleId: "ws-gateway", sceneName: "Module_WSServer", label: "Network door", role: "API", center: {x: 10, y: PLOT_Y, z: -66}, size: PLOT},
+  {moduleId: "shared-state", sceneName: "Module_SharedState", label: "Shared memory", role: "Data", center: {x: -12, y: PLOT_Y, z: -83}, size: PLOT},
+  {moduleId: "db-mock", sceneName: "Module_DBMock", label: "Pretend database", role: "Assets", center: {x: 4, y: PLOT_Y, z: -85}, size: PLOT},
+  {moduleId: "test-suite", sceneName: "Module_TestSuite", label: "Checks", role: "Tests", center: {x: 17, y: PLOT_Y, z: -80}, size: PLOT},
 ]
+
+export const FAULT_MARKER_POS: Vec3Cm = {x: 17, y: PLATEAU_Y + 15, z: -80}
+export const FAULT_MARKER_SIZE: BoxSizeCm = {w: 2.2, h: 2.2, d: 2.2}
 
 export const CITY_BRIDGES: readonly BridgeLayoutSpec[] = [
-  {
-    bridgeId: "bridge-client-lobby",
-    sceneName: "Bridge_Client_Lobby",
-    fromModuleId: "client-ui",
-    toModuleId: "server-lobby",
-    verified: true,
-  },
-  {
-    bridgeId: "bridge-lobby-ws",
-    sceneName: "Bridge_Lobby_WS",
-    fromModuleId: "server-lobby",
-    toModuleId: "ws-gateway",
-    verified: true,
-  },
-  {
-    bridgeId: "bridge-lobby-state",
-    sceneName: "Bridge_Lobby_State",
-    fromModuleId: "server-lobby",
-    toModuleId: "shared-state",
-    verified: true,
-  },
-  {
-    bridgeId: "bridge-state-db",
-    sceneName: "Bridge_State_DB",
-    fromModuleId: "shared-state",
-    toModuleId: "db-mock",
-    verified: false, // F12: explicitly unknown/heuristic edge
-  },
-  {
-    bridgeId: "bridge-lobby-tests",
-    sceneName: "Bridge_Lobby_Tests",
-    fromModuleId: "server-lobby",
-    toModuleId: "test-suite",
-    verified: true,
-  },
+  {bridgeId: "bridge-client-lobby", sceneName: "Bridge_Client_Lobby", fromModuleId: "client-ui", toModuleId: "server-lobby", verified: true},
+  {bridgeId: "bridge-lobby-ws", sceneName: "Bridge_Lobby_WS", fromModuleId: "server-lobby", toModuleId: "ws-gateway", verified: true},
+  {bridgeId: "bridge-lobby-state", sceneName: "Bridge_Lobby_State", fromModuleId: "server-lobby", toModuleId: "shared-state", verified: true},
+  {bridgeId: "bridge-state-db", sceneName: "Bridge_State_DB", fromModuleId: "shared-state", toModuleId: "db-mock", verified: false}, // F12: explicitly unknown/heuristic edge
+  {bridgeId: "bridge-lobby-tests", sceneName: "Bridge_Lobby_Tests", fromModuleId: "server-lobby", toModuleId: "test-suite", verified: true},
 ]
 
-// Execution Theater agent vessels (above city)
-export const AGENT_PRIMARY_HOME: Vec3Cm = {x: -4, y: -9.5, z: -70}
-export const AGENT_SUB_HOME: Vec3Cm = {x: 16, y: -9.5, z: -68}
-export const AGENT_VESSEL_SIZE: BoxSizeCm = {w: 3.6, h: 2.2, d: 3.6}
+// Little voxel workers walk on the plateau (feet on the ground).
+export const AGENT_VESSEL_SIZE: BoxSizeCm = {w: 1.8, h: 3.0, d: 1.4}
+export const AGENT_PRIMARY_HOME: Vec3Cm = {x: -3, y: PLATEAU_Y, z: -63}
+export const AGENT_SUB_HOME: Vec3Cm = {x: 17, y: PLATEAU_Y, z: -73}
 
-// Evidence / learning / approval card: centred above the city so its whole footprint stays inside the preview FOV
-// (a 25 cm card at x = +15 was cut off by the camera). Height is the FlexLayout estimate for the six text rows.
-export const BUILD_ALIVE_CARD_POS: Vec3Cm = {x: 0, y: -4, z: -68}
-export const BUILD_ALIVE_CARD_WIDTH_CM = 22
-export const BUILD_ALIVE_CARD_HEIGHT_CM = 12.5
+// One small glass card, upper-left, clear of every sight line from the eye to a building or island.
+export const BUILD_ALIVE_CARD_POS: Vec3Cm = {x: -9, y: -8.5, z: -62}
+export const BUILD_ALIVE_CARD_WIDTH_CM = 17
+export const BUILD_ALIVE_CARD_HEIGHT_CM = 10
 
-// Provenance banner on desk front-left edge
-export const PROVENANCE_BANNER_POS: Vec3Cm = {x: 0, y: DESK_TOP_Y - 0.4, z: -43.5}
+// Small honest status caption under the dock (LIVE / REPLAY / real scan).
+export const PROVENANCE_BANNER_POS: Vec3Cm = {x: 0, y: -35.4, z: -41}
 
 export function dist3D(a: Vec3Cm, b: Vec3Cm): number {
   const dx = a.x - b.x
@@ -268,27 +155,23 @@ export function midpoint3D(a: Vec3Cm, b: Vec3Cm): Vec3Cm {
   }
 }
 
-/**
- * Checks whether a 3D world point (in cm, eye at origin) falls inside the preview camera's
- * field of view when gazing at `gazeTarget`.
- */
+/** Yaw/pitch of `point` relative to the gaze ray from `eye` (default: the measured Preview camera pose). */
 export function angularOffsetFromGazeDeg(
   point: Vec3Cm,
   gazeTarget: Vec3Cm = SEATED_GAZE_TARGET,
+  eye: Vec3Cm = PREVIEW_EYE,
 ): {yawDeg: number; pitchDeg: number; inView: boolean} {
-  const gx = gazeTarget.x
-  const gy = gazeTarget.y
-  const gz = gazeTarget.z
-  const gHorizontal = Math.sqrt(gx * gx + gz * gz)
+  const gx = gazeTarget.x - eye.x
+  const gy = gazeTarget.y - eye.y
+  const gz = gazeTarget.z - eye.z
   const gazeYaw = Math.atan2(gx, -gz)
-  const gazePitch = Math.atan2(gy, gHorizontal)
+  const gazePitch = Math.atan2(gy, Math.sqrt(gx * gx + gz * gz))
 
-  const px = point.x
-  const py = point.y
-  const pz = point.z
-  const pHorizontal = Math.sqrt(px * px + pz * pz)
+  const px = point.x - eye.x
+  const py = point.y - eye.y
+  const pz = point.z - eye.z
   const pointYaw = Math.atan2(px, -pz)
-  const pointPitch = Math.atan2(py, pHorizontal)
+  const pointPitch = Math.atan2(py, Math.sqrt(px * px + pz * pz))
 
   const yawDeg = (pointYaw - gazeYaw) / DEG_TO_RAD
   const pitchDeg = (pointPitch - gazePitch) / DEG_TO_RAD
@@ -304,8 +187,8 @@ export function angularOffsetFromGazeDeg(
 }
 
 /**
- * Verifies that every rail control and island control satisfies the >= 5 cm size floor
- * and >= 12 cm center-to-center spacing within its interaction row.
+ * Verifies that every rail control and island control satisfies the >= 5 cm size floor and the dock spacing,
+ * that rail buttons and islands never share a spot, and that everything (incl. the card's corners) is in view.
  */
 export function auditControlErgonomics(): {
   passed: boolean
@@ -324,7 +207,6 @@ export function auditControlErgonomics(): {
   let minCrossGroupGapCm = Infinity
   let allInView = true
 
-  // The evidence card must be fully visible: test its four corners, not just its centre.
   const hw = BUILD_ALIVE_CARD_WIDTH_CM / 2
   const hh = BUILD_ALIVE_CARD_HEIGHT_CM / 2
   let cardInView = true
@@ -337,7 +219,6 @@ export function auditControlErgonomics(): {
   }
   if (!cardInView) allInView = false
 
-  // Rail buttons and islands are different groups: centres must not sit on top of each other.
   for (const a of RAIL_CONTROLS) {
     for (const b of PROJECT_ISLANDS) {
       const d = dist3D(a.center, b.center)
@@ -382,7 +263,7 @@ export function auditControlErgonomics(): {
   const passed =
     minWidthCm >= MIN_TARGET_SIZE_CM &&
     minRailSpacingCm >= MIN_RAIL_SEPARATION_CM - 0.01 &&
-    minIslandSpacingCm >= MIN_RAIL_SEPARATION_CM - 0.01 &&
+    minIslandSpacingCm >= 12 - 0.01 &&
     minCrossGroupGapCm >= 8 &&
     allInView
 

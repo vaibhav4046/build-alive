@@ -40,6 +40,7 @@
     rover: false
     stallMarker: false
     tray: false
+    voxelMaterial: false
     wheelFL: false
     wheelFR: false
     wheelRL: false
@@ -69,6 +70,7 @@
       stallMarker: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       chime: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
       internetModule: !<reference.InternetModule> 00000000-0000-0000-0000-000000000000
+      voxelMaterial: !<reference.Material> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
@@ -89,3 +91,4 @@
     - // @input SceneObject stallMarker
     - // @input Asset.AudioTrackAsset chime
     - // @input Asset.InternetModule internetModule
+    - // @input Asset.Material voxelMaterial

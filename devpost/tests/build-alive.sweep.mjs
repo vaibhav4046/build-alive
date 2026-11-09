@@ -24,6 +24,7 @@ import {
   auditControlErgonomics,
   angularOffsetFromGazeDeg,
   RAIL_CONTROLS,
+  MIN_RAIL_SEPARATION_CM,
   PROJECT_ISLANDS,
   CITY_MODULES,
 } from "../../Assets/Scripts/BuildAliveLayout.ts"
@@ -131,7 +132,7 @@ console.log("-> 3. Ergonomics & Camera FOV Audit")
   const audit = auditControlErgonomics()
   check(audit.passed, "auditControlErgonomics() must pass")
   check(audit.minWidthCm >= 5.0, "All interactive targets >= 5 cm")
-  check(audit.minRailSpacingCm >= 12.0, "Rail control spacing >= 12 cm")
+  check(audit.minRailSpacingCm >= MIN_RAIL_SEPARATION_CM, "Dock control spacing >= MIN_RAIL_SEPARATION_CM (6 cm, v4 dock)")
   check(audit.allInView, "All controls and modules in camera FOV from seated/standing gaze")
 
   for (const c of RAIL_CONTROLS) {

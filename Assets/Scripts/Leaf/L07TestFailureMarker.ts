@@ -31,7 +31,7 @@ export class BuildAliveL07TestFailureMarker extends Scenario {
     const snap = ba.engine.snapshot()
     expectTrue(snap.activeFailures.length > 0, "active failure present at seq 5")
     expectTrue(findSceneObjectByName("FaultMarker_Room03").enabled, "FaultMarker_Room03 is enabled")
-    expectTrue(ba.cardRowText(0).indexOf("FAILURE ALERT") >= 0, "card headline shows FAILURE ALERT")
+    expectTrue(ba.cardRowText(0).indexOf("Broken") >= 0, "card headline says Broken: " + ba.cardRowText(0))
     log("L07", "spatial fault marker and failure card verified")
   }
 }

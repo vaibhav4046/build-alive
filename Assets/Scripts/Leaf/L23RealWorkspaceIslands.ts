@@ -43,8 +43,8 @@ export class BuildAliveL23RealWorkspaceIslands extends Scenario {
     expectTrue(textOf(findSceneObjectByName("Island_EdgeGuard_Label")) === "mnemosyne", "island 2 label is the real repo name mnemosyne")
     expectTrue(textOf(findSceneObjectByName("Island_EarthProof_Label")) === "Sample World", "island 3 is the selectable Sample World")
     const banner = textOf(findSceneObjectByName("ProvenanceBanner"))
-    expectTrue(banner.indexOf("REAL REPO SCAN") >= 0 && banner.indexOf("no live agent event") >= 0, "banner says real scan snapshot, no live event: " + banner)
-    expectTrue(banner.indexOf("LIVE_CONNECTED") < 0, "banner does not claim live")
+    expectTrue(banner.indexOf("real repo scan") >= 0 && banner.indexOf("no live agent") >= 0, "banner says real scan snapshot, no live event: " + banner)
+    expectTrue(banner.indexOf("LIVE agent") < 0, "banner does not claim live")
     const proj = ba.engine.currentProject
     expectTrue(proj.provenance === "REAL_SCAN" && proj.title === "EarthProof", "current world is the real EarthProof scan")
     expectTrue(proj.modules.length >= 5, "EarthProof has real modules: " + proj.modules.length)
