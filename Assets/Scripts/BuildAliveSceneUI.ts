@@ -153,6 +153,21 @@ const GRAPHITE_TILE = new vec4(0.37, 0.4, 0.45, 1)
 const GRAPHITE_TILE_HI = new vec4(0.5, 0.54, 0.6, 1)
 const ACCENT_CLAUDE = new vec4(0.851, 0.467, 0.341, 1) // brand accent, replaced by the official simple-icons hex in the logo step
 const ACCENT_CYAN = new vec4(0.38, 0.85, 0.95, 1)
+/** 'monogram' (default; no third-party marks, safe for the submission film) or 'brand' (real simple-icons marks, for local use only). */
+const LOGO_MODE: "monogram" | "brand" = "monogram"
+/** Monogram per provider: one or two letters in a generic accent colour (not a brand logo). */
+const PROVIDER_MONO: Record<string, {letters: string; color: vec4}> = {
+  "claude-code": {letters: "CC", color: new vec4(0.95, 0.52, 0.38, 1)},
+  codex: {letters: "Cx", color: new vec4(0.52, 0.86, 0.62, 1)},
+  antigravity: {letters: "AG", color: new vec4(0.72, 0.62, 0.98, 1)},
+  opencode: {letters: "OC", color: new vec4(0.45, 0.78, 0.98, 1)},
+  hermes: {letters: "He", color: new vec4(0.98, 0.78, 0.42, 1)},
+  openclaw: {letters: "Cl", color: new vec4(0.98, 0.55, 0.62, 1)},
+  "chatgpt-app": {letters: "Cg", color: new vec4(0.62, 0.9, 0.82, 1)},
+  "grok-bots": {letters: "Gr", color: new vec4(0.85, 0.85, 0.9, 1)},
+  instinct: {letters: "In", color: new vec4(0.98, 0.7, 0.85, 1)},
+  muse: {letters: "Mu", color: new vec4(0.8, 0.9, 0.5, 1)},
+}
 const COLOR_BLOCK = new vec4(1.2, 1.28, 1.42, 1)
 const COLOR_BLOCK_GOLD = new vec4(1.6, 1.25, 0.5, 1)
 const COLOR_BLOCK_FAIL = new vec4(1.6, 0.5, 0.45, 1)
@@ -236,6 +251,8 @@ export class BuildAliveSceneUI {
   private logoTex: Record<string, Texture> = {}
   private headerLogoMat: Material | null = null
   private headerLogoShown = ""
+  private headerMonoText: Text | null = null
+  private chipMarks: Record<string, {text: Text | null; mat: Material | null}> = {}
   private providerRings: Record<string, RoundedRectangle> = {}
   private providerDots: Record<string, RoundedRectangle> = {}
   private providerSlashes: Record<string, SceneObject> = {}
@@ -797,6 +814,15 @@ export class BuildAliveSceneUI {
     return t
   }
 
+  /** Bold monogram letters: dark outline keeps them readable on a bright room (dark is see-through on an additive display, which is harmless). */
+  private monoText(parent: SceneObject, name: string, x: number, y: number, w: number, h: number, size: number, color: vec4): Text {
+    const t = this.panelText(parent, name, x, y, w, h, size, color, true)
+    t.outlineSettings.enabled = true
+    t.outlineSettings.size = 0.4
+    t.outlineSettings.fill.color = new vec4(0.04, 0.05, 0.07, 1)
+    return t
+  }
+
   /** Three floating graphite windows at seated distance: Session (centre), Learn (left), Project (right, holds the module blocks). */
   private buildGlassWindows(land: SceneObject): void {
     const sess = this.glass("Glass_Session", land, 0, -11.6, WINDOW_Z, 19, 19, 1, GRAPHITE)
@@ -806,10 +832,16 @@ export class BuildAliveSceneUI {
 
     // Session window: header tile (per-app accent strip) + one tile per recent step + a "Try" tile
     this.tile(sess.root, "SessionHeaderTile", 0, 7.7, 17.6, 2.7, GRAPHITE_TILE, null)
-    this.loadLogos()
-    const headerLogo = this.logoImage(sess.root, "Logo_claude-code", -7.4, 7.7, 2.1, this.logoTex[PROVIDER_STATIONS[0].id])
-    this.headerLogoMat = headerLogo ? (headerLogo.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
-    this.headerLogoShown = PROVIDER_STATIONS[0].id
+    if (LOGO_MODE === "brand") {
+      this.loadLogos()
+      const headerLogo = this.logoImage(sess.root, "Logo_claude-code", -7.4, 7.7, 2.1, this.logoTex[PROVIDER_STATIONS[0].id])
+      this.headerLogoMat = headerLogo ? (headerLogo.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
+      this.headerLogoShown = PROVIDER_STATIONS[0].id
+    } else {
+      this.tile(sess.root, "HeaderMonoTile", -7.4, 7.7, 2.1, 2.1, GRAPHITE, null).cornerRadius = 0.6
+      this.headerMonoText = this.monoText(sess.root, "HeaderMonoText", -7.4, 7.7, 2.1, 1.9, 38, PROVIDER_MONO[PROVIDER_STATIONS[0].id].color)
+      this.headerMonoText.text = PROVIDER_MONO[PROVIDER_STATIONS[0].id].letters
+    }
     this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", -1.4, 7.7, 9.4, 2.5, 24, COLOR_WHITE, false)
     this.sessionChip = this.panelText(sess.root, "SessionStatusChip", 5.0, 7.7, 4.0, 2.2, 16, COLOR_CAPTION, true)
     for (let i = 0; i < 4; i++) {
@@ -883,12 +915,26 @@ export class BuildAliveSceneUI {
       this.headerLogoMat.mainPass.baseTex = this.logoTex[this.selectedProvider] // the header mark always belongs to the provider it describes
       this.headerLogoShown = this.selectedProvider
     }
+    if (this.headerMonoText) {
+      const mono = PROVIDER_MONO[this.selectedProvider] // the header mark always belongs to the provider it describes
+      this.headerMonoText.text = mono.letters
+      this.headerMonoText.textFill.color = mono.color
+    }
     for (const st of PROVIDER_STATIONS) {
       const dot = this.providerDots[st.id]
       if (!dot) continue
       const b = badgeFor(st, lensLive)
       dot.backgroundColor = b === "LIVE" ? COLOR_MINT : b === "REPLAY" ? COLOR_AMBER : new vec4(0.62, 0.65, 0.7, 1)
-      this.providerSlashes[st.id].enabled = b === "UNSUPPORTED"
+      this.providerSlashes[st.id].enabled = b === "UNSUPPORTED" // tiny slash sits on the status dot; the mark itself is dimmed, never struck through
+      const dim = b === "UNSUPPORTED" ? 0.5 : 1
+      const mark = this.chipMarks[st.id]
+      if (mark.text) {
+        const c = PROVIDER_MONO[st.id].color
+        mark.text.textFill.color = new vec4(c.x, c.y, c.z, dim) // ~50% faded chip for UNSUPPORTED
+        mark.text.outlineSettings.fill.color = new vec4(0.04, 0.05, 0.07, dim)
+      }
+      this.providerRings[st.id].opacity = dim
+      if (mark.mat) mark.mat.mainPass.baseColor = new vec4(1.15 * dim, 1.15 * dim, 1.15 * dim, 1)
       this.providerRings[st.id].backgroundColor = st.id === this.selectedProvider ? GRAPHITE_TILE_HI : GRAPHITE
     }
   }
@@ -910,6 +956,7 @@ export class BuildAliveSceneUI {
 
   /** Compact row of agent chips under the Session window: real simple-icons mark where one exists, monogram otherwise. */
   private buildAgentRow(land: SceneObject): void {
+    if (LOGO_MODE === "brand" && Object.keys(this.logoTex).length === 0) this.loadLogos()
     const logos = this.logoTex
     const pitch = 2.5
     PROVIDER_STATIONS.forEach((st, i) => {
@@ -924,7 +971,16 @@ export class BuildAliveSceneUI {
       ring.opacity = 1
       ring.initialize()
       this.providerRings[st.id] = ring
-      this.logoImage(chip, "AgentChipLogo_" + st.id, 0, 0, 1.75, logos[st.id])
+      this.chipMarks[st.id] = {text: null, mat: null}
+      if (LOGO_MODE === "brand") {
+        const logo = this.logoImage(chip, "AgentChipLogo_" + st.id, 0, 0, 1.75, logos[st.id])
+        this.chipMarks[st.id].mat = logo ? (logo.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
+      } else {
+        const mt = this.monoText(chip, "AgentChipMono_" + st.id, 0, -0.05, 2.2, 1.8, 38, PROVIDER_MONO[st.id].color)
+        mt.text = PROVIDER_MONO[st.id].letters
+        mt.getSceneObject().getTransform().setLocalPosition(new vec3(0, -0.05, 0.6))
+        this.chipMarks[st.id].text = mt
+      }
       const dotObj = global.scene.createSceneObject("AgentChipDot_" + st.id)
       dotObj.setParent(chip)
       dotObj.getTransform().setLocalPosition(new vec3(0.95, 0.95, 1.0))
@@ -938,7 +994,8 @@ export class BuildAliveSceneUI {
       this.providerDots[st.id] = dot
       const slash = global.scene.createSceneObject("AgentChipSlash_" + st.id)
       slash.setParent(chip)
-      this.iconLine(slash, "bar", 0, 0, 1.9, 45, 0.2, COLOR_WHITE)
+      slash.getTransform().setLocalPosition(new vec3(0, 0, 0.4))
+      this.iconLine(slash, "bar", 0.95, 0.95, 0.95, 45, 0.16, COLOR_WHITE)
       slash.enabled = false
       this.providerSlashes[st.id] = slash
       this.makeCtl(chip, 2.3, 2.3, () => this.selectProvider(st.id))

@@ -21,6 +21,9 @@ export class BuildAliveL28AgentChips extends Scenario {
     expectTrue(PROVIDER_STATIONS.length === 10, "ten providers from the bridge snapshot")
     for (const st of PROVIDER_STATIONS) expectTrue(findSceneObjectByName("AgentChip_" + st.id) !== null, "chip exists for " + st.id)
     expectTrue(ba.currentProvider() === "claude-code", "Claude Code is selected at start")
+    const mark = () => textOf(findSceneObjectByName("HeaderMonoText"))
+    const claudeMark = mark()
+    expectTrue(claudeMark.length >= 1 && claudeMark.length <= 2, "header shows a 1-2 letter monogram (" + claudeMark + "), not a brand logo")
     expectTrue(row(0).indexOf("REPLAY") === 0, "Claude Code shows labelled REPLAY steps while the bridge is not live")
 
     for (const id of ["codex", "opencode", "chatgpt-app", "muse"]) {
@@ -29,6 +32,7 @@ export class BuildAliveL28AgentChips extends Scenario {
       const st = PROVIDER_STATIONS.filter((p) => p.id === id)[0]
       expectTrue(ba.currentProvider() === id, "pinching the " + id + " chip selects it")
       expectTrue(title().indexOf(st.name) === 0, id + ": header names the provider (" + title() + ")")
+      expectTrue(mark() !== claudeMark, id + ": header monogram follows the selected provider (" + mark() + ")")
       const badge = st.bridgeStatus === "UNSUPPORTED" ? "UNSUPPORTED" : "OFFLINE"
       expectTrue(title().indexOf(badge) >= 0, id + ": header carries the honest status word " + badge)
       expectTrue(row(0).indexOf("REPLAY") < 0 && row(0).length > 0, id + ": first tile explains, it is not a fake event")

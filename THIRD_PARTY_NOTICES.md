@@ -21,6 +21,8 @@ The Lens shows a small logo next to an agent's name so people can recognise whic
 | Claude (Anthropic), for the Claude Code session | `simple-icons` `siClaude`, source https://claude.ai | `#D97757` | Session window header (when Claude Code is selected), Claude Code chip in the agent row |
 | OpenCode, for the OpenCode station | `simple-icons` `siOpencode`, source github.com/anomalyco/opencode (`packages/identity/mark.svg`) | `#000000` (white badge) | OpenCode chip in the agent row, Session header when OpenCode is selected |
 
+**Default is monogram mode** (`LOGO_MODE = "monogram"` in `BuildAliveSceneUI.ts`): every chip and the Session header show a one- or two-letter monogram (CC, Cx, AG, OC...) in a generic accent colour, so no third-party mark appears in the submitted video or default build. The real marks below are only drawn when a user sets `LOGO_MODE = "brand"` locally; none of the film footage or submission screenshots use them.
+
 The agent row under the Session window has one chip per provider the local bridge reports (`GET /providers`). A chip's small dot is its honest status (green LIVE, amber REPLAY, grey OFFLINE, grey with a slash UNSUPPORTED); a chip is a selector only and never means the company endorses or is connected to this Lens.
 
 Apps without a `simple-icons` entry (Codex, Antigravity, OpenClaw, ChatGPT app, Grok bots, Instinct, Muse) and Hermes (the `simple-icons` "Hermes" is a different company) get a neutral generated monogram badge (graphite square, two white letters) rendered by a script in this repository (`devpost/tools/render-logos.cjs`). No logo was scraped, redrawn or guessed.
