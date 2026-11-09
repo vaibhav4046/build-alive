@@ -75,8 +75,8 @@ export const MIN_RAIL_SEPARATION_CM = 6.0
 
 export const RAIL_BUTTON_SIZE: BoxSizeCm = {w: 5.4, h: 2.8, d: 1.0}
 // Dock sits below every camera->module sight line but within a seated arm's reach (L16 left-hand IK failed at y -32).
-const DOCK_Y = -29.5
-const DOCK_Z = -40
+const DOCK_Y = -23.2
+const DOCK_Z = -44
 export const RAIL_CONTROLS: readonly ControlSpec[] = [
   {id: "reset", sceneName: "BA_ResetButton", label: "Replay", center: {x: -12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
   {id: "inspect", sceneName: "BA_InspectButton", label: "Command", center: {x: -6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},

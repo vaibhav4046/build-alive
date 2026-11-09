@@ -19,6 +19,7 @@ import {FlexAlign, FlexDirection, FlexJustify} from "SpectaclesUIKit.lspkg/Scrip
 import {
   AgentEvent,
   AllowlistedActionId,
+  DEMO_PROJECTS,
   BuildAliveEngine,
   validateWorkspaceWorlds,
   WorkspaceWorldPayload,
@@ -223,6 +224,10 @@ export class BuildAliveSceneUI {
   private sessionRows: Text[] = []
   private sessionTiles: RoundedRectangle[] = []
   private projectTitle: Text | null = null
+  private sessionChip: Text | null = null
+  private projectMinimised = false
+  private windowRoots: Record<string, SceneObject> = {}
+  private windowChips: Record<string, SceneObject> = {}
   private chipDot: Record<string, RoundedRectangle> = {}
   private learnStageTiles: RoundedRectangle[] = []
   private learnTitle: Text | null = null
@@ -788,7 +793,8 @@ export class BuildAliveSceneUI {
 
     // Session window: header tile (per-app accent strip) + one tile per recent step + a "Try" tile
     this.tile(sess.root, "SessionHeaderTile", 0, 7.7, 17.6, 2.7, GRAPHITE_TILE, ACCENT_CLAUDE)
-    this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", 0.3, 7.7, 16.4, 2.5, 27, COLOR_WHITE, false)
+    this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", -2.2, 7.7, 10.2, 2.5, 24, COLOR_WHITE, false)
+    this.sessionChip = this.panelText(sess.root, "SessionStatusChip", 4.7, 7.7, 4.4, 2.2, 18, COLOR_CAPTION, true)
     for (let i = 0; i < 4; i++) {
       this.sessionTiles.push(this.tile(sess.root, "SessionTile_" + i, 0, 4.4 - i * 3.0, 17.6, 2.7, GRAPHITE_TILE, null))
       this.sessionRows.push(this.panelText(sess.root, "SessionRow_" + i, 0.3, 4.4 - i * 3.0, 16.2, 2.5, 28, COLOR_WHITE, false))
@@ -798,7 +804,7 @@ export class BuildAliveSceneUI {
 
     // Learn window: header tile, one small tile per flow stage (active stage lit), why-it-matters tile
     this.tile(learn.root, "LearnHeaderTile", 0, 7.7, 10.2, 2.4, GRAPHITE_TILE, ACCENT_CYAN)
-    this.learnTitle = this.panelText(learn.root, "LearnTitle", 0.3, 7.7, 9.0, 2.2, 26, COLOR_WHITE, false)
+    this.learnTitle = this.panelText(learn.root, "LearnTitle", 0.1, 7.7, 6.6, 2.2, 26, COLOR_WHITE, false)
     this.learnTitle.text = "How it works"
     for (let i = 0; i < FLOW_STAGES.length; i++) {
       this.learnStageTiles.push(this.tile(learn.root, "FlowStageTile_" + FLOW_STAGES[i], 0, 5.0 - i * 1.55, 10.2, 1.4, GRAPHITE_TILE, null))
@@ -809,11 +815,80 @@ export class BuildAliveSceneUI {
 
     // Project window: header tile, and a graphite tile behind each module block (the blocks are the Module_* objects)
     this.tile(proj.root, "ProjectHeaderTile", 0, 7.7, 10.2, 2.4, GRAPHITE_TILE, ACCENT_CYAN)
-    const projTitle = this.panelText(proj.root, "ProjectTitle", 0.3, 7.7, 9.2, 2.2, 21, COLOR_WHITE, false)
+    const projTitle = this.panelText(proj.root, "ProjectTitle", 0.1, 7.7, 6.6, 2.2, 21, COLOR_WHITE, false)
     projTitle.text = "Project"
     this.projectTitle = projTitle
     for (const m of CITY_MODULES) {
       this.tile(proj.root, "ModuleTile_" + m.moduleId, m.center.x - 16.5, m.center.y + 11.6, 5.5, 5.4, GRAPHITE_TILE, null)
+    }
+
+    this.addWindowControls(land, "session", "Session", sess.root, 0, 19)
+    this.addWindowControls(land, "learn", "Learn", learn.root, -16.5, 11.5)
+    this.addWindowControls(land, "project", "Project", proj.root, 16.5, 11.5)
+  }
+
+  private makeCtl(so: SceneObject, w: number, h: number, onPress: () => void): void {
+    const collider = so.createComponent("Physics.ColliderComponent") as ColliderComponent
+    const shape = Shape.createBoxShape()
+    shape.size = new vec3(w, h, 1.5)
+    collider.shape = shape
+    const it = so.createComponent(Interactable.getTypeName()) as Interactable
+    it.targetingMode = 3
+    it.onTriggerEnd.add(() => onPress())
+  }
+
+  /** Minimise (X, right end of the header tile, clear of the project tabs above) and restore chip for one window. A minimised window leaves a small chip with a gold dot where it was; tapping it reopens the window in place. */
+  private addWindowControls(land: SceneObject, key: string, label: string, win: SceneObject, cx: number, w: number): void {
+    this.windowRoots[key] = win
+    const xObj = global.scene.createSceneObject("Close_" + key)
+    xObj.setParent(win)
+    xObj.getTransform().setLocalPosition(new vec3(w / 2 - 1.8, 7.7, 1.0))
+    const disc = xObj.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    disc.size = new vec2(2.2, 2.2)
+    disc.cornerRadius = 1.1
+    disc.backgroundColor = GRAPHITE_RIM
+    disc.blendMode = 1
+    disc.opacity = 1
+    disc.initialize()
+    this.iconLine(xObj, "x1", 0, 0, 1.0, 45)
+    this.iconLine(xObj, "x2", 0, 0, 1.0, -45)
+    this.makeCtl(xObj, 2.6, 2.6, () => this.setWindowHidden(key, true))
+
+    const chip = global.scene.createSceneObject("Restore_" + key)
+    chip.setParent(land)
+    chip.getTransform().setLocalPosition(new vec3(cx - w / 2 + 3.4, -4.6, WINDOW_Z + 0.5))
+    const body = chip.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    body.size = new vec2(6.4, 2.4)
+    body.cornerRadius = 1.2
+    body.backgroundColor = GRAPHITE_TILE_HI
+    body.blendMode = 1
+    body.opacity = 1
+    body.initialize()
+    const dotObj = global.scene.createSceneObject("Restore_" + key + "_Dot")
+    dotObj.setParent(chip)
+    dotObj.getTransform().setLocalPosition(new vec3(-2.3, 0, 0.4))
+    const dot = dotObj.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    dot.size = new vec2(0.8, 0.8)
+    dot.cornerRadius = 0.4
+    dot.backgroundColor = COLOR_GOLD
+    dot.blendMode = 1
+    dot.opacity = 1
+    dot.initialize()
+    this.panelText(chip, "RestoreText", 0.5, 0, 4.0, 2.0, 20, COLOR_WHITE, false).text = label
+    this.makeCtl(chip, 6.4, 2.4, () => this.setWindowHidden(key, false))
+    chip.enabled = false
+    this.windowChips[key] = chip
+  }
+
+  setWindowHidden(key: string, hidden: boolean): void {
+    const win = this.windowRoots[key]
+    const chip = this.windowChips[key]
+    if (!win || !chip) return
+    win.enabled = !hidden
+    chip.enabled = hidden
+    if (key === "project") {
+      this.projectMinimised = hidden
+      this.syncVisuals() // the module blocks live outside the window object, so sync hides/shows them
     }
   }
 
@@ -826,25 +901,31 @@ export class BuildAliveSceneUI {
     const hero = PROVIDER_STATIONS[0]
     const heroBadge = badgeFor(hero, lensLive)
     if (this.sessionTitle) {
-      const where = this.workspaceBound ? proj.title : "Sample world · made-up story"
-      this.sessionTitle.text = hero.name + " · " + where + " · " + heroBadge + "  (+" + (PROVIDER_STATIONS.length - 1) + " apps)"
+      const where = this.workspaceBound ? proj.title : "Sample (made-up)"
+      this.sessionTitle.text = hero.name + " · " + where + " · " + heroBadge
     }
     // recent steps: replayed events up to the cursor, plus the live/active one
     const steps: AgentEvent[] = proj.recordedEvents.filter((e) => e.seq <= snap.cursorSeq).slice(-5)
     if (ev && !steps.some((e) => e.eventId === ev.eventId)) steps.push(ev)
     const shown = steps.slice(-4)
+    // idle: show the first replay steps of the made-up Sample World as content, clearly labelled REPLAY (never as live work)
+    const idle = shown.length === 0
+    const sampleProj = DEMO_PROJECTS.find((p) => p.projectId === DEMO_SAMPLE_PROJECT_ID)
+    const display: AgentEvent[] = idle && sampleProj ? sampleProj.recordedEvents.slice(0, 3) : shown
+    if (this.sessionChip) this.sessionChip.text = idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
     for (let i = 0; i < this.sessionRows.length; i++) {
       const row = this.sessionRows[i]
-      const step = shown[i]
+      const step = display[i]
       if (!step) {
-        row.text = shown.length === 0 ? (i === 0 ? (this.workspaceBound ? "No agent is connected yet." : "Press Next step to watch the agent work.") : i === 1 && this.workspaceBound ? "Pinch Sample World above, then Next step, to watch a made-up story." : "") : ""
+        row.text = ""
         row.textFill.color = COLOR_CAPTION
+        this.sessionTiles[i].backgroundColor = GRAPHITE_TILE
         continue
       }
       const ex = explainStep({kind: step.kind, status: step.status, summary: step.summary, files: step.fileAliases, actor: step.actor})
-      const isNow = i === shown.length - 1
-      row.text = (isNow ? "Now: " : "") + ex.what
-      row.textFill.color = step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : COLOR_WHITE
+      const isNow = !idle && i === shown.length - 1
+      row.text = (idle ? "REPLAY · " : isNow ? "Now: " : "") + ex.what
+      row.textFill.color = step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : idle ? COLOR_CAPTION : COLOR_WHITE
       this.sessionTiles[i].backgroundColor = isNow ? GRAPHITE_TILE_HI : GRAPHITE_TILE
     }
     // learn window
@@ -1109,7 +1190,7 @@ export class BuildAliveSceneUI {
 
     // one small dark pill behind all dock icons, centred under the session window
     const mid = RAIL_CONTROLS[Math.floor(RAIL_CONTROLS.length / 2)].center
-    const pill = this.glass("DockPill", rail, mid.x, mid.y, mid.z - 0.9, 6.2 * RAIL_CONTROLS.length + 1.2, 4.4, 1, GRAPHITE)
+    const pill = this.glass("DockPill", rail, mid.x, mid.y, mid.z - 0.9, 6.2 * (RAIL_CONTROLS.length - 1) + 3.6, 3.0, 1, GRAPHITE)
     pill.root.getTransform().setLocalRotation(quat.angleAxis(-0.42, vec3.right()))
 
     for (const spec of RAIL_CONTROLS) {
@@ -1171,6 +1252,7 @@ export class BuildAliveSceneUI {
     const holder = global.scene.createSceneObject(btnObj.name + "_Icon")
     holder.setParent(btnObj)
     holder.getTransform().setLocalPosition(vec3.zero())
+    holder.getTransform().setLocalScale(new vec3(0.7, 0.7, 0.7)) // slim dock: icon height about the header text height
     if (id === "reset") {
       this.iconLine(holder, "bar", -0.9, 0, 1.3, 90)
       this.chevron(holder, "chev", 0.4, false)
@@ -1292,9 +1374,9 @@ export class BuildAliveSceneUI {
       if (!vis) continue
       const pm = proj.modules.find((x) => x.id === m.moduleId)
       if (this.workspaceBound) {
-        vis.root.enabled = !!pm
+        vis.root.enabled = !this.projectMinimised && !!pm
         if (!pm) continue
-      } else vis.root.enabled = true
+      } else vis.root.enabled = !this.projectMinimised
       const role = (pm ? pm.role : m.role) as BuildingRole
       const files = pm ? pm.files.length : 12
 
@@ -1365,8 +1447,8 @@ export class BuildAliveSceneUI {
     this.subTarget.y = testMod.center.y + 2.4
     this.subTarget.z = testMod.center.z + testMod.size.d / 2 + 1.2
     this.syncMissionControl(ev, live)
-    this.faultMarker.enabled = hasFailures || realFail
-    this.causalBeam.enabled = this.workspaceBound ? realFail : hasFailures || snap.selectedModuleId === "server-lobby" || snap.sceneMode === "ERROR"
+    this.faultMarker.enabled = (hasFailures || realFail) && !this.projectMinimised
+    this.causalBeam.enabled = (this.workspaceBound ? realFail : hasFailures || snap.selectedModuleId === "server-lobby" || snap.sceneMode === "ERROR") && !this.projectMinimised
 
     if (this.workspaceBound) this.fillRealCard(snap, ev, proj, activeMod, realFail, prov.bannerText)
     else this.fillSampleCard(snap, hasFailures, targetMod, prov.bannerText)
