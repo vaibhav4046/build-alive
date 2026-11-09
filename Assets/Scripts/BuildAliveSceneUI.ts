@@ -77,7 +77,8 @@ import {
   WORKER_VOX,
 } from "./BuildAliveHolo"
 import {badgeFor, FLOW_STAGES, PROVIDER_STATIONS, PROVIDERS_SNAPSHOT_SOURCE, ProviderStation, stageForEvent} from "./BuildAliveProviders"
-import {explainStep, promptCoach} from "./BuildAliveExplain"
+import {explainCommand, explainStep, promptCoach} from "./BuildAliveExplain"
+import {routeVoice, VOICE_HELP, VoiceListener} from "./BuildAliveVoice"
 import {RoundedRectangle} from "SpectaclesUIKit.lspkg/Scripts/Visuals/RoundedRectangle/RoundedRectangle"
 
 /** The scripted recorded-replay project that stays selectable as "Sample World". */
@@ -250,6 +251,10 @@ export class BuildAliveSceneUI {
   private sessionChip: Text | null = null
   private projectMinimised = false
   private selectedProvider = PROVIDER_STATIONS[0].id
+  private voiceLines: string[] | null = null
+  private voicePendingApproveAt = 0
+  private voiceListener = new VoiceListener()
+  private micStatus = "idle"
   private logoTex: Record<string, Texture> = {}
   private headerLogoMat: Material | null = null
   private headerLogoShown = ""
@@ -357,6 +362,7 @@ export class BuildAliveSceneUI {
 
   handleStep(pressMs: number = Date.now()) {
     this.markPress("step", "BA_StepButton", pressMs)
+    this.voiceLines = null
     this.engine.stepForward()
     const snap = this.engine.snapshot()
     if (snap.activeFailures.length > 0) {
@@ -454,6 +460,8 @@ export class BuildAliveSceneUI {
 
   handleReset(pressMs: number = Date.now()) {
     this.markPress("reset", "BA_ResetButton", pressMs)
+    this.voiceLines = null
+    this.voicePendingApproveAt = 0
     this.lastRequestId = null
     this.lastNonce = null
     this.disclosureTier = "WORLD"
@@ -900,10 +908,96 @@ export class BuildAliveSceneUI {
     ]
   }
 
+  /** Dock mic: start/stop the built-in ASR. Transcripts go through handleVoice(); if ASR cannot start the Session window says so. */
+  handleMic(): void {
+    if (this.voiceListener.isListening) {
+      this.voiceListener.stop()
+      this.micStatus = "idle"
+      this.voiceLines = null
+    } else {
+      this.voiceListener.start(
+        (text) => this.handleVoice(text),
+        (status) => {
+          this.micStatus = status
+          if (status.indexOf("listening") !== 0) {
+            this.voiceLines = ["Voice is not available here: " + status, VOICE_HELP]
+          } else {
+            this.voiceLines = ["Listening... " + VOICE_HELP]
+          }
+          this.syncVisuals()
+        },
+      )
+    }
+    this.syncVisuals()
+  }
+
+  /** One voice command (a final ASR transcript, or an injected one in LEAF). Answers come from the deterministic explainer; nothing is invented. */
+  handleVoice(transcript: string): string[] {
+    const intent = routeVoice(transcript)
+    const snap = this.engine.snapshot()
+    const proj = this.engine.currentProject
+    const seen = proj.recordedEvents.filter((e) => e.seq <= snap.cursorSeq)
+    const last = seen.length > 0 ? seen[seen.length - 1] : null
+    const ex = (e: AgentEvent) => explainStep({kind: e.kind, status: e.status, summary: e.summary, files: e.fileAliases, actor: e.actor})
+    const lines: string[] = ["You said: \"" + transcript.trim() + "\""]
+    const replay = this.lensLive ? "" : " (replay)"
+    if (intent === "what_happened") {
+      lines.push(last ? ex(last).what + replay : "Nothing has happened yet. Press Next step to replay the first step.")
+    } else if (intent === "why_failed") {
+      const failed = seen.filter((e) => e.status === "failed")
+      const f = failed.length > 0 ? failed[failed.length - 1] : null
+      if (f) {
+        const x = ex(f)
+        lines.push(x.what + replay, x.why)
+      } else lines.push("Nothing has failed so far" + replay + ".")
+    } else if (intent === "what_try") {
+      lines.push("Try: " + (last ? ex(last).tip : promptCoach("").tip))
+    } else if (intent === "explain_command") {
+      const cmd = last && last.summary ? last.summary : ""
+      if (cmd) {
+        const c = explainCommand(cmd)
+        lines.push("Command: " + cmd, c.known ? c.plain : "I do not recognise this command, so I will not guess what it does.")
+      } else lines.push("No command to explain yet. Press Next step first.")
+    } else if (intent === "next_step") {
+      this.handleStep()
+      const nowSeen = this.engine.currentProject.recordedEvents.filter((e) => e.seq <= this.engine.snapshot().cursorSeq)
+      const nowLast = nowSeen.length > 0 ? nowSeen[nowSeen.length - 1] : null
+      lines.push(nowLast ? "Next step" + replay + ": " + ex(nowLast).what : "That was the last step.")
+    } else if (intent === "approve") {
+      const fresh = this.voicePendingApproveAt > 0 && Date.now() - this.voicePendingApproveAt < 20000
+      if (fresh) {
+        this.voicePendingApproveAt = 0
+        this.handleApprove("run_known_test")
+        lines.push("Approved: re-ran the read-only check only. Nothing else was changed.")
+      } else {
+        const res = this.handleStageAction("run_known_test")
+        if (res.ok) {
+          this.voicePendingApproveAt = Date.now()
+          lines.push("Re-run the read-only check? It only repeats the existing test; nothing is changed.", "Confirm: say approve again, or tap the check. Say deny to cancel.")
+        } else lines.push("Nothing to approve right now (" + (res.reason || "not allowed") + ").")
+      }
+    } else if (intent === "deny") {
+      this.voicePendingApproveAt = 0
+      this.handleReject()
+      lines.push("Denied. Nothing was run.")
+    } else {
+      lines.push(VOICE_HELP)
+    }
+    this.voiceLines = lines
+    this.syncVisuals()
+    return lines
+  }
+
+  /** LEAF/diagnostics: the lines the Session window is showing for the last voice command, or null. */
+  voiceSnapshot(): {lines: string[] | null; listening: boolean; micStatus: string} {
+    return {lines: this.voiceLines, listening: this.voiceListener.isListening, micStatus: this.micStatus}
+  }
+
   /** Pick which provider the Session window talks about. Unknown ids are ignored. Never creates events. */
   selectProvider(id: string): void {
     if (!PROVIDER_STATIONS.some((st) => st.id === id)) return
     this.selectedProvider = id
+    this.voiceLines = null
     this.syncVisuals()
   }
 
@@ -1088,7 +1182,7 @@ export class BuildAliveSceneUI {
     if (!other && ev && !steps.some((e) => e.eventId === ev.eventId)) steps.push(ev)
     const shown = steps.slice(-4)
     // idle: show the first replay steps of the made-up Sample World as content, clearly labelled REPLAY (never as live work)
-    const idle = shown.length === 0 && !other
+    const idle = shown.length === 0 && !other && !this.voiceLines
     const sampleProj = DEMO_PROJECTS.find((p) => p.projectId === DEMO_SAMPLE_PROJECT_ID)
     const source: AgentEvent[] = idle && sampleProj ? sampleProj.recordedEvents.slice(0, 8) : shown
     // identical consecutive steps collapse into one tile with a count (honest to the data, not a duplicate-row bug)
@@ -1101,8 +1195,13 @@ export class BuildAliveSceneUI {
         g.step = s
       } else groups.push({step: s, what: w, count: 1})
     }
-    const display = other ? this.providerExplain(hero, heroBadge).map((t) => ({step: null as AgentEvent | null, what: t, count: 1})) : idle ? groups.slice(0, 3) : groups.slice(-4)
-    if (this.sessionChip) this.sessionChip.text = other ? heroBadge : idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
+    const voiceOn = !!this.voiceLines && !other
+    const display = voiceOn
+      ? (this.voiceLines as string[]).slice(0, 4).map((t) => ({step: null as AgentEvent | null, what: t, count: 1}))
+      : other
+        ? this.providerExplain(hero, heroBadge).map((t) => ({step: null as AgentEvent | null, what: t, count: 1}))
+        : idle ? groups.slice(0, 3) : groups.slice(-4)
+    if (this.sessionChip) this.sessionChip.text = voiceOn ? (this.voiceListener.isListening ? "Listening" : "Voice") : other ? heroBadge : idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
     for (let i = 0; i < this.sessionRows.length; i++) {
       const row = this.sessionRows[i]
       const grp = display[i]
@@ -1114,11 +1213,13 @@ export class BuildAliveSceneUI {
         row.text = ""
         row.textFill.color = COLOR_CAPTION
         this.sessionTiles[i].backgroundColor = GRAPHITE_TILE
+        this.sessionTiles[i].getSceneObject().enabled = false // no empty tile slots
         continue
       }
+      this.sessionTiles[i].getSceneObject().enabled = true
       const step = grp.step
-      const isNow = !idle && !other && i === display.length - 1
-      row.text = (idle ? "REPLAY · " : isNow ? "Now: " : "") + grp.what
+      const isNow = !idle && !other && !voiceOn && i === display.length - 1
+      row.text = (idle && !voiceOn ? "REPLAY · " : isNow ? "Now: " : "") + grp.what
       row.textFill.color = step && step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : idle ? COLOR_CAPTION : COLOR_WHITE
       this.sessionTiles[i].backgroundColor = isNow ? GRAPHITE_TILE_HI : GRAPHITE_TILE
     }
@@ -1360,12 +1461,14 @@ export class BuildAliveSceneUI {
     this.faultMarker = global.scene.createSceneObject("FaultMarker_Room03")
     this.faultMarker.setParent(this.rootObj)
     this.faultMarker.getTransform().setLocalPosition(new vec3(FAULT_MARKER_POS.x, FAULT_MARKER_POS.y, FAULT_MARKER_POS.z))
-    this.voxelObject("FaultMarker_Art", this.faultMarker, null, 0.7, [-0.35, -0.35, -0.35], null, "warning07", () => buildWarning())
+    const faultArt = this.voxelObject("FaultMarker_Art", this.faultMarker, null, 0.7, [-0.35, -0.35, -0.35], null, "warning07", () => buildWarning())
+    faultArt.enabled = false // glass layout: the failure shows as the red module tile + the Session/Learn windows, not a floating marker
     const fLabel = global.scene.createSceneObject("FaultMarker_Label")
     fLabel.setParent(this.faultMarker)
     fLabel.getTransform().setLocalPosition(new vec3(0, 3.4, 0))
     fLabel.createComponent(Billboard.getTypeName())
     this.addText(fLabel, "A check failed", LABEL_TEXT_SIZE, COLOR_CORAL)
+    fLabel.enabled = false // no floating label over the tiles
 
     const lobby = CITY_MODULES.find((m) => m.moduleId === "server-lobby") || CITY_MODULES[1]
     const fromVec = new vec3(FAULT_MARKER_POS.x, FAULT_MARKER_POS.y - 1.5, FAULT_MARKER_POS.z)
@@ -1375,6 +1478,8 @@ export class BuildAliveSceneUI {
     const midVec = fromVec.add(toVec).uniformScale(0.5)
     this.causalBeam = this.makeBoxObject("CausalFaultBeam", this.rootObj, {x: midVec.x, y: midVec.y, z: midVec.z}, {w: 0.18, h: 0.18, d: this.causalBeamLen}, COLOR_CORAL)
     this.causalBeam.getTransform().setLocalRotation(quat.lookAt(diffVec.uniformScale(1 / this.causalBeamLen), vec3.up()))
+    const beamRmv = this.causalBeam.getComponent("Component.RenderMeshVisual") as RenderMeshVisual | null
+    if (beamRmv) beamRmv.enabled = false // object stays enabled (LEAF L07/L08 read it) but the red line through the tiles is not drawn
 
     this.dataPacket = this.voxelObject("DataFlowPacket", this.rootObj, buildCrate(), 0.3, [-0.6, 0, -0.6], null)
     this.dataPacket.getTransform().setLocalScale(new vec3(0.001, 0.001, 0.001))
@@ -1388,7 +1493,8 @@ export class BuildAliveSceneUI {
 
     // one small dark pill behind all dock icons, centred under the session window
     const mid = RAIL_CONTROLS[Math.floor(RAIL_CONTROLS.length / 2)].center
-    const pill = this.glass("DockPill", rail, mid.x, mid.y, mid.z - 0.9, 6.2 * (RAIL_CONTROLS.length - 1) + 3.6, 3.0, 1, GRAPHITE)
+    const midX = RAIL_CONTROLS.reduce((a, c) => a + c.center.x, 0) / RAIL_CONTROLS.length
+    const pill = this.glass("DockPill", rail, midX, mid.y, mid.z - 0.9, 6.2 * (RAIL_CONTROLS.length - 1) + 3.6, 3.0, 1, GRAPHITE)
     pill.root.getTransform().setLocalRotation(quat.angleAxis(-0.42, vec3.right()))
 
     for (const spec of RAIL_CONTROLS) {
@@ -1419,6 +1525,7 @@ export class BuildAliveSceneUI {
         else if (spec.sceneName === "BA_LearnButton") this.handleLearn(undefined, t0)
         else if (spec.sceneName === "BA_ApproveButton") this.handleApprove("run_known_test", t0)
         else if (spec.sceneName === "BA_ResetButton") this.handleReset(t0)
+        else if (spec.sceneName === "BA_MicButton") this.handleMic()
       })
       this.buttons[spec.sceneName] = btn
     }
@@ -1519,6 +1626,11 @@ export class BuildAliveSceneUI {
     } else if (id === "step") {
       this.chevron(holder, "chev1", -0.2, true)
       this.chevron(holder, "chev2", 0.8, true)
+    } else if (id === "voice") {
+      this.iconLine(holder, "capsule", 0, 0.35, 1.5, 90, 1.0)
+      this.iconLine(holder, "cupL", -0.8, -0.35, 0.9, 80, 0.26)
+      this.iconLine(holder, "cupR", 0.8, -0.35, 0.9, -80, 0.26)
+      this.iconLine(holder, "cupB", 0, -0.85, 1.4, 0, 0.26)
     } else if (id === "learn") {
       this.iconLine(holder, "dot", 0, 0.95, 0.35, 0)
       this.iconLine(holder, "stem", 0, -0.2, 1.3, 90)

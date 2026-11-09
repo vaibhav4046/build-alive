@@ -78,11 +78,12 @@ export const RAIL_BUTTON_SIZE: BoxSizeCm = {w: 5.4, h: 2.8, d: 1.0}
 const DOCK_Y = -25.8 // below the agent chip row (which sits just under the Session window)
 const DOCK_Z = -44
 export const RAIL_CONTROLS: readonly ControlSpec[] = [
-  {id: "reset", sceneName: "BA_ResetButton", label: "Replay", center: {x: -12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
-  {id: "inspect", sceneName: "BA_InspectButton", label: "Command", center: {x: -6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
-  {id: "step", sceneName: "BA_StepButton", label: "Next step", center: {x: 0, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
-  {id: "learn", sceneName: "BA_LearnButton", label: "Explain", center: {x: 6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
-  {id: "approve", sceneName: "BA_ApproveButton", label: "Approve", center: {x: 12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "reset", sceneName: "BA_ResetButton", label: "Replay", center: {x: -15.5, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "inspect", sceneName: "BA_InspectButton", label: "Command", center: {x: -9.3, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "step", sceneName: "BA_StepButton", label: "Next step", center: {x: -3.1, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "learn", sceneName: "BA_LearnButton", label: "Explain", center: {x: 3.1, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "approve", sceneName: "BA_ApproveButton", label: "Approve", center: {x: 9.3, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "voice", sceneName: "BA_MicButton", label: "Voice", center: {x: 15.5, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
 ]
 
 // Real-repo islands float in the sky above the far valley. Collider box = ISLAND_SIZE (grass top + rocky underside).
