@@ -38,6 +38,7 @@ import {BuildAliveL24PinchRealModule} from "./L24PinchRealModule"
 import {BuildAliveL25FeedbackRewards} from "./L25FeedbackRewards"
 import {BuildAliveL26MissionControl} from "./L26MissionControl"
 import {BuildAliveL27WindowMinimise} from "./L27WindowMinimise"
+import {BuildAliveL28AgentChips} from "./L28AgentChips"
 
 @component
 export class LeafIndex extends BaseScriptComponent {
@@ -79,5 +80,6 @@ export class LeafIndex extends BaseScriptComponent {
     {id: "L25-feedback-and-rewards", typename: BuildAliveL25FeedbackRewards.getTypeName()},
     {id: "L26-agent-orbs-and-flow-pipeline", typename: BuildAliveL26MissionControl.getTypeName()},
     {id: "L27-window-minimise-restore", typename: BuildAliveL27WindowMinimise.getTypeName()},
+    {id: "L28-agent-chips", typename: BuildAliveL28AgentChips.getTypeName()},
   ]
 }

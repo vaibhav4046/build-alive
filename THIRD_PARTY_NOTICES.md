@@ -18,10 +18,12 @@ The Lens shows a small logo next to an agent's name so people can recognise whic
 
 | Mark | Source | Official colour | Where used |
 |---|---|---|---|
-| Claude (Anthropic), for the Claude Code session | `simple-icons` `siClaude`, source https://claude.ai | `#D97757` | Session window header, Claude Code tab |
-| OpenCode, for the OpenCode station | `simple-icons` `siOpencode`, source github.com/anomalyco/opencode (`packages/identity/mark.svg`) | `#000000` (white badge) | OpenCode tab |
+| Claude (Anthropic), for the Claude Code session | `simple-icons` `siClaude`, source https://claude.ai | `#D97757` | Session window header (when Claude Code is selected), Claude Code chip in the agent row |
+| OpenCode, for the OpenCode station | `simple-icons` `siOpencode`, source github.com/anomalyco/opencode (`packages/identity/mark.svg`) | `#000000` (white badge) | OpenCode chip in the agent row, Session header when OpenCode is selected |
 
-Apps without a `simple-icons` entry (Codex, Antigravity, OpenClaw, ChatGPT app, Grok bots, Instinct, Muse) and Hermes (the `simple-icons` "Hermes" is a different company) get a neutral generated monogram badge (graphite square, two white letters) rendered by a script in this repository. No logo was scraped, redrawn or guessed.
+The agent row under the Session window has one chip per provider the local bridge reports (`GET /providers`). A chip's small dot is its honest status (green LIVE, amber REPLAY, grey OFFLINE, grey with a slash UNSUPPORTED); a chip is a selector only and never means the company endorses or is connected to this Lens.
+
+Apps without a `simple-icons` entry (Codex, Antigravity, OpenClaw, ChatGPT app, Grok bots, Instinct, Muse) and Hermes (the `simple-icons` "Hermes" is a different company) get a neutral generated monogram badge (graphite square, two white letters) rendered by a script in this repository (`devpost/tools/render-logos.cjs`). No logo was scraped, redrawn or guessed.
 
 ## Project-made assets
 - All meshes are Lens Studio built-in primitives (boxes, cylinders) used as **placeholders**; no third-party 3D models.

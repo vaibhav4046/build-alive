@@ -76,7 +76,7 @@ import {
   WORKER_ORIGIN,
   WORKER_VOX,
 } from "./BuildAliveHolo"
-import {badgeFor, FLOW_STAGES, PROVIDER_STATIONS, PROVIDERS_SNAPSHOT_SOURCE, stageForEvent} from "./BuildAliveProviders"
+import {badgeFor, FLOW_STAGES, PROVIDER_STATIONS, PROVIDERS_SNAPSHOT_SOURCE, ProviderStation, stageForEvent} from "./BuildAliveProviders"
 import {explainStep, promptCoach} from "./BuildAliveExplain"
 import {RoundedRectangle} from "SpectaclesUIKit.lspkg/Scripts/Visuals/RoundedRectangle/RoundedRectangle"
 
@@ -132,6 +132,8 @@ interface OrbVisual {
 // Text / accent colours (UI only; the world itself uses the palette texture).
 const COLOR_CYAN = new vec4(0.55, 0.92, 1.0, 1.0)
 const COLOR_MINT = new vec4(0.45, 0.98, 0.72, 1.0)
+const AGENT_ROW_Y = -22.9 // chip row just under the Session window (the project tabs own the space above it)
+const AGENT_ROW_Z = WINDOW_Z + 0.5
 const COLOR_AMBER = new vec4(1.0, 0.8, 0.35, 1.0)
 const COLOR_CORAL = new vec4(1.0, 0.45, 0.4, 1.0)
 const COLOR_VIOLET = new vec4(0.8, 0.66, 1.0, 1.0)
@@ -230,6 +232,13 @@ export class BuildAliveSceneUI {
   private projectTitle: Text | null = null
   private sessionChip: Text | null = null
   private projectMinimised = false
+  private selectedProvider = PROVIDER_STATIONS[0].id
+  private logoTex: Record<string, Texture> = {}
+  private headerLogoMat: Material | null = null
+  private headerLogoShown = ""
+  private providerRings: Record<string, RoundedRectangle> = {}
+  private providerDots: Record<string, RoundedRectangle> = {}
+  private providerSlashes: Record<string, SceneObject> = {}
   private windowRoots: Record<string, SceneObject> = {}
   private windowChips: Record<string, SceneObject> = {}
   private chipDot: Record<string, RoundedRectangle> = {}
@@ -797,8 +806,10 @@ export class BuildAliveSceneUI {
 
     // Session window: header tile (per-app accent strip) + one tile per recent step + a "Try" tile
     this.tile(sess.root, "SessionHeaderTile", 0, 7.7, 17.6, 2.7, GRAPHITE_TILE, null)
-    const claudeLogo = requireAsset("../Textures/logos/claude-code.png") as Texture
-    this.logoImage(sess.root, "Logo_claude-code", -7.4, 7.7, 2.1, claudeLogo)
+    this.loadLogos()
+    const headerLogo = this.logoImage(sess.root, "Logo_claude-code", -7.4, 7.7, 2.1, this.logoTex[PROVIDER_STATIONS[0].id])
+    this.headerLogoMat = headerLogo ? (headerLogo.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
+    this.headerLogoShown = PROVIDER_STATIONS[0].id
     this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", -1.4, 7.7, 9.4, 2.5, 24, COLOR_WHITE, false)
     this.sessionChip = this.panelText(sess.root, "SessionStatusChip", 5.0, 7.7, 4.0, 2.2, 16, COLOR_CAPTION, true)
     for (let i = 0; i < 4; i++) {
@@ -836,6 +847,102 @@ export class BuildAliveSceneUI {
     this.addWindowControls(land, "session", "Session", sess.root, 0, 19)
     this.addWindowControls(land, "learn", "Learn", learn.root, -16.5, 11.5)
     this.addWindowControls(land, "project", "Project", proj.root, 16.5, 11.5)
+    this.buildAgentRow(land)
+  }
+
+  /** What the Session window says for a provider that is not the live Claude Code station: why it is not showing events, and how to connect. */
+  private providerExplain(st: ProviderStation, badge: string): string[] {
+    if (badge === "UNSUPPORTED") {
+      return [
+        "No live link for " + st.name + " on this PC.",
+        "It can only be shown from events you import yourself.",
+        "To connect: export its steps as AgentEvent JSON and replay them here.",
+      ]
+    }
+    return [
+      st.name + " is not connected on this PC.",
+      "Bridge says: " + st.note + ".",
+      "To connect: install it, start the bridge (bridge/start-g2.mjs), then run a task.",
+    ]
+  }
+
+  /** Pick which provider the Session window talks about. Unknown ids are ignored. Never creates events. */
+  selectProvider(id: string): void {
+    if (!PROVIDER_STATIONS.some((st) => st.id === id)) return
+    this.selectedProvider = id
+    this.syncVisuals()
+  }
+
+  currentProvider(): string {
+    return this.selectedProvider
+  }
+
+  /** Status dot per chip (green LIVE, amber REPLAY, grey OFFLINE, grey with a slash UNSUPPORTED) plus the selection ring. */
+  private refreshProviderChips(lensLive: boolean): void {
+    if (this.headerLogoMat && this.headerLogoShown !== this.selectedProvider && this.logoTex[this.selectedProvider]) {
+      this.headerLogoMat.mainPass.baseTex = this.logoTex[this.selectedProvider] // the header mark always belongs to the provider it describes
+      this.headerLogoShown = this.selectedProvider
+    }
+    for (const st of PROVIDER_STATIONS) {
+      const dot = this.providerDots[st.id]
+      if (!dot) continue
+      const b = badgeFor(st, lensLive)
+      dot.backgroundColor = b === "LIVE" ? COLOR_MINT : b === "REPLAY" ? COLOR_AMBER : new vec4(0.62, 0.65, 0.7, 1)
+      this.providerSlashes[st.id].enabled = b === "UNSUPPORTED"
+      this.providerRings[st.id].backgroundColor = st.id === this.selectedProvider ? GRAPHITE_TILE_HI : GRAPHITE
+    }
+  }
+
+  private loadLogos(): void {
+    this.logoTex = {
+      "claude-code": requireAsset("../Textures/logos/claude-code.png") as Texture,
+      codex: requireAsset("../Textures/logos/codex.png") as Texture,
+      antigravity: requireAsset("../Textures/logos/antigravity.png") as Texture,
+      opencode: requireAsset("../Textures/logos/opencode.png") as Texture,
+      hermes: requireAsset("../Textures/logos/hermes.png") as Texture,
+      openclaw: requireAsset("../Textures/logos/openclaw.png") as Texture,
+      "chatgpt-app": requireAsset("../Textures/logos/chatgpt-app.png") as Texture,
+      "grok-bots": requireAsset("../Textures/logos/grok-bots.png") as Texture,
+      instinct: requireAsset("../Textures/logos/instinct.png") as Texture,
+      muse: requireAsset("../Textures/logos/muse.png") as Texture,
+    }
+  }
+
+  /** Compact row of agent chips under the Session window: real simple-icons mark where one exists, monogram otherwise. */
+  private buildAgentRow(land: SceneObject): void {
+    const logos = this.logoTex
+    const pitch = 2.5
+    PROVIDER_STATIONS.forEach((st, i) => {
+      const chip = global.scene.createSceneObject("AgentChip_" + st.id)
+      chip.setParent(land)
+      chip.getTransform().setLocalPosition(new vec3((i - (PROVIDER_STATIONS.length - 1) / 2) * pitch, AGENT_ROW_Y, AGENT_ROW_Z))
+      const ring = chip.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+      ring.size = new vec2(2.3, 2.3)
+      ring.cornerRadius = 0.7
+      ring.backgroundColor = GRAPHITE
+      ring.blendMode = 1
+      ring.opacity = 1
+      ring.initialize()
+      this.providerRings[st.id] = ring
+      this.logoImage(chip, "AgentChipLogo_" + st.id, 0, 0, 1.75, logos[st.id])
+      const dotObj = global.scene.createSceneObject("AgentChipDot_" + st.id)
+      dotObj.setParent(chip)
+      dotObj.getTransform().setLocalPosition(new vec3(0.95, 0.95, 1.0))
+      const dot = dotObj.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+      dot.size = new vec2(0.6, 0.6)
+      dot.cornerRadius = 0.3
+      dot.backgroundColor = COLOR_AMBER
+      dot.blendMode = 1
+      dot.opacity = 1
+      dot.initialize()
+      this.providerDots[st.id] = dot
+      const slash = global.scene.createSceneObject("AgentChipSlash_" + st.id)
+      slash.setParent(chip)
+      this.iconLine(slash, "bar", 0, 0, 1.9, 45, 0.2, COLOR_WHITE)
+      slash.enabled = false
+      this.providerSlashes[st.id] = slash
+      this.makeCtl(chip, 2.3, 2.3, () => this.selectProvider(st.id))
+    })
   }
 
   private makeCtl(so: SceneObject, w: number, h: number, onPress: () => void): void {
@@ -909,22 +1016,24 @@ export class BuildAliveSceneUI {
     const snap = this.engine.snapshot()
     const proj = this.engine.currentProject
     if (this.projectTitle) this.projectTitle.text = proj.title + " · " + proj.modules.length + " modules"
-    const hero = PROVIDER_STATIONS[0]
+    const hero = PROVIDER_STATIONS.find((st) => st.id === this.selectedProvider) || PROVIDER_STATIONS[0]
+    const other = hero.id !== PROVIDER_STATIONS[0].id // another provider's station: only an honest explanation, never made-up events
     const heroBadge = badgeFor(hero, lensLive)
+    this.refreshProviderChips(lensLive)
     if (this.sessionTitle) {
       const where = this.workspaceBound ? proj.title : "Sample (made-up)"
-      this.sessionTitle.text = hero.name + " · " + where + " · " + heroBadge
+      this.sessionTitle.text = other ? hero.name + " · " + heroBadge : hero.name + " · " + where + " · " + heroBadge
     }
     // recent steps: replayed events up to the cursor, plus the live/active one
-    const steps: AgentEvent[] = proj.recordedEvents.filter((e) => e.seq <= snap.cursorSeq).slice(-5)
-    if (ev && !steps.some((e) => e.eventId === ev.eventId)) steps.push(ev)
+    const steps: AgentEvent[] = other ? [] : proj.recordedEvents.filter((e) => e.seq <= snap.cursorSeq).slice(-5)
+    if (!other && ev && !steps.some((e) => e.eventId === ev.eventId)) steps.push(ev)
     const shown = steps.slice(-4)
     // idle: show the first replay steps of the made-up Sample World as content, clearly labelled REPLAY (never as live work)
-    const idle = shown.length === 0
+    const idle = shown.length === 0 && !other
     const sampleProj = DEMO_PROJECTS.find((p) => p.projectId === DEMO_SAMPLE_PROJECT_ID)
     const source: AgentEvent[] = idle && sampleProj ? sampleProj.recordedEvents.slice(0, 8) : shown
     // identical consecutive steps collapse into one tile with a count (honest to the data, not a duplicate-row bug)
-    const groups: {step: AgentEvent; what: string; count: number}[] = []
+    const groups: {step: AgentEvent | null; what: string; count: number}[] = []
     for (const s of source) {
       const w = explainStep({kind: s.kind, status: s.status, summary: s.summary, files: s.fileAliases, actor: s.actor}).what
       const g = groups.length > 0 ? groups[groups.length - 1] : null
@@ -933,8 +1042,8 @@ export class BuildAliveSceneUI {
         g.step = s
       } else groups.push({step: s, what: w, count: 1})
     }
-    const display = idle ? groups.slice(0, 3) : groups.slice(-4)
-    if (this.sessionChip) this.sessionChip.text = idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
+    const display = other ? this.providerExplain(hero, heroBadge).map((t) => ({step: null as AgentEvent | null, what: t, count: 1})) : idle ? groups.slice(0, 3) : groups.slice(-4)
+    if (this.sessionChip) this.sessionChip.text = other ? heroBadge : idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
     for (let i = 0; i < this.sessionRows.length; i++) {
       const row = this.sessionRows[i]
       const grp = display[i]
@@ -949,9 +1058,9 @@ export class BuildAliveSceneUI {
         continue
       }
       const step = grp.step
-      const isNow = !idle && i === display.length - 1
+      const isNow = !idle && !other && i === display.length - 1
       row.text = (idle ? "REPLAY · " : isNow ? "Now: " : "") + grp.what
-      row.textFill.color = step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : idle ? COLOR_CAPTION : COLOR_WHITE
+      row.textFill.color = step && step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : idle ? COLOR_CAPTION : COLOR_WHITE
       this.sessionTiles[i].backgroundColor = isNow ? GRAPHITE_TILE_HI : GRAPHITE_TILE
     }
     // learn window
