@@ -2,6 +2,8 @@
 
 **Learn AI engineering by doing.** BUILD ALIVE is a Snap Spectacles Lens that shows your AI coding agent working on your real project in floating windows around you. Every step and every shell command is explained in one plain sentence, the exact evidence is one pinch deeper, and nothing risky runs until you approve it.
 
+> The Lens Studio project file is `EarthProof.esproj`: EarthProof was this entry's working name during the hackathon, and BUILD ALIVE is the product it became. Same project.
+
 Built for the Snap **Learn AR with SPECS** Devpost hackathon (deadline 9 November 2026, 22:00 GMT) with Lens Studio 5.23.2, CLAD, the Lens Studio MCP and LEAF.
 
 ---
