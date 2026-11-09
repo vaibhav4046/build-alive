@@ -35,6 +35,8 @@ import {BuildAliveL21DisconnectFallback} from "./L21DisconnectFallback"
 import {BuildAliveL22Accessibility} from "./L22Accessibility"
 import {BuildAliveL23RealWorkspaceIslands} from "./L23RealWorkspaceIslands"
 import {BuildAliveL24PinchRealModule} from "./L24PinchRealModule"
+import {BuildAliveL25FeedbackRewards} from "./L25FeedbackRewards"
+import {BuildAliveL26MissionControl} from "./L26MissionControl"
 
 @component
 export class LeafIndex extends BaseScriptComponent {
@@ -73,5 +75,7 @@ export class LeafIndex extends BaseScriptComponent {
     {id: "L22-reduced-motion-colour-safe", typename: BuildAliveL22Accessibility.getTypeName()},
     {id: "L23-real-workspace-islands", typename: BuildAliveL23RealWorkspaceIslands.getTypeName()},
     {id: "L24-pinch-real-module-path", typename: BuildAliveL24PinchRealModule.getTypeName()},
+    {id: "L25-feedback-and-rewards", typename: BuildAliveL25FeedbackRewards.getTypeName()},
+    {id: "L26-agent-orbs-and-flow-pipeline", typename: BuildAliveL26MissionControl.getTypeName()},
   ]
 }

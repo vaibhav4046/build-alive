@@ -103,6 +103,15 @@ interface ModuleVisual {
   hot: number
 }
 
+interface FeedbackState {
+  obj: SceneObject
+  base: number
+  hover: boolean
+  down: boolean
+  pop: number
+  cur: number
+}
+
 interface OrbVisual {
   readonly stationId: string
   readonly root: SceneObject
@@ -182,6 +191,16 @@ export class BuildAliveSceneUI {
   private causalBeam!: SceneObject
   private causalBeamLen = 1
   private dataPacket!: SceneObject
+  private feedback: Record<string, FeedbackState> = {}
+  private pingRing: SceneObject | null = null
+  private pingMat: Material | null = null
+  private pingClock = 0
+  private burstSparks: SceneObject[] = []
+  private burstClock = 0
+  private burstOrigin: vec3 = new vec3(0, 0, 0)
+  private rewardsGiven = 0
+  private understood: Record<string, boolean> = {}
+  private lanterns: Record<string, SceneObject> = {}
   private scanRing: SceneObject | null = null
   private orbs: OrbVisual[] = []
   private stageNodes: {name: string; root: SceneObject; mat: Material; label: Text}[] = []
@@ -285,6 +304,7 @@ export class BuildAliveSceneUI {
     this.markPress("inspect", moduleId, pressMs)
     const prevSelected = this.engine.snapshot().selectedModuleId
     this.engine.selectModule(moduleId)
+    this.rewardForModule(moduleId) // reward only the real act of opening a building's evidence
     if (prevSelected === moduleId && this.disclosureTier === "INSPECT") {
       this.disclosureTier = "ENGINEER"
     } else {
@@ -307,8 +327,18 @@ export class BuildAliveSceneUI {
       const expected = this.engine.activeLearningCase.expectedFailedModuleId
       this.engine.submitPrediction(expected)
     }
+    const pred = this.engine.snapshot().lastPrediction
+    if (pred && pred.correct) this.rewardForModule(pred.guessedModuleId, true) // only a correct predict-what-breaks answer
     this.syncVisuals()
     return this.engine.snapshot()
+  }
+
+  private rewardForModule(moduleId: string, force: boolean = false): void {
+    const spec = CITY_MODULES.find((m) => m.moduleId === moduleId)
+    if (!spec) return
+    const at = new vec3(spec.center.x, PLATEAU_Y, spec.center.z)
+    if (force && this.understood[moduleId]) this.rewardBurst(at)
+    else this.markUnderstood(moduleId, at)
   }
 
   handleStageAction(actionId: AllowlistedActionId = "run_known_test") {
@@ -335,6 +365,7 @@ export class BuildAliveSceneUI {
       const res = this.engine.approveAction(this.lastRequestId, "CONFIRM_PINCH_APPROVE", this.lastNonce)
       if (res.ok) {
         this.transport.sendApprovedAction(actionId)
+        if (this.engine.snapshot().testRepaired) this.rewardForModule("test-suite", true) // a verified fix, not just a click
       }
       this.lastRequestId = null
       this.lastNonce = null
@@ -438,6 +469,7 @@ export class BuildAliveSceneUI {
     this.autoDemoClock += dt
     const t = this.pulseClock
     const snap = this.engine.snapshot()
+    this.animateFeedback(dt)
     if (!snap.reducedMotion) {
       this.animateScenery(t, dt)
       this.animateWorkers(t, dt)
@@ -647,6 +679,7 @@ export class BuildAliveSceneUI {
       this.smoke.push(this.voxelObject("Chimney_Smoke_" + i, land, null, 0.6, [-0.3, -0.3, -0.3], null, "smoke", () => buildPuff(H.CYAN_LT)))
     }
     this.buildMissionControl(land)
+    this.buildFeedbackFx(land)
 
     // Small honest status caption under the dock + one gentle hint (both plain language).
     const bannerObj = global.scene.createSceneObject("ProvenanceBanner")
@@ -829,6 +862,7 @@ export class BuildAliveSceneUI {
           else this.handleInspect(m.moduleId, Date.now())
         },
         m.moduleId,
+        art,
       )
       const vis: ModuleVisual = {
         moduleId: m.moduleId,
@@ -1076,9 +1110,7 @@ export class BuildAliveSceneUI {
         lbl.getSceneObject().enabled = this.hoveredId === slot.id || isActiveProj
         lbl.textFill.color = isActiveProj ? COLOR_MINT : COLOR_WHITE
       }
-      const s = isActiveProj ? 1.12 : 1.0
-      const obj = this.islandObjects[slot.id]
-      if (obj) obj.getTransform().setLocalScale(new vec3(s, s, s))
+      this.setBaseScale(slot.id, isActiveProj ? 1.12 : 1.0)
     }
 
     for (const m of CITY_MODULES) {
@@ -1105,11 +1137,11 @@ export class BuildAliveSceneUI {
       vis.badgeText.text = (status ? status + " · " : "") + name + (isSelected || this.hoveredId === m.moduleId ? " — " + ROLE_WORD[role] : "")
       vis.badgeText.textFill.color = col
       vis.badgeText.getSceneObject().enabled = isSelected || isFailedMod || isEditedMod || this.hoveredId === m.moduleId
-      vis.mat.mainPass.baseColor = isFailedMod ? TINT_FAILED : isEditedMod ? TINT_CHANGED : TINT_NORMAL // mesh colour carries the state; tints stay white
+      // mesh colour carries the state; hover adds a glow overdrive
+      vis.mat.mainPass.baseColor = this.hoveredId === m.moduleId ? TINT_ON : isFailedMod ? TINT_FAILED : isEditedMod ? TINT_CHANGED : TINT_NORMAL
       if (vis.lampRmv) this.setMaterialColor(vis.lampRmv, isFailedMod ? COLOR_CORAL : this.workspaceBound && !evHere ? COLOR_DIM : COLOR_MINT)
       vis.lamp.enabled = isEditedMod && vis.role !== "Tests"
-      const lift = isSelected ? 1.08 : 1.0
-      vis.art.getTransform().setLocalScale(new vec3(lift, lift, lift))
+      this.setBaseScale(m.moduleId, isSelected ? 1.08 : 1.0)
     }
 
     // Roads: real resolved import edges only (workspace mode); the sample world keeps its fixed roads.
@@ -1358,23 +1390,197 @@ export class BuildAliveSceneUI {
   }
 
   /** Box collider of `size` (object is unscaled) + SIK Interactable; hover shows the plain-language name. */
-  private makeInteractable(so: SceneObject, size: BoxSizeCm, onPinchRelease: () => void, hoverId: string): Interactable {
+  private makeInteractable(so: SceneObject, size: BoxSizeCm, onPinchRelease: () => void, hoverId: string, scaleObj?: SceneObject): Interactable {
     const collider = so.createComponent("Physics.ColliderComponent") as ColliderComponent
     const shape = Shape.createBoxShape()
     shape.size = new vec3(size.w, size.h, size.d)
     collider.shape = shape
     const interactable = so.createComponent(Interactable.getTypeName()) as Interactable
     interactable.targetingMode = 3
-    interactable.onTriggerEnd.add(() => onPinchRelease())
+    const fb: FeedbackState = {obj: scaleObj || so, base: 1, hover: false, down: false, pop: 0, cur: 1}
+    this.feedback[hoverId] = fb
+    interactable.onTriggerStart.add(() => {
+      fb.down = true
+    })
+    interactable.onTriggerEnd.add(() => {
+      fb.down = false
+      this.triggerFeedback(hoverId)
+      onPinchRelease()
+    })
     interactable.onHoverEnter.add(() => {
+      fb.hover = true
       this.hoveredId = hoverId
       this.syncVisuals()
     })
     interactable.onHoverExit.add(() => {
+      fb.hover = false
+      fb.down = false
       if (this.hoveredId === hoverId) this.hoveredId = null
       this.syncVisuals()
     })
     return interactable
+  }
+
+  /** Release pop: scale kick + one expanding ping ring at the target. Works in reduced motion too (short, no loop). */
+  triggerFeedback(id: string): void {
+    const fb = this.feedback[id]
+    if (!fb) return
+    fb.pop = 1
+    this.pingAt(fb.obj.getTransform().getWorldPosition())
+  }
+
+  private pingAt(pos: vec3): void {
+    if (!this.pingRing) return
+    this.pingClock = 0.0001
+    this.pingRing.enabled = true
+    this.pingRing.getTransform().setWorldPosition(pos)
+  }
+
+  /** Reward burst for a REAL learning action (inspected evidence, correct prediction, verified fix): sparks fly outward. */
+  private rewardBurst(at: vec3): void {
+    this.burstOrigin = new vec3(at.x, at.y, at.z)
+    this.burstClock = 0.0001
+    this.rewardsGiven++
+  }
+
+  private setBaseScale(id: string, s: number): void {
+    const fb = this.feedback[id]
+    if (fb) fb.base = s
+  }
+
+  private animateFeedback(dt: number): void {
+    for (const id in this.feedback) {
+      const fb = this.feedback[id]
+      const target = fb.down ? 0.9 : fb.hover ? 1.12 : 1.0
+      fb.cur += (target - fb.cur) * Math.min(1, dt * 14)
+      if (fb.pop > 0) fb.pop = Math.max(0, fb.pop - dt * 3.2)
+      const f = fb.base * (fb.cur + 0.22 * Math.sin(fb.pop * Math.PI))
+      this.scratchScale.x = f
+      this.scratchScale.y = f
+      this.scratchScale.z = f
+      fb.obj.getTransform().setLocalScale(this.scratchScale)
+    }
+    if (this.pingRing && this.pingClock > 0) {
+      this.pingClock += dt
+      const u = this.pingClock / 0.55
+      if (u >= 1) {
+        this.pingClock = 0
+        this.pingRing.enabled = false
+      } else {
+        const s = 0.5 + u * 1.8
+        this.scratchScale.x = s
+        this.scratchScale.y = s
+        this.scratchScale.z = s
+        this.pingRing.getTransform().setLocalScale(this.scratchScale)
+        const k = 1.2 * (1 - u)
+        if (this.pingMat) this.pingMat.mainPass.baseColor = new vec4(k, k, k, 1)
+      }
+    }
+    if (this.burstClock > 0) {
+      this.burstClock += dt
+      const u = this.burstClock / 0.9
+      for (let i = 0; i < this.burstSparks.length; i++) {
+        const sp = this.burstSparks[i]
+        if (u >= 1) {
+          sp.enabled = false
+          continue
+        }
+        sp.enabled = true
+        const ang = (i / this.burstSparks.length) * Math.PI * 2
+        const r = 1.5 + u * 7
+        this.scratchPos.x = this.burstOrigin.x + Math.cos(ang) * r
+        this.scratchPos.y = this.burstOrigin.y + 2 + u * 6 - u * u * 3
+        this.scratchPos.z = this.burstOrigin.z + Math.sin(ang) * r * 0.6
+        sp.getTransform().setLocalPosition(this.scratchPos)
+        const sc = 1.4 * (1 - u) + 0.2
+        this.scratchScale.x = sc
+        this.scratchScale.y = sc
+        this.scratchScale.z = sc
+        sp.getTransform().setLocalScale(this.scratchScale)
+      }
+      if (u >= 1) this.burstClock = 0
+    }
+  }
+
+  private buildFeedbackFx(land: SceneObject): void {
+    const baseMaterial = (this.voxelMat || this.baseMat) as Material
+    this.pingMat = baseMaterial.clone()
+    this.pingRing = this.voxelObject("Fx_PingRing", land, null, PROP_VOX, [0, 0, 0], this.pingMat, "pingring", () => buildOrbRing(8, H.WHITE))
+    this.pingRing.getTransform().setLocalRotation(quat.angleAxis(1.15, vec3.right()))
+    this.pingRing.enabled = false
+    for (let i = 0; i < 10; i++) {
+      const sp = this.voxelObject("Fx_RewardSpark_" + i, land, null, 0.5, [-0.25, -0.25, -0.25], null, "spark" + (i % 2), () => buildPuff(i % 2 ? H.AMBER : H.WARM))
+      sp.enabled = false
+      this.burstSparks.push(sp)
+    }
+    // quiet progress trail: one small lantern per building the user has actually inspected (persisted locally, no profiling)
+    this.loadUnderstood()
+    for (const m of CITY_MODULES) {
+      const lantern = this.voxelObject("Lantern_" + m.moduleId, land, null, 0.5, [-0.75, 0, -0.75], null, "lantern", () => {
+        const g = new VoxelGrid()
+        g.box(0, 0, 0, 2, 2, 2, H.AMBER)
+        g.set(1, 3, 1, H.WARM)
+        return g
+      })
+      lantern.getTransform().setLocalPosition(new vec3(m.center.x + 4.2, PLATEAU_Y + 1.2, m.center.z + 4.2))
+      lantern.enabled = !!this.understood[m.moduleId]
+      this.lanterns[m.moduleId] = lantern
+    }
+  }
+
+  private markUnderstood(moduleId: string, at: vec3): void {
+    const first = !this.understood[moduleId]
+    this.understood[moduleId] = true
+    const lantern = this.lanterns[moduleId]
+    if (lantern) lantern.enabled = true
+    if (first) {
+      this.rewardBurst(at)
+      this.saveUnderstood()
+    }
+  }
+
+  private loadUnderstood(): void {
+    try {
+      const raw = global.persistentStorageSystem.store.getString("ba_understood")
+      if (raw) this.understood = JSON.parse(raw) as Record<string, boolean>
+    } catch (e) {
+      this.understood = {}
+    }
+  }
+
+  private saveUnderstood(): void {
+    try {
+      global.persistentStorageSystem.store.putString("ba_understood", JSON.stringify(this.understood))
+    } catch (e) {
+      // local progress is a convenience; losing it must never break the Lens
+    }
+  }
+
+  /** Test/diagnostic hook (LEAF): what the agent orbs and the flow pipeline currently show. */
+  missionControlSnapshot(): {orbs: {id: string; badge: string}[]; stage: number; stageName: string} {
+    const orbs = this.orbs.map((o) => {
+      const parts = o.badge.text.split("\n")
+      return {id: o.stationId, badge: parts.length > 1 ? parts[1] : ""}
+    })
+    return {orbs, stage: this.lastStage, stageName: this.lastStage >= 0 ? FLOW_STAGES[this.lastStage] : ""}
+  }
+
+  /** Test/diagnostic hooks (LEAF): read-only view of the feedback and reward state. */
+  feedbackSnapshot(): {rewards: number; lanterns: string[]; hoverScale: number} {
+    const lit = Object.keys(this.understood).filter((k) => this.understood[k])
+    return {rewards: this.rewardsGiven, lanterns: lit, hoverScale: this.feedbackScale("Module_Lobby")}
+  }
+
+  private feedbackScale(_id: string): number {
+    const fb = this.feedback["server-lobby"]
+    return fb ? fb.obj.getTransform().getLocalScale().x : 1
+  }
+
+  /** Clears progress (used by Start over would erase learning, so only tests call this). */
+  resetProgressForTest(): void {
+    this.understood = {}
+    for (const id in this.lanterns) this.lanterns[id].enabled = false
+    this.rewardsGiven = 0
   }
 
   private markPress(kind: BuildAlivePressRecord["kind"], target: string, pressMs: number): void {

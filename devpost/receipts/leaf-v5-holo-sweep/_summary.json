@@ -2,232 +2,246 @@
   {
     "scenario": "L01-scene-boot-provenance",
     "verdict": "PASS",
-    "startedAt": "05:29:08.695",
-    "logLine": 8377,
-    "receipt": "L01-scene-boot-provenance.run8377.txt"
+    "startedAt": "05:48:59.763",
+    "logLine": 11271,
+    "receipt": "L01-scene-boot-provenance.run11271.txt"
   },
   {
     "scenario": "L02-project-islands-exist",
     "verdict": "PASS",
-    "startedAt": "05:29:24.221",
-    "logLine": 8429,
-    "receipt": "L02-project-islands-exist.run8429.txt"
+    "startedAt": "05:49:20.306",
+    "logLine": 11325,
+    "receipt": "L02-project-islands-exist.run11325.txt"
   },
   {
     "scenario": "L03-pinch-project-island",
     "verdict": "PASS",
-    "startedAt": "05:29:38.878",
-    "logLine": 8481,
-    "receipt": "L03-pinch-project-island.run8481.txt"
+    "startedAt": "05:49:40.566",
+    "logLine": 11379,
+    "receipt": "L03-pinch-project-island.run11379.txt"
   },
   {
     "scenario": "L04-agent-vessel-and-subagent",
     "verdict": "PASS",
-    "startedAt": "05:29:55.020",
-    "logLine": 8533,
-    "receipt": "L04-agent-vessel-and-subagent.run8533.txt"
+    "startedAt": "05:50:01.546",
+    "logLine": 11433,
+    "receipt": "L04-agent-vessel-and-subagent.run11433.txt"
   },
   {
     "scenario": "L05-architecture-city-graph",
     "verdict": "PASS",
-    "startedAt": "05:30:09.661",
-    "logLine": 8585,
-    "receipt": "L05-architecture-city-graph.run8585.txt"
+    "startedAt": "05:50:22.370",
+    "logLine": 11487,
+    "receipt": "L05-architecture-city-graph.run11487.txt"
   },
   {
     "scenario": "L06-file-edit-pulse",
     "verdict": "PASS",
-    "startedAt": "05:30:25.289",
-    "logLine": 8637,
-    "receipt": "L06-file-edit-pulse.run8637.txt"
+    "startedAt": "05:50:42.418",
+    "logLine": 11541,
+    "receipt": "L06-file-edit-pulse.run11541.txt"
   },
   {
     "scenario": "L07-test-failure-fault-marker",
     "verdict": "PASS",
-    "startedAt": "05:30:40.200",
-    "logLine": 8689,
-    "receipt": "L07-test-failure-fault-marker.run8689.txt"
+    "startedAt": "05:51:03.324",
+    "logLine": 11595,
+    "receipt": "L07-test-failure-fault-marker.run11595.txt"
   },
   {
     "scenario": "L08-pinch-fault-marker-causal-chain",
     "verdict": "PASS",
-    "startedAt": "05:30:56.753",
-    "logLine": 8741,
-    "receipt": "L08-pinch-fault-marker-causal-chain.run8741.txt"
+    "startedAt": "05:51:23.872",
+    "logLine": 11649,
+    "receipt": "L08-pinch-fault-marker-causal-chain.run11649.txt"
   },
   {
     "scenario": "L09-rewind-crystal-diff",
     "verdict": "PASS",
-    "startedAt": "05:31:17.151",
-    "logLine": 8796,
-    "receipt": "L09-rewind-crystal-diff.run8796.txt"
+    "startedAt": "05:51:46.430",
+    "logLine": 11703,
+    "receipt": "L09-rewind-crystal-diff.run11703.txt"
   },
   {
     "scenario": "L10-learning-atelier-prediction",
     "verdict": "PASS",
-    "startedAt": "05:31:32.588",
-    "logLine": 8848,
-    "receipt": "L10-learning-atelier-prediction.run8848.txt"
+    "startedAt": "05:52:07.773",
+    "logLine": 11757,
+    "receipt": "L10-learning-atelier-prediction.run11757.txt"
   },
   {
     "scenario": "L11-safe-action-gate-approve-reject",
     "verdict": "PASS",
-    "startedAt": "05:31:52.319",
-    "logLine": 8903,
-    "receipt": "L11-safe-action-gate-approve-reject.run8903.txt"
+    "startedAt": "05:52:29.108",
+    "logLine": 11811,
+    "receipt": "L11-safe-action-gate-approve-reject.run11811.txt"
   },
   {
     "scenario": "L12-re-run-tests-after-fix",
     "verdict": "PASS",
-    "startedAt": "05:32:09.236",
-    "logLine": 8958,
-    "receipt": "L12-re-run-tests-after-fix.run8958.txt"
+    "startedAt": "05:52:50.753",
+    "logLine": 11865,
+    "receipt": "L12-re-run-tests-after-fix.run11865.txt"
   },
   {
     "scenario": "L13-reset-baseline",
     "verdict": "PASS",
-    "startedAt": "05:33:16.551",
-    "logLine": 9013,
-    "receipt": "L13-reset-baseline.run9013.txt"
+    "startedAt": "05:53:22.062",
+    "logLine": 11919,
+    "receipt": "L13-reset-baseline.run11919.txt"
   },
   {
     "scenario": "L14-control-size-spacing",
     "verdict": "PASS",
-    "startedAt": "05:33:32.667",
-    "logLine": 9065,
-    "receipt": "L14-control-size-spacing.run9065.txt"
+    "startedAt": "05:53:44.266",
+    "logLine": 11973,
+    "receipt": "L14-control-size-spacing.run11973.txt"
   },
   {
     "scenario": "L15-camera-fov-visibility",
     "verdict": "PASS",
-    "startedAt": "05:33:48.687",
-    "logLine": 9117,
-    "receipt": "L15-camera-fov-visibility.run9117.txt"
+    "startedAt": "05:54:06.748",
+    "logLine": 12027,
+    "receipt": "L15-camera-fov-visibility.run12027.txt"
   },
   {
     "scenario": "L16-ik-reachability",
     "verdict": "PASS",
-    "startedAt": "05:34:04.678",
-    "logLine": 9169,
-    "receipt": "L16-ik-reachability.run9169.txt"
+    "startedAt": "05:54:29.736",
+    "logLine": 12081,
+    "receipt": "L16-ik-reachability.run12081.txt"
   },
   {
     "scenario": "L18-secret-redaction",
     "verdict": "PASS",
-    "startedAt": "05:34:24.659",
-    "logLine": 9221,
-    "receipt": "L18-secret-redaction.run9221.txt"
+    "startedAt": "05:54:55.560",
+    "logLine": 12135,
+    "receipt": "L18-secret-redaction.run12135.txt"
   },
   {
     "scenario": "L19-malformed-event-handling",
     "verdict": "PASS",
-    "startedAt": "05:34:42.035",
-    "logLine": 9273,
-    "receipt": "L19-malformed-event-handling.run9273.txt"
+    "startedAt": "05:55:18.843",
+    "logLine": 12189,
+    "receipt": "L19-malformed-event-handling.run12189.txt"
   },
   {
     "scenario": "L20-duplicate-out-of-order",
     "verdict": "PASS",
-    "startedAt": "05:34:59.393",
-    "logLine": 9325,
-    "receipt": "L20-duplicate-out-of-order.run9325.txt"
+    "startedAt": "05:55:40.946",
+    "logLine": 12243,
+    "receipt": "L20-duplicate-out-of-order.run12243.txt"
   },
   {
     "scenario": "L21-disconnect-fallback",
     "verdict": "PASS",
-    "startedAt": "05:35:16.877",
-    "logLine": 9377,
-    "receipt": "L21-disconnect-fallback.run9377.txt"
+    "startedAt": "05:56:03.511",
+    "logLine": 12297,
+    "receipt": "L21-disconnect-fallback.run12297.txt"
   },
   {
     "scenario": "L22-reduced-motion-colour-safe",
     "verdict": "PASS",
-    "startedAt": "05:35:34.586",
-    "logLine": 9429,
-    "receipt": "L22-reduced-motion-colour-safe.run9429.txt"
+    "startedAt": "05:56:26.046",
+    "logLine": 12351,
+    "receipt": "L22-reduced-motion-colour-safe.run12351.txt"
   },
   {
     "scenario": "L23-real-workspace-islands",
     "verdict": "PASS",
-    "startedAt": "05:35:52.263",
-    "logLine": 9481,
-    "receipt": "L23-real-workspace-islands.run9481.txt"
+    "startedAt": "05:56:49.231",
+    "logLine": 12405,
+    "receipt": "L23-real-workspace-islands.run12405.txt"
   },
   {
     "scenario": "L24-pinch-real-module-path",
     "verdict": "PASS",
-    "startedAt": "05:36:10.487",
-    "logLine": 9545,
-    "receipt": "L24-pinch-real-module-path.run9545.txt"
+    "startedAt": "05:57:14.713",
+    "logLine": 12471,
+    "receipt": "L24-pinch-real-module-path.run12471.txt"
+  },
+  {
+    "scenario": "L25-feedback-and-rewards",
+    "verdict": "PASS",
+    "startedAt": "05:57:39.036",
+    "logLine": 12526,
+    "receipt": "L25-feedback-and-rewards.run12526.txt"
+  },
+  {
+    "scenario": "L26-agent-orbs-and-flow-pipeline",
+    "verdict": "PASS",
+    "startedAt": "05:58:31.220",
+    "logLine": 12581,
+    "receipt": "L26-agent-orbs-and-flow-pipeline.run12581.txt"
   },
   {
     "scenario": "c1-layout",
     "verdict": "PASS",
-    "startedAt": "05:36:31.190",
-    "logLine": 9598,
-    "receipt": "c1-layout.run9598.txt"
+    "startedAt": "06:03:45.401",
+    "logLine": 12636,
+    "receipt": "c1-layout.run12636.txt"
   },
   {
     "scenario": "c2-stall-evidence",
     "verdict": "PASS",
-    "startedAt": "05:36:48.886",
-    "logLine": 9650,
-    "receipt": "c2-stall-evidence.run9650.txt"
+    "startedAt": "06:04:09.538",
+    "logLine": 12690,
+    "receipt": "c2-stall-evidence.run12690.txt"
   },
   {
     "scenario": "c3-swap-pinch",
     "verdict": "PASS",
-    "startedAt": "05:37:07.699",
-    "logLine": 9705,
-    "receipt": "c3-swap-pinch.run9705.txt"
+    "startedAt": "06:04:35.075",
+    "logLine": 12747,
+    "receipt": "c3-swap-pinch.run12747.txt"
   },
   {
     "scenario": "c3-drop-far",
     "verdict": "PASS",
-    "startedAt": "05:37:27.913",
-    "logLine": 9758,
-    "receipt": "c3-drop-far.run9758.txt"
+    "startedAt": "06:05:01.933",
+    "logLine": 12802,
+    "receipt": "c3-drop-far.run12802.txt"
   },
   {
     "scenario": "c4-pass-proof",
     "verdict": "PASS",
-    "startedAt": "05:37:47.807",
-    "logLine": 9810,
-    "receipt": "c4-pass-proof.run9810.txt"
+    "startedAt": "06:05:28.279",
+    "logLine": 12856,
+    "receipt": "c4-pass-proof.run12856.txt"
   },
   {
     "scenario": "c5-reset",
     "verdict": "PASS",
-    "startedAt": "05:38:15.326",
-    "logLine": 9863,
-    "receipt": "c5-reset.run9863.txt"
+    "startedAt": "06:05:58.757",
+    "logLine": 12911,
+    "receipt": "c5-reset.run12911.txt"
   },
   {
     "scenario": "c6-controls",
     "verdict": "FAIL",
-    "startedAt": "05:38:43.212",
-    "logLine": 9917,
-    "receipt": "c6-controls.run9917.txt"
+    "startedAt": "06:06:31.140",
+    "logLine": 12967,
+    "receipt": "c6-controls.run12967.txt"
   },
   {
     "scenario": "c6-ik-reach",
     "verdict": "PASS",
-    "startedAt": "05:39:03.292",
-    "logLine": 9976,
-    "receipt": "c6-ik-reach.run9976.txt"
+    "startedAt": "06:06:55.866",
+    "logLine": 13028,
+    "receipt": "c6-ik-reach.run13028.txt"
   },
   {
     "scenario": "L17-latency-benchmark",
     "verdict": "PASS",
-    "startedAt": "05:39:34.898",
-    "logLine": 10030,
-    "receipt": "L17-latency-benchmark.run10030.txt"
+    "startedAt": "06:07:31.434",
+    "logLine": 13084,
+    "receipt": "L17-latency-benchmark.run13084.txt"
   },
   {
     "scenario": "c7-latency",
     "verdict": "PASS",
-    "startedAt": "05:40:46.322",
-    "logLine": 10082,
-    "receipt": "c7-latency.run10082.txt"
+    "startedAt": "06:08:53.406",
+    "logLine": 13138,
+    "receipt": "c7-latency.run13138.txt"
   }
 ]

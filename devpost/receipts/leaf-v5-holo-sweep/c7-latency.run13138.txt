@@ -1,0 +1,11 @@
+I 06:08:53.406 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]RUNS: c7-latency with args: []
+I 06:08:53.406 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 06:09:41.608 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c7] presses logged: 200 (run 50, reset 50, swap 100)
+I 06:09:41.609 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c7] press-to-first-frame ms: p50=1.0 p95=2.0 p99=2.0 min=0 max=2 n=200
+I 06:09:41.610 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c7] run: p50=1.0 p95=2.0 p99=2.0 n=50
+I 06:09:41.610 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c7] reset: p50=1.0 p95=2.0 p99=2.0 n=50
+I 06:09:41.611 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c7] swap: p50=1.0 p95=2.0 p99=2.0 n=100
+I 06:09:41.611 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c7] RAW 2,2,1,1,2,1,1,1,2,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,2,1,2,2,1,2,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1,2,1,1,1,1,1,2,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,2,1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,1,1,1,1,1,1,2,1,1,2,1,2,1,0,1,2,1,1,1,2,1,1,1,2,2,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,1,1
+I 06:09:41.611 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [ 48.206s]PASSED: c7-latency
+I 06:09:41.611 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [ 48.206s][c7-latency] PASSED
+I 06:09:41.613 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario c7-latency completed successfully.
