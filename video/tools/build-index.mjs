@@ -1,0 +1,196 @@
+// Generates index.html: static <img> tags for the 22 real Preview frames (g001-g022) + the composition script.
+// All timing is derived from the constants below so the passes, slates, labels and end card stay in sync.
+import { writeFileSync } from "node:fs"
+
+const NF = 22
+const A = { first: 21.6, hold: 1.4 }                           // pass 1: as captured, g001-g022
+const A_END = A.first + NF * A.hold                            // 52.4
+const SLATE = 4.0
+const B = { start: A_END + SLATE, frames: [10, 17], hold: 4.2 } // pass 2: zoom on evidence card
+const B_COUNT = B.frames[1] - B.frames[0] + 1
+const B_END = B.start + B_COUNT * B.hold
+const C = { start: B_END + SLATE, frames: [16, 22], hold: 4.4 } // pass 3: zoom on fault marker + Learn card
+const C_COUNT = C.frames[1] - C.frames[0] + 1
+const C_END = C.start + C_COUNT * C.hold
+const END_DUR = 16.4
+const TOTAL = +(C_END + END_DUR).toFixed(1)
+const r = (x) => +x.toFixed(2)
+
+const imgs = []
+for (let i = 1; i <= NF; i++) {
+  const n = String(i).padStart(3, "0")
+  imgs.push(`          <img id="img-g${n}" class="fr" src="assets/preview-frames-v2/g${n}.png" width="1740" height="1590" alt="Lens Studio Preview capture g${n}" />`)
+}
+
+const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root { --ground:#060a14; --ink:#f4f7ff; --cyan:#47ebff; --amber:#ffc83d; --mint:#3df5ad; --muted:#a9b6d6; }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      html, body { margin:0; width:1920px; height:1080px; overflow:hidden; background:var(--ground); }
+      #root { position:absolute; inset:0; background:var(--ground); font-family:monospace; color:var(--ink); }
+      .full { position:absolute; inset:0; }
+      #footage { background:var(--ground); }
+      #cam { position:absolute; left:0; top:0; width:1740px; height:1590px; transform-origin:0 0; }
+      .fr { position:absolute; left:0; top:0; width:1740px; height:1590px; opacity:0; }
+      #px { position:absolute; left:0; top:0; width:1920px; height:1080px; image-rendering:pixelated; image-rendering:crisp-edges; }
+      .chip { position:absolute; background:rgba(6,10,20,0.84); border-left:5px solid var(--cyan); padding:9px 16px; font-size:22px; font-weight:700; letter-spacing:0.02em; line-height:1.3; border-radius:3px; }
+      #lab-real { left:36px; top:32px; }
+      #lab-replay { left:36px; bottom:32px; border-left-color:var(--mint); }
+      #lab-pinch { right:36px; top:32px; border-left-color:var(--amber); color:var(--amber); opacity:0; }
+      #tags { position:absolute; right:36px; bottom:32px; width:1200px; height:90px; }
+      .tag { position:absolute; right:0; bottom:0; text-align:right; opacity:0; }
+      .tag .l1 { display:inline-block; background:rgba(6,10,20,0.84); border-right:5px solid var(--cyan); padding:6px 16px; font-size:22px; font-weight:700; border-radius:3px; }
+      .tag .l2 { display:block; margin-top:4px; }
+      .tag .l2 span { display:inline-block; background:rgba(6,10,20,0.84); border-right:5px solid var(--amber); padding:5px 16px; font-size:20px; color:var(--muted); border-radius:3px; }
+      .slate { background:var(--ground); }
+      .slate-in { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:18px; opacity:0; text-align:center; padding:0 220px; }
+      .slate h2 { font-size:46px; letter-spacing:0.08em; color:var(--cyan); }
+      .slate p { font-size:25px; line-height:1.5; color:var(--ink); }
+      .slate p.sm { font-size:21px; color:var(--muted); }
+      #end { background:var(--ground); opacity:0; }
+      #end-in { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px; text-align:center; padding:0 150px; }
+      #end-title { font-size:104px; letter-spacing:0.08em; color:var(--cyan); opacity:0; }
+      #end-pre { font-size:44px; font-weight:700; color:var(--amber); opacity:0; }
+      #end-pass { font-size:34px; font-weight:700; color:var(--mint); margin-top:18px; opacity:0; }
+      #end-det { font-size:25px; color:var(--ink); line-height:1.5; opacity:0; }
+      #end-foot { position:absolute; left:0; right:0; bottom:46px; text-align:center; font-size:20px; color:var(--muted); opacity:0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="${TOTAL}" data-width="1920" data-height="1080">
+      <div id="footage" class="clip full" data-start="20.8" data-duration="${r(C_END + 0.8 - 20.8)}" data-track-index="0">
+        <div id="cam" data-layout-allow-overflow>
+${imgs.join("\n")}
+        </div>
+      </div>
+
+      <canvas id="px" class="clip" width="480" height="270" data-start="0" data-duration="22.6" data-track-index="1"></canvas>
+
+      <div id="slate-b" class="clip full slate" data-start="${r(A_END)}" data-duration="${SLATE}" data-track-index="2">
+        <div class="slate-in" id="slate-b-in">
+          <h2>PASS 2 OF 3</h2>
+          <p>Zoomed crop, evidence card (g010-g017)</p>
+          <p>Slowed to ${B.hold} s per frame</p>
+          <p class="sm">Dissolves between frames are not real motion.</p>
+        </div>
+      </div>
+      <div id="slate-c" class="clip full slate" data-start="${r(B_END)}" data-duration="${SLATE}" data-track-index="2">
+        <div class="slate-in" id="slate-c-in">
+          <h2>PASS 3 OF 3</h2>
+          <p>Zoomed crop, fault marker and Learn card (g016-g022)</p>
+          <p>Slowed to ${C.hold} s per frame</p>
+          <p class="sm">Injected test pinches (Preview simulation) precede g013, g016, g018, g020.</p>
+        </div>
+      </div>
+
+      <div id="labels" class="clip full" data-start="21.6" data-duration="${r(C_END + 0.6 - 21.6)}" data-track-index="3" style="pointer-events:none">
+        <div id="lab-real" class="chip">REAL PREVIEW CAPTURE (Lens Studio 5.23.2, ~0.7 fps frame sequence)</div>
+        <div id="lab-replay" class="chip">RECORDED REPLAY DATA - not a live agent</div>
+        <div id="lab-pinch" class="chip">INJECTED TEST PINCH (Preview simulation, not a physical hand)</div>
+        <div id="tags"></div>
+      </div>
+
+      <div id="end" class="clip full" data-hold data-start="${r(C_END)}" data-duration="${END_DUR}" data-track-index="4">
+        <div id="end-in">
+          <h1 id="end-title">BUILD ALIVE</h1>
+          <p id="end-pre">Preview-only. No physical Spectacles test.</p>
+          <p id="end-pass">31/31 LEAF scenarios passed in Lens Studio Preview</p>
+          <p id="end-det">L01-L22 + c1-c7, second sweep after two test fixes and a layout fix.<br />Raw receipts in repo: devpost/receipts/</p>
+        </div>
+        <p id="end-foot">Footage: real Lens Studio 5.23.2 Preview captures. Recorded replay data, not a live agent.</p>
+      </div>
+
+      <audio id="score" src="assets/score.wav" data-start="0" data-duration="${TOTAL}" data-volume="1"></audio>
+    </div>
+    <script src="assets/intro.js"></script>
+    <script>
+      const FID = (n) => "g" + String(n).padStart(3, "0")
+      const IMG = (n) => "#img-" + FID(n)
+      const ALL = Array.from({ length: ${NF} }, (_, i) => IMG(i + 1)).join(",")
+      const crop = (cx, cy, cw) => { const s = 1920 / cw; return { x: -cx * s, y: -cy * s, scale: s } }
+      const DESC = (n) => n <= 9 ? "idle project universe, no card"
+        : n <= 12 ? "idle auto-cycle begins: edit pulse, [CHG] Logic:Lobby badge"
+        : n <= 15 ? "after injected Inspect pinch: INSPECT evidence card"
+        : n <= 17 ? "INSPECT card (injected Step pinch at about g016)"
+        : n <= 19 ? "after injected Step pinch: FAILURE ALERT card, red fault marker"
+        : "after injected Learn pinch: LEARNING ATELIER card"
+      const PINCH_FRAMES = [13, 16, 18, 20]
+      const XF = 0.5
+      const tl = gsap.timeline({ paused: true })
+      const tagsEl = document.getElementById("tags")
+      let z = 1
+      const pinch = []
+
+      function run(frames, t0, hold, label, firstAt) {
+        frames.forEach((n, i) => {
+          const s = t0 + i * hold, e = s + hold
+          const tag = document.createElement("div")
+          tag.className = "tag"
+          tag.innerHTML = '<span class="l1">' + label + " - " + FID(n) + '</span><span class="l2"><span>' + DESC(n) + "</span></span>"
+          tagsEl.appendChild(tag)
+          const showAt = i === 0 ? firstAt : s
+          tl.set(tag, { opacity: 1 }, showAt)
+          tl.set(tag, { opacity: 0 }, e)
+          if (i === 0) tl.set(IMG(n), { opacity: 1, zIndex: ++z }, firstAt)
+          else {
+            tl.set(IMG(n), { zIndex: ++z }, s)
+            tl.fromTo(IMG(n), { opacity: 0 }, { opacity: 1, duration: XF, ease: "none", immediateRender: false }, s)
+            tl.set(IMG(frames[i - 1]), { opacity: 0 }, s + XF + 0.03)
+          }
+          if (PINCH_FRAMES.includes(n)) pinch.push([showAt, e])
+        })
+      }
+      const seq = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i)
+
+      // Pass 1: as captured (real time, ${A.hold} s per frame), wide crop with a slow drift.
+      const A0 = crop(170, 400, 1400), A1 = crop(215, 420, 1310)
+      tl.set("#cam", A0, 20.8)
+      tl.set(IMG(1), { opacity: 1, zIndex: 1 }, 20.8)
+      tl.fromTo("#cam", A0, { ...A1, duration: ${r(A_END - 20.8)}, ease: "sine.inOut", immediateRender: false }, 20.8)
+      run(seq(1, ${NF}), ${A.first}, ${A.hold}, "PASS 1/3 - AS CAPTURED (${A.hold} s per frame)", ${A.first})
+
+      // Pass 2: zoomed + slowed on the evidence card (g${B.frames[0]}-g${B.frames[1]}).
+      tl.set(ALL, { opacity: 0 }, ${r(A_END + 1.0)})
+      const B0 = crop(380, 430, 880), B1 = crop(620, 450, 820)
+      tl.set("#cam", B0, ${r(A_END + 2.6)})
+      tl.fromTo("#cam", B0, { ...B1, duration: ${r(B_END - (A_END + 2.6))}, ease: "sine.inOut", immediateRender: false }, ${r(A_END + 2.6)})
+      run(seq(${B.frames[0]}, ${B.frames[1]}), ${r(B.start)}, ${B.hold}, "PASS 2/3 - ZOOMED + SLOWED (${B.hold} s per frame)", ${r(A_END + 2.6)})
+
+      // Pass 3: zoomed + slowed on the fault marker and Learn card (g${C.frames[0]}-g${C.frames[1]}).
+      tl.set(ALL, { opacity: 0 }, ${r(B_END + 1.0)})
+      const C0 = crop(470, 425, 900), C1 = crop(560, 445, 800)
+      tl.set("#cam", C0, ${r(B_END + 2.6)})
+      tl.fromTo("#cam", C0, { ...C1, duration: ${r(C_END - (B_END + 2.6))}, ease: "sine.inOut", immediateRender: false }, ${r(B_END + 2.6)})
+      run(seq(${C.frames[0]}, ${C.frames[1]}), ${r(C.start)}, ${C.hold}, "PASS 3/3 - ZOOMED + SLOWED (${C.hold} s per frame)", ${r(B_END + 2.6)})
+
+      // injected-pinch label
+      pinch.forEach(([a, b]) => { tl.set("#lab-pinch", { opacity: 1 }, a); tl.set("#lab-pinch", { opacity: 0 }, b) })
+
+      // slates
+      for (const [id, a] of [["#slate-b-in", ${r(A_END)}], ["#slate-c-in", ${r(B_END)}]]) {
+        tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.out", immediateRender: false }, a)
+        tl.fromTo(id, { opacity: 1 }, { opacity: 0, duration: 0.5, ease: "power1.in", immediateRender: false }, a + 3.5)
+      }
+
+      // end card
+      const E = ${r(C_END)}
+      tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "none", immediateRender: false }, E)
+      tl.fromTo("#end-title", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 1.4)
+      tl.fromTo("#end-pre", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 3.0)
+      tl.fromTo("#end-pass", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 5.5)
+      tl.fromTo("#end-det", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 7.5)
+      tl.fromTo("#end-foot", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 9.5)
+
+      window.__timelines = window.__timelines || {}
+      window.__timelines["main"] = tl
+    </script>
+  </body>
+</html>
+`
+writeFileSync(new URL("../index.html", import.meta.url), html)
+console.log("wrote index.html", { A_END, B_END, C_END, TOTAL })

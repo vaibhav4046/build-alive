@@ -5,82 +5,186 @@
     <meta name="viewport" content="width=1920, height=1080" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
     <style>
-      :root {
-        --ground: #060a14;
-        --ink: #f4f7ff;
-        --cyan: #47ebff;
-        --amber: #ffc83d;
-        --mint: #3df5ad;
-        --coral: #ff5c52;
-        --violet: #c28aff;
-        --font-display: "Consolas", "Space Mono", "Courier New", monospace;
-      }
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); }
-      #root { position: absolute; inset: 0; width: 1920px; height: 1080px; background: var(--ground); font-family: var(--font-display); }
-      #px { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
-      .cap {
-        position: absolute;
-        color: var(--ink);
-        font-size: 25px;
-        font-weight: 700;
-        letter-spacing: 0.03em;
-        line-height: 1.35;
-        background: rgba(6, 10, 20, 0.88);
-        padding: 12px 22px;
-        border-left: 6px solid var(--cyan);
-        border-radius: 4px;
-        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
-      }
-      #cap-act1 { left: 84px; bottom: 54px; border-left-color: var(--coral); }
-      #cap-act2a { left: 84px; bottom: 54px; border-left-color: var(--cyan); }
-      #cap-act2b { left: 84px; bottom: 54px; border-left-color: var(--amber); }
-      #cap-act2c { left: 84px; bottom: 54px; border-left-color: var(--mint); }
-      #cap-act3 { left: 84px; bottom: 54px; border-left-color: var(--violet); }
-      #end-title { position: absolute; left: 0; right: 0; top: 130px; text-align: center; color: var(--cyan); font-size: 108px; font-weight: 700; letter-spacing: 0.05em; text-shadow: 0 0 36px rgba(71, 235, 255, 0.35); }
-      #end-sub { position: absolute; left: 0; right: 0; top: 278px; text-align: center; color: var(--ink); font-size: 40px; font-weight: 700; }
-      #end-stats { position: absolute; left: 0; right: 0; top: 360px; text-align: center; color: var(--mint); font-size: 27px; letter-spacing: 0.04em; }
-      #end-note { position: absolute; left: 0; right: 0; bottom: 78px; text-align: center; color: #b8c2e0; font-size: 25px; line-height: 1.45; }
+      :root { --ground:#060a14; --ink:#f4f7ff; --cyan:#47ebff; --amber:#ffc83d; --mint:#3df5ad; --muted:#a9b6d6; }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      html, body { margin:0; width:1920px; height:1080px; overflow:hidden; background:var(--ground); }
+      #root { position:absolute; inset:0; background:var(--ground); font-family:monospace; color:var(--ink); }
+      .full { position:absolute; inset:0; }
+      #footage { background:var(--ground); }
+      #cam { position:absolute; left:0; top:0; width:1740px; height:1590px; transform-origin:0 0; }
+      .fr { position:absolute; left:0; top:0; width:1740px; height:1590px; opacity:0; }
+      #px { position:absolute; left:0; top:0; width:1920px; height:1080px; image-rendering:pixelated; image-rendering:crisp-edges; }
+      .chip { position:absolute; background:rgba(6,10,20,0.84); border-left:5px solid var(--cyan); padding:9px 16px; font-size:22px; font-weight:700; letter-spacing:0.02em; line-height:1.3; border-radius:3px; }
+      #lab-real { left:36px; top:32px; }
+      #lab-replay { left:36px; bottom:32px; border-left-color:var(--mint); }
+      #lab-pinch { right:36px; top:32px; border-left-color:var(--amber); color:var(--amber); opacity:0; }
+      #tags { position:absolute; right:36px; bottom:32px; width:1200px; height:90px; }
+      .tag { position:absolute; right:0; bottom:0; text-align:right; opacity:0; }
+      .tag .l1 { display:inline-block; background:rgba(6,10,20,0.84); border-right:5px solid var(--cyan); padding:6px 16px; font-size:22px; font-weight:700; border-radius:3px; }
+      .tag .l2 { display:block; margin-top:4px; }
+      .tag .l2 span { display:inline-block; background:rgba(6,10,20,0.84); border-right:5px solid var(--amber); padding:5px 16px; font-size:20px; color:var(--muted); border-radius:3px; }
+      .slate { background:var(--ground); }
+      .slate-in { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:18px; opacity:0; text-align:center; padding:0 220px; }
+      .slate h2 { font-size:46px; letter-spacing:0.08em; color:var(--cyan); }
+      .slate p { font-size:25px; line-height:1.5; color:var(--ink); }
+      .slate p.sm { font-size:21px; color:var(--muted); }
+      #end { background:var(--ground); opacity:0; }
+      #end-in { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px; text-align:center; padding:0 150px; }
+      #end-title { font-size:104px; letter-spacing:0.08em; color:var(--cyan); opacity:0; }
+      #end-pre { font-size:44px; font-weight:700; color:var(--amber); opacity:0; }
+      #end-pass { font-size:34px; font-weight:700; color:var(--mint); margin-top:18px; opacity:0; }
+      #end-det { font-size:25px; color:var(--ink); line-height:1.5; opacity:0; }
+      #end-foot { position:absolute; left:0; right:0; bottom:46px; text-align:center; font-size:20px; color:var(--muted); opacity:0; }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="154" data-width="1920" data-height="1080" data-hold>
-      <canvas id="px" class="clip" width="960" height="540" data-start="0" data-duration="154" data-track-index="0"></canvas>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="141.2" data-width="1920" data-height="1080">
+      <div id="footage" class="clip full" data-start="20.8" data-duration="104.8" data-track-index="0">
+        <div id="cam" data-layout-allow-overflow>
+          <img id="img-g001" class="fr" src="assets/preview-frames-v2/g001.png" width="1740" height="1590" alt="Lens Studio Preview capture g001" />
+          <img id="img-g002" class="fr" src="assets/preview-frames-v2/g002.png" width="1740" height="1590" alt="Lens Studio Preview capture g002" />
+          <img id="img-g003" class="fr" src="assets/preview-frames-v2/g003.png" width="1740" height="1590" alt="Lens Studio Preview capture g003" />
+          <img id="img-g004" class="fr" src="assets/preview-frames-v2/g004.png" width="1740" height="1590" alt="Lens Studio Preview capture g004" />
+          <img id="img-g005" class="fr" src="assets/preview-frames-v2/g005.png" width="1740" height="1590" alt="Lens Studio Preview capture g005" />
+          <img id="img-g006" class="fr" src="assets/preview-frames-v2/g006.png" width="1740" height="1590" alt="Lens Studio Preview capture g006" />
+          <img id="img-g007" class="fr" src="assets/preview-frames-v2/g007.png" width="1740" height="1590" alt="Lens Studio Preview capture g007" />
+          <img id="img-g008" class="fr" src="assets/preview-frames-v2/g008.png" width="1740" height="1590" alt="Lens Studio Preview capture g008" />
+          <img id="img-g009" class="fr" src="assets/preview-frames-v2/g009.png" width="1740" height="1590" alt="Lens Studio Preview capture g009" />
+          <img id="img-g010" class="fr" src="assets/preview-frames-v2/g010.png" width="1740" height="1590" alt="Lens Studio Preview capture g010" />
+          <img id="img-g011" class="fr" src="assets/preview-frames-v2/g011.png" width="1740" height="1590" alt="Lens Studio Preview capture g011" />
+          <img id="img-g012" class="fr" src="assets/preview-frames-v2/g012.png" width="1740" height="1590" alt="Lens Studio Preview capture g012" />
+          <img id="img-g013" class="fr" src="assets/preview-frames-v2/g013.png" width="1740" height="1590" alt="Lens Studio Preview capture g013" />
+          <img id="img-g014" class="fr" src="assets/preview-frames-v2/g014.png" width="1740" height="1590" alt="Lens Studio Preview capture g014" />
+          <img id="img-g015" class="fr" src="assets/preview-frames-v2/g015.png" width="1740" height="1590" alt="Lens Studio Preview capture g015" />
+          <img id="img-g016" class="fr" src="assets/preview-frames-v2/g016.png" width="1740" height="1590" alt="Lens Studio Preview capture g016" />
+          <img id="img-g017" class="fr" src="assets/preview-frames-v2/g017.png" width="1740" height="1590" alt="Lens Studio Preview capture g017" />
+          <img id="img-g018" class="fr" src="assets/preview-frames-v2/g018.png" width="1740" height="1590" alt="Lens Studio Preview capture g018" />
+          <img id="img-g019" class="fr" src="assets/preview-frames-v2/g019.png" width="1740" height="1590" alt="Lens Studio Preview capture g019" />
+          <img id="img-g020" class="fr" src="assets/preview-frames-v2/g020.png" width="1740" height="1590" alt="Lens Studio Preview capture g020" />
+          <img id="img-g021" class="fr" src="assets/preview-frames-v2/g021.png" width="1740" height="1590" alt="Lens Studio Preview capture g021" />
+          <img id="img-g022" class="fr" src="assets/preview-frames-v2/g022.png" width="1740" height="1590" alt="Lens Studio Preview capture g022" />
+        </div>
+      </div>
 
-      <div id="cap-act1" class="cap clip" data-start="3" data-duration="33" data-track-index="5">ACT I • Why 2D Terminals Fail: LLM Scroll Flood, Hidden Blast Radius &amp; Blind Shell Risks</div>
-      <div id="cap-act2a" class="cap clip" data-start="36" data-duration="44" data-track-index="5">ACT II • BUILD ALIVE in Spectacles Preview: 3D LLM Architecture City, Agent Vessels &amp; Causal Fault Beam</div>
-      <div id="cap-act2b" class="cap clip" data-start="80" data-duration="24" data-track-index="5">4D Time-Travel Rewind Crystal • Side-by-Side AST Diff &amp; Socratic Learning Atelier</div>
-      <div id="cap-act2c" class="cap clip" data-start="104" data-duration="24" data-track-index="5">Cryptographic Human-in-the-Loop Gate • Pinch Approve (SHA-256 Nonce) &amp; City-Wide Repair</div>
-      <div id="cap-act3" class="cap clip" data-start="128" data-duration="14" data-track-index="5">ACT III • Live Windows Multi-Agent Bridge: Antigravity + Claude Code + Codex (p50 = 0.04 ms)</div>
+      <canvas id="px" class="clip" width="480" height="270" data-start="0" data-duration="22.6" data-track-index="1"></canvas>
 
-      <h1 id="end-title" class="clip" data-start="142" data-duration="12" data-track-index="5">BUILD ALIVE</h1>
-      <p id="end-sub" class="clip" data-start="143" data-duration="11" data-track-index="5">Walk inside what AI is building on your desk.</p>
-      <p id="end-stats" class="clip" data-start="145" data-duration="9" data-track-index="5">174,521 Automated Assertions • 72 Capabilities • 22 LEAF Scenarios • Live LLM Bridge</p>
-      <p id="end-note" class="clip" data-start="146" data-duration="8" data-track-index="5">Shown working in Lens Studio 5.23.2 Spectacles preview only.<br />Physical Spectacles hardware unproven.</p>
+      <div id="slate-b" class="clip full slate" data-start="52.4" data-duration="4" data-track-index="2">
+        <div class="slate-in" id="slate-b-in">
+          <h2>PASS 2 OF 3</h2>
+          <p>Zoomed crop, evidence card (g010-g017)</p>
+          <p>Slowed to 4.2 s per frame</p>
+          <p class="sm">Dissolves between frames are not real motion.</p>
+        </div>
+      </div>
+      <div id="slate-c" class="clip full slate" data-start="90" data-duration="4" data-track-index="2">
+        <div class="slate-in" id="slate-c-in">
+          <h2>PASS 3 OF 3</h2>
+          <p>Zoomed crop, fault marker and Learn card (g016-g022)</p>
+          <p>Slowed to 4.4 s per frame</p>
+          <p class="sm">Injected test pinches (Preview simulation) precede g013, g016, g018, g020.</p>
+        </div>
+      </div>
 
-      <audio id="bed" src="assets/ambient.wav" data-start="0" data-duration="154" data-volume="0.9"></audio>
+      <div id="labels" class="clip full" data-start="21.6" data-duration="103.8" data-track-index="3" style="pointer-events:none">
+        <div id="lab-real" class="chip">REAL PREVIEW CAPTURE (Lens Studio 5.23.2, ~0.7 fps frame sequence)</div>
+        <div id="lab-replay" class="chip">RECORDED REPLAY DATA - not a live agent</div>
+        <div id="lab-pinch" class="chip">INJECTED TEST PINCH (Preview simulation, not a physical hand)</div>
+        <div id="tags"></div>
+      </div>
+
+      <div id="end" class="clip full" data-hold data-start="124.8" data-duration="16.4" data-track-index="4">
+        <div id="end-in">
+          <h1 id="end-title">BUILD ALIVE</h1>
+          <p id="end-pre">Preview-only. No physical Spectacles test.</p>
+          <p id="end-pass">31/31 LEAF scenarios passed in Lens Studio Preview</p>
+          <p id="end-det">L01-L22 + c1-c7, second sweep after two test fixes and a layout fix.<br />Raw receipts in repo: devpost/receipts/</p>
+        </div>
+        <p id="end-foot">Footage: real Lens Studio 5.23.2 Preview captures. Recorded replay data, not a live agent.</p>
+      </div>
+
+      <audio id="score" src="assets/score.wav" data-start="0" data-duration="141.2" data-volume="1"></audio>
     </div>
-    <script src="assets/film.js"></script>
+    <script src="assets/intro.js"></script>
     <script>
-      window.__timelines = window.__timelines || {};
-      const tl = gsap.timeline({ paused: true });
-      tl.fromTo("#cap-act1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 3);
-      tl.to("#cap-act1", { opacity: 0, duration: 0.4, ease: "power2.in" }, 35.4);
-      tl.fromTo("#cap-act2a", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 36);
-      tl.to("#cap-act2a", { opacity: 0, duration: 0.4, ease: "power2.in" }, 79.4);
-      tl.fromTo("#cap-act2b", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 80);
-      tl.to("#cap-act2b", { opacity: 0, duration: 0.4, ease: "power2.in" }, 103.4);
-      tl.fromTo("#cap-act2c", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 104);
-      tl.to("#cap-act2c", { opacity: 0, duration: 0.4, ease: "power2.in" }, 127.4);
-      tl.fromTo("#cap-act3", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 128);
-      tl.to("#cap-act3", { opacity: 0, duration: 0.4, ease: "power2.in" }, 141.4);
-      tl.fromTo("#end-title", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 142);
-      tl.fromTo("#end-sub", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 143.2);
-      tl.fromTo("#end-stats", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 144.6);
-      tl.fromTo("#end-note", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 146);
-      tl.to({}, { duration: 154 }, 0);
-      window.__timelines["main"] = tl;
-      tl.seek(0);
+      const FID = (n) => "g" + String(n).padStart(3, "0")
+      const IMG = (n) => "#img-" + FID(n)
+      const ALL = Array.from({ length: 22 }, (_, i) => IMG(i + 1)).join(",")
+      const crop = (cx, cy, cw) => { const s = 1920 / cw; return { x: -cx * s, y: -cy * s, scale: s } }
+      const DESC = (n) => n <= 9 ? "idle project universe, no card"
+        : n <= 12 ? "idle auto-cycle begins: edit pulse, [CHG] Logic:Lobby badge"
+        : n <= 15 ? "after injected Inspect pinch: INSPECT evidence card"
+        : n <= 17 ? "INSPECT card (injected Step pinch at about g016)"
+        : n <= 19 ? "after injected Step pinch: FAILURE ALERT card, red fault marker"
+        : "after injected Learn pinch: LEARNING ATELIER card"
+      const PINCH_FRAMES = [13, 16, 18, 20]
+      const XF = 0.5
+      const tl = gsap.timeline({ paused: true })
+      const tagsEl = document.getElementById("tags")
+      let z = 1
+      const pinch = []
+
+      function run(frames, t0, hold, label, firstAt) {
+        frames.forEach((n, i) => {
+          const s = t0 + i * hold, e = s + hold
+          const tag = document.createElement("div")
+          tag.className = "tag"
+          tag.innerHTML = '<span class="l1">' + label + " - " + FID(n) + '</span><span class="l2"><span>' + DESC(n) + "</span></span>"
+          tagsEl.appendChild(tag)
+          const showAt = i === 0 ? firstAt : s
+          tl.set(tag, { opacity: 1 }, showAt)
+          tl.set(tag, { opacity: 0 }, e)
+          if (i === 0) tl.set(IMG(n), { opacity: 1, zIndex: ++z }, firstAt)
+          else {
+            tl.set(IMG(n), { zIndex: ++z }, s)
+            tl.fromTo(IMG(n), { opacity: 0 }, { opacity: 1, duration: XF, ease: "none", immediateRender: false }, s)
+            tl.set(IMG(frames[i - 1]), { opacity: 0 }, s + XF + 0.03)
+          }
+          if (PINCH_FRAMES.includes(n)) pinch.push([showAt, e])
+        })
+      }
+      const seq = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i)
+
+      // Pass 1: as captured (real time, 1.4 s per frame), wide crop with a slow drift.
+      const A0 = crop(170, 400, 1400), A1 = crop(215, 420, 1310)
+      tl.set("#cam", A0, 20.8)
+      tl.set(IMG(1), { opacity: 1, zIndex: 1 }, 20.8)
+      tl.fromTo("#cam", A0, { ...A1, duration: 31.6, ease: "sine.inOut", immediateRender: false }, 20.8)
+      run(seq(1, 22), 21.6, 1.4, "PASS 1/3 - AS CAPTURED (1.4 s per frame)", 21.6)
+
+      // Pass 2: zoomed + slowed on the evidence card (g10-g17).
+      tl.set(ALL, { opacity: 0 }, 53.4)
+      const B0 = crop(380, 430, 880), B1 = crop(620, 450, 820)
+      tl.set("#cam", B0, 55)
+      tl.fromTo("#cam", B0, { ...B1, duration: 35, ease: "sine.inOut", immediateRender: false }, 55)
+      run(seq(10, 17), 56.4, 4.2, "PASS 2/3 - ZOOMED + SLOWED (4.2 s per frame)", 55)
+
+      // Pass 3: zoomed + slowed on the fault marker and Learn card (g16-g22).
+      tl.set(ALL, { opacity: 0 }, 91)
+      const C0 = crop(470, 425, 900), C1 = crop(560, 445, 800)
+      tl.set("#cam", C0, 92.6)
+      tl.fromTo("#cam", C0, { ...C1, duration: 32.2, ease: "sine.inOut", immediateRender: false }, 92.6)
+      run(seq(16, 22), 94, 4.4, "PASS 3/3 - ZOOMED + SLOWED (4.4 s per frame)", 92.6)
+
+      // injected-pinch label
+      pinch.forEach(([a, b]) => { tl.set("#lab-pinch", { opacity: 1 }, a); tl.set("#lab-pinch", { opacity: 0 }, b) })
+
+      // slates
+      for (const [id, a] of [["#slate-b-in", 52.4], ["#slate-c-in", 90]]) {
+        tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.out", immediateRender: false }, a)
+        tl.fromTo(id, { opacity: 1 }, { opacity: 0, duration: 0.5, ease: "power1.in", immediateRender: false }, a + 3.5)
+      }
+
+      // end card
+      const E = 124.8
+      tl.fromTo("#end", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "none", immediateRender: false }, E)
+      tl.fromTo("#end-title", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 1.4)
+      tl.fromTo("#end-pre", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 3.0)
+      tl.fromTo("#end-pass", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 5.5)
+      tl.fromTo("#end-det", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 7.5)
+      tl.fromTo("#end-foot", { opacity: 0 }, { opacity: 1, duration: 0.8, immediateRender: false }, E + 9.5)
+
+      window.__timelines = window.__timelines || {}
+      window.__timelines["main"] = tl
     </script>
   </body>
 </html>

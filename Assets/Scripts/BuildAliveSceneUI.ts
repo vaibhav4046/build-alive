@@ -116,6 +116,7 @@ export class BuildAliveSceneUI {
   private moduleVisuals: Record<string, ModuleVisual> = {}
   private bridgeObjects: Record<string, SceneObject> = {}
   private primaryVessel!: SceneObject
+  private primaryLabel: Text | null = null
   private primaryRightArm!: SceneObject
   private subVessel!: SceneObject
   private subRightArm!: SceneObject
@@ -776,7 +777,7 @@ export class BuildAliveSceneUI {
     const pLabel = global.scene.createSceneObject("AgentVessel_Primary_Label")
     pLabel.setParent(this.primaryVessel)
     pLabel.getTransform().setLocalPosition(new vec3(0, 1.38, 0))
-    this.addText(pLabel, "[AGT] Builder Bot", 24, COLOR_CYAN)
+    this.primaryLabel = this.addText(pLabel, "[AGT] Builder Bot", 24, COLOR_CYAN)
     this.compensateLabelScale(pLabel, AGENT_VESSEL_SIZE, LABEL_WORLD_SCALE_CM)
 
     // 2. Subagent Verifier AI-Worker Character (Amethyst Judge Golem)
@@ -806,7 +807,7 @@ export class BuildAliveSceneUI {
     const rLabel = global.scene.createSceneObject("RewindCrystal_Label")
     rLabel.setParent(this.rewindCrystal)
     rLabel.getTransform().setLocalPosition(new vec3(0, 0.95, 0))
-    this.addText(rLabel, "[CHG] Rewind", 24, COLOR_AMBER)
+    this.addText(rLabel, "Rewind", 24, COLOR_AMBER)
     this.compensateLabelScale(rLabel, REWIND_CRYSTAL.size, LABEL_WORLD_SCALE_CM)
     this.makeInteractable(this.rewindCrystal, () => this.handleRewind(undefined, Date.now()))
 
@@ -1065,6 +1066,10 @@ export class BuildAliveSceneUI {
     this.primaryVessel.getTransform().setLocalPosition(
       new vec3(targetMod.center.x, targetMod.center.y + targetMod.size.h / 2 + 2.0, targetMod.center.z),
     )
+    // A real world with no observed event must not look busy: say the agent is idle instead of showing the sample "Builder Bot".
+    if (this.primaryLabel) {
+      this.primaryLabel.text = this.workspaceBound ? (ev ? "[AGT] " + ev.actor : "[AGT] idle - no live event") : "[AGT] Builder Bot"
+    }
     this.subVessel.enabled = this.workspaceBound
       ? ev !== null && ev.actor.indexOf("subagent") === 0
       : snap.glyph.lane === "subagent" || snap.cursorSeq >= 4

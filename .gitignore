@@ -42,3 +42,7 @@ leaf_plugin_settings.json
 
 # bridge hook shared secret (generated at first bridge start)
 bridge/.hook-token
+
+# Film capture frames and rendered score are large and regenerable; kept on disk only
+video/assets/preview-frames*/
+video/assets/score.wav

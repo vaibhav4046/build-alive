@@ -34,6 +34,7 @@
     cards: false
     chime: false
     controls: false
+    internetModule: false
     mount: false
     mountLabel: false
     rover: false
@@ -67,6 +68,7 @@
       beam: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       stallMarker: !<reference.SceneObject> 00000000-0000-0000-0000-000000000000
       chime: !<reference.AudioTrackAsset> 00000000-0000-0000-0000-000000000000
+      internetModule: !<reference.InternetModule> 00000000-0000-0000-0000-000000000000
   ScriptTypes:
     -
       {}
@@ -86,3 +88,4 @@
     - // @input SceneObject beam
     - // @input SceneObject stallMarker
     - // @input Asset.AudioTrackAsset chime
+    - // @input Asset.InternetModule internetModule
