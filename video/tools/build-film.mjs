@@ -90,6 +90,6 @@ const out = resolve(base, plan.out)
 mkdirSync(dirname(out), {recursive: true})
 const score = resolve(base, plan.score)
 run("ffmpeg.exe", ["-y", "-v", "error", "-i", silent, "-stream_loop", "-1", "-i", score,
-  "-filter_complex", `[1:a]atrim=0:${total},afade=t=in:st=0:d=1.5,afade=t=out:st=${total - 3}:d=3,loudnorm=I=-16:TP=-1.5:LRA=11[a]`,
+  "-filter_complex", `[1:a]atrim=0:${total},afade=t=in:st=0:d=1.5,afade=t=out:st=${total - 3}:d=3,loudnorm=I=-18:TP=-1.5:LRA=11[a]`,
   "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out])
 console.log(`wrote ${out} (${total.toFixed(1)} s planned)`)
