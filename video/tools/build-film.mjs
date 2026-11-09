@@ -30,15 +30,38 @@ const run = (bin, args) => {
 const textFile = (name, text) => { const p = join(work, name); writeFileSync(p, text, "utf8"); return p.replace(/\\/g, "/").replace(/:/g, "\\:") }
 
 const parts = []
+// A keyframe sequence (several Preview screenshots of one action) becomes one clip: each frame holds, then crossfades.
+const XF = 0.45
+const buildSequence = (s, i) => {
+  const frames = s.frames.map((f) => resolve(base, f))
+  frames.forEach((f) => { if (!existsSync(f)) throw new Error("missing frame: " + f) })
+  const per = s.dur / frames.length + XF * (frames.length - 1) / frames.length
+  const fit = `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${BG},setsar=1,fps=${FPS},format=yuv420p`
+  const inputs = frames.flatMap((f) => ["-loop", "1", "-framerate", String(FPS), "-t", per.toFixed(3), "-i", f])
+  const chains = frames.map((_, k) => `[${k}:v]${fit}[f${k}]`)
+  let last = "f0"
+  for (let k = 1; k < frames.length; k++) {
+    const out = k === frames.length - 1 ? "seq" : `x${k}`
+    chains.push(`[${last}][f${k}]xfade=transition=fade:duration=${XF}:offset=${(k * (per - XF)).toFixed(3)}[${out}]`)
+    last = out
+  }
+  if (frames.length === 1) chains.push(`[f0]null[seq]`)
+  const tmp = join(work, `seq${i}.mp4`)
+  run("ffmpeg.exe", ["-y", "-v", "error", ...inputs, "-filter_complex", chains.join(";"), "-map", "[seq]", "-c:v", "libx264", "-crf", "16", "-t", String(s.dur), tmp])
+  return tmp
+}
+
 plan.segments.forEach((s, i) => {
-  const src = resolve(base, s.src)
+  const src = s.frames ? buildSequence(s, i) : resolve(base, s.src)
   if (!existsSync(src)) throw new Error("missing segment source: " + src)
   const isImg = [".png", ".jpg", ".jpeg"].includes(extname(src).toLowerCase())
   const dur = s.dur
   const fit = `scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${BG},setsar=1`
   // Stills get a gentle 4% push-in so the frame breathes; footage is left untouched.
   const motion = isImg ? `,zoompan=z='1+0.04*on/${Math.round(dur * FPS)}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${Math.round(dur * FPS)}:s=${W}x${H}:fps=${FPS}` : `,fps=${FPS}`
-  let vf = fit + motion
+  // Optional crop (x,y,w,h in source pixels) turns a full Preview frame into a close-up before fitting.
+  const crop = s.crop ? `crop=${s.crop.join(":")},` : ""
+  let vf = crop + fit + motion
   if (s.caption) {
     const tf = textFile(`cap${i}.txt`, s.caption)
     vf += `,drawbox=x=0:y=ih-150:w=iw:h=150:color=${BG}@0.82:t=fill`

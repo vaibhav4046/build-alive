@@ -3,8 +3,8 @@
   "score": "assets/score.wav",
   "width": 1920, "height": 1080, "fps": 30,
   "segments": [
-    {"src": "../devpost/shots/v63-logo-b.png", "dur": 6, "caption": "Your AI agent is working on your real project.", "tag": "Lens Studio Preview · REPLAY"},
-    {"src": "../devpost/shots/v64-agents-a.png", "dur": 6, "caption": "Every step in one plain sentence.", "tag": "Lens Studio Preview · REPLAY"},
-    {"src": "../devpost/shots/v64-agents-b-codex-offline.png", "dur": 6, "caption": "Not connected? It says so. Nothing is faked.", "tag": "Lens Studio Preview · OFFLINE"}
+    {"src": "assets/coldopen.mp4", "dur": 12.4},
+    {"frames": ["../devpost/shots/v65-mono-b.png", "../devpost/shots/v66-learn-tests.png"], "dur": 7, "caption": "A check failed. Learn lights up Tests and tells you why.", "tag": "Lens Studio Preview · REPLAY"},
+    {"src": "../devpost/shots/v66-learn-tests.png", "dur": 5, "crop": [200, 300, 1000, 620], "caption": "What to try next, in plain words.", "tag": "Lens Studio Preview · REPLAY"}
   ]
 }
