@@ -1,0 +1,16 @@
+{
+  "suite": "BuildAliveCore+Layout",
+  "node": "v24.12.0",
+  "namedTestsPassed": 62,
+  "namedTestsFailed": 0,
+  "generatedCases": 2400,
+  "failures": [],
+  "latency": {
+    "samples": 20000,
+    "unit": "microseconds",
+    "p50": 0.9,
+    "p95": 8.9,
+    "p99": 13,
+    "max": 51005.4
+  }
+}

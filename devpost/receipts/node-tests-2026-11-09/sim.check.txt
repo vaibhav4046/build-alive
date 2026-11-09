@@ -1,0 +1,4 @@
+sim.check: all assertions passed
+small  : {"o":"stall","need":"7.9","has":"4.0","speed":"47.1"}
+geared : {"o":"pass","margin":"2.1x","speed":"9.4"}
+ramp   : [{"name":"shallow","angleDeg":10,"lengthCm":20},{"name":"steep","angleDeg":25,"lengthCm":30}]

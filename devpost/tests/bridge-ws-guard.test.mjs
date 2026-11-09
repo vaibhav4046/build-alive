@@ -46,4 +46,5 @@ const r2 = await fetch(`http://127.0.0.1:${PORT}/antigravity`, {method: "POST", 
 check(r2.status === 413, "/antigravity oversize body: 413")
 await bridge.close?.()
 console.log(`bridge-ws-guard.test: ${pass}/${pass + fail} passed`)
-process.exit(fail ? 1 : 0)
+// Let open fetch sockets drain instead of process.exit(), which aborts libuv on Windows while handles are closing.
+process.exitCode = fail ? 1 : 0

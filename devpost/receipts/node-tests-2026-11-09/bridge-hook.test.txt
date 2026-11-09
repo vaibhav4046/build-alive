@@ -1,0 +1,17 @@
+PASS no token -> 401
+PASS wrong token -> 401
+PASS token of wrong length -> 401 (no crash)
+PASS valid token + file in approved repo -> 200 earthproof LIVE_VERIFIED
+PASS file outside approved roots -> 403
+PASS path traversal out of the root -> 403
+PASS secret-named file inside root is accepted but its name is not journaled
+PASS cwd-only (Bash) inside root -> 200
+PASS cwd-only outside root -> 403
+PASS unknown hookName -> 400
+PASS invalid JSON -> 400
+PASS oversize body -> 413 (bridge survives)
+PASS non-loopback Host header -> 403 (DNS rebinding guard)
+PASS /providers reports claude-code LIVE_CONNECTED after an accepted hook
+PASS token never appears in /journal or /providers
+PASS secrets in tool name are redacted before journaling
+bridge-hook.test: 16/16 passed

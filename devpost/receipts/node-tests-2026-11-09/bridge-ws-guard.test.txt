@@ -1,0 +1,8 @@
+PASS Lens-style upgrade (no Origin) is accepted: 101
+PASS same-origin loopback page is accepted
+PASS page on another localhost port is refused (403)
+PASS foreign Origin is refused (403)
+PASS non-loopback Host (DNS rebinding) is refused (403)
+PASS /antigravity without token: 401
+PASS /antigravity oversize body: 413
+bridge-ws-guard.test: 7/7 passed

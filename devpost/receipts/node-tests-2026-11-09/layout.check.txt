@@ -1,0 +1,6 @@
+layout.check: all 37 assertions passed
+Run     across 5 cm, nearest other control 16.4 cm
+Reset   across 5 cm, nearest other control 20.0 cm
+Small   across 6 cm, nearest other control 14.0 cm
+Geared  across 6 cm, nearest other control 14.0 cm
+ramp top at x=30.4 y=-13.8; rover left end -34.5, landing end 34.4 (span 68.9 cm)

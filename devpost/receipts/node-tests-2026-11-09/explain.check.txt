@@ -1,0 +1,12 @@
+PASS known commands map to plain words
+PASS git diff wins over generic git rules (order)
+PASS unknown and empty commands are labelled honestly, never guessed
+PASS failed test step says something is broken and gives a debug tip
+PASS passing test step says all passed
+PASS edit step names only the last path part (no home path leak)
+PASS bash step routes through the command explainer
+PASS approval denied says nothing ran
+PASS Prompt Coach: a vague prompt misses goal, file and check
+PASS Prompt Coach: a complete prompt passes
+PASS Prompt Coach: missing file only asks for the file
+explain.check: 11/11 passed
