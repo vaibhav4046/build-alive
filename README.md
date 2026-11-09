@@ -1,193 +1,83 @@
-# BUILD ALIVE: Walk Inside What AI is Building
+# BUILD ALIVE
 
-> **Desk-Scale Spatial AI Engineering Observatory, Architecture Workbench & Learning Atelier on Snap Spectacles**  
-> Built for the Snap **Learn AR with SPECS** Devpost Hackathon (Deadline: 9 November 2026, 22:00 GMT).
+**Learn AI engineering by doing.** BUILD ALIVE is a Snap Spectacles Lens that shows your AI coding agent working on your real project in floating windows around you. Every step and every shell command is explained in one plain sentence, the exact evidence is one pinch deeper, and nothing risky runs until you approve it.
 
----
-
-## What is BUILD ALIVE?
-
-When autonomous AI coding agents (Claude Code, Cursor, Codex) write software, developers are trapped staring at flat screens—scrolling through thousands of lines of terminal text, reviewing opaque git diffs, and guessing how multi-agent swarms alter underlying system architecture.
-
-**BUILD ALIVE** transforms software development into a living, desk-scale physical reality on Snap Spectacles:
-
-1. **Walk Inside System Topology:** Physicalizes software into interactive 3D Project Islands (UI, Logic, API, Data, Tests, Assets) resting on your real desk at 50–75 cm distance.
-2. **Observe Agent Execution:** (current build plays a recorded replay of an agent session; live bridge connection is not yet proven) multi-agent steps map to spatial vessels (cyan primary orchestrator, amber subagents). Glowing pulses highlight files being modified, while data bridges animate live request/response cycles.
-3. **Trace Impact & Failure Paths:** When tests fail, a vibrant red failure beam shoots directly from the broken test module through the affected logic to the exact failing database mock.
-4. **Scrub History with the Rewind Crystal:** Pinch and scrub a physical 3D crystal to travel back and forth through agent turns, diffs, and test runs.
-5. **Human-in-the-Loop Action Gate:** Agents cannot touch your repo without permission. A spatial approval card proposes the exact file modification; you physically pinch **Approve** to execute under cryptographic nonce verification.
-6. **Spatial Learning Atelier:** Challenges learners with architectural quizzes ("Predict which module fails when load triples!"). Pinch a 3D module to submit your answer and see immediate visual validation.
-7. **Dual-Heritage Fallback:** Intact integration of the original **EarthProof Rover Ramp Climb** physics trial as interactive Project Island #3.
+Built for the Snap **Learn AR with SPECS** Devpost hackathon (deadline 9 November 2026, 22:00 GMT) with Lens Studio 5.23.2, CLAD, the Lens Studio MCP and LEAF.
 
 ---
 
-## Status & Truth in Advertising
+## What you see
 
-| Dimension | Measured Outcome & Evidence | Provenance Status |
+| Window | What it shows |
+|---|---|
+| **Session** (centre) | The agent's steps as tiles, one plain sentence each ("Rewrote part of lobby.ts", "The checks ran and one failed, so something is broken"). Repeated steps collapse into one tile with an `x2` badge. |
+| **Learn** (left) | The agent loop: Prompt, Plan, Tools, Files, Tests, Result, Loop. The current step's stage lights up, with *what happened*, *why it matters* and *what to try next*. |
+| **Project** (right) | The real module folders of a repo you approved, with a type icon per tile (script, material, bridge, docs, folder). |
+| **Agent chips** | One chip per supported agent with its honest status: `LIVE`, `REPLAY`, `OFFLINE` or `UNSUPPORTED`. Pinch a chip to switch; a disconnected agent shows how to connect instead of fake events. |
+| **Dock** | Rewind, Command explainer, Next step, Explain, Approve. Approve runs only an allowlisted read-only check and leaves a receipt. |
+
+Each window minimises into its tab with the round X, and pinching the tab restores it.
+
+**Plain words, never guesses.** `git status` becomes "Checks which files changed". An unknown command is labelled unknown. The **Prompt Coach** checks a prompt for a goal, a file and a way to check it worked, and gives one tip. All of this is deterministic and rule-based (`Assets/Scripts/BuildAliveExplain.ts`), not AI reasoning, and the Lens never claims to read the agent's private thoughts.
+
+---
+
+## Status (truth in advertising)
+
+| Area | Result | Evidence |
 |---|---|---|
-| **LEAF in Lens Studio Preview** | **31/31 scenarios PASS** (L01-L22 + 9 Rover c-scenarios), re-confirmed on the polished build, 2026-11-08, Lens Studio 5.23.2 Preview. First sweep was 26/31; two test-expectation corrections and one real layout fix (islands occluded the control rail) followed. Raw receipts: [`devpost/receipts/`](devpost/receipts/README.md). | `VERIFIED` (Preview only) |
-| **Real Preview screenshots** | [`devpost/shots/`](devpost/shots/) (project universe, active agent card, learning + fault marker), captured with the Lens Studio MCP. Re-captured after a label de-overlap pass (labels only on focus/inspect, card rows fixed). | `VERIFIED` (Preview only) |
-| **Deterministic Node tests** | `build-alive.sweep.mjs` 2,223 assertions 0 failures; `core.check.mjs` 62/62 named + generated cases; `sim.check.mjs` pass (re-run 2026-11-08). | `VERIFIED` |
-| **Lens Studio compile** | `RecompileTypeScriptTool`: succeeded. | `VERIFIED` |
-| **Bridge (HTTP)** | `bridge/start-workspace.mjs` serves /health /workspace /providers on 127.0.0.1:8787; journal = 24 recorded-replay events. | `VERIFIED` (HTTP) |
-| **Bridge -> Lens live updates** | **Not connected in Preview**: `createWebSocket` to ws://127.0.0.1 throws in Preview ("URL is not secure (Experimental API must be enabled...)"; the setting was not changed), so the Lens runs recorded replay (`OFFLINE FALLBACK`). No live agent event has driven the scene. | **`UNPROVEN`** |
-| **72 feature claims (F01-F72)** | Engine logic is covered by Node tests; the feature matrix statuses have not been re-audited against the running Lens. | `UNAUDITED` |
-| **Latency** | Preview script-side press-to-first-frame p50 1.0 / p95 2.0 / p99 2.0 ms (n=200, c7). Not measured on a headset; no frame-rate claim. | `VERIFIED` (Preview script-side) |
-| **Zero Additional Spending** | £0 / $0 spend. | `VERIFIED` |
-| **Physical Spectacles Glasses** | Not tested. Preview-only (Lens Studio 5.23.2, SPECS 27 Interactive). | **`UNPROVEN`** |
+| Node checks | core 62/62 + 2,400 generated cases; engine sweep 2,224 assertions, 0 failures; explainer 11/11; layout 37/37; bridge hook 16/16; bridge WS guard 7/7 | `devpost/tests/`, run 2026-11-09 |
+| LEAF in Lens Studio Preview | see the latest sweep receipts | `devpost/receipts/` |
+| Real workspaces | EarthProof (139 files, 11 modules) and mnemosyne (113 files, 13 modules) scanned by the bridge | `bridge/start-workspace.mjs` → `/workspace` |
+| Live agent events in the Lens | Shown as LIVE only when a real event arrives; otherwise REPLAY | provider status in the Lens |
+| Physical Spectacles | **Not tested.** Preview only. | |
 
 ---
 
-## Architectural Layout & Ergonomics
+## How to run
 
-All geometry is calculated in centimeters relative to the seated eye origin $(0, 0, 0)$ looking forward along $-Z$:
-
-```
-                       [ Provenance Banner: SIMULATED IN PREVIEW ]
-                                     (y = +15, z = -75)
-
-          [ Island 1: LobbySync ]   [ Island 2: Arch Workbench ]   [ Island 3: EarthProof Rover ]
-            (x = -26, z = -75)           (x = 0, z = -75)               (x = +26, z = -75)
-             6 Volumetric Modules      Active Deliberation Vessel       Working Physics Fallback
-            [UI, Logic, API, Data,       & Failure Beams (Red)           Small vs Geared Motors
-                Tests, Assets]
-
-                              [ Rewind Crystal: Time Travel ]
-                                     (y = -18, z = -68)
-
-      -------------------------- FRONT CONTROL RAIL (z = -62) --------------------------
-             Row 2 (y = -12.5):      [ Inspect ]              [ Reset ]
-                                      (x = -6)                 (x = +6)
-
-             Row 1 (y = -24.5):  [ Step > ]        [ Learn ? ]        [ Approve ]
-                                  (x = -12)          (x = 0)           (x = +12)
-      ----------------------------------------------------------------------------------
-                                [ Virtual Desk Surface ]
-                                   (y = -30, z = -75)
-```
-
-- **Field of View:** Engineered specifically for the Spectacles 36.6° vertical FOV and 0.875 aspect ratio. No controls extend beyond the binocular comfort zone.
-- **SIK Button Separation:** All interactive controls maintain $\ge 12\text{ cm}$ center-to-center spacing (Row 1 to Row 2 separation is $13.4\text{ cm}$ in 3D), eliminating targeting collisions.
-- **Zero Allocations in Render Loop:** Pre-allocated scratch vectors (`scratchScale`) prevent GC stutter during 90 fps Spectacles display refresh.
-
----
-
-## Repository Structure
-
-```
-EarthProof/
-├── Assets/Scripts/
-│   ├── BuildAliveCore.ts           # Pure TypeScript engine: 72 features (F01-F72), state, scrubber, learning atelier
-│   ├── BuildAliveLayout.ts         # Seated cm geometry, FOV projection math, SIK separation checks
-│   ├── BuildAliveTransport.ts      # Bidirectional WebSocket framing, sanitization, action proposal protocol
-│   ├── BuildAliveSceneUI.ts        # Lens Studio scene adapter, UIKit buttons, vessels, fault markers, GC-free tick
-│   ├── EarthProofMain.ts           # Preserved Rover trial adapter, dual-mode cohabitation toggle
-│   ├── EarthProofSim.ts            # Rover physics simulation (pure, deterministic)
-│   ├── EarthProofFlow.ts           # Rover run state machine (idle, running, stalled, passed)
-│   └── Leaf/
-│       ├── LeafIndex.ts            # Central LEAF scenario registry
-│       ├── L01BootProvenance.ts    # Scenario L01: Boot provenance & honest watermarking
-│       ├── ...                     # Scenarios L02-L21
-│       └── L22Accessibility.ts     # Scenario L22: Colorblind modes & reduced motion verification
-├── bridge/
-│   ├── ws-server.mjs               # Zero-dependency RFC 6455 WebSocket + HTTP server (stdlib node:http, node:crypto)
-│   ├── action-gate.mjs             # Cryptographic nonce-enforced action gate with allowlist
-│   ├── redactor.mjs                # Secret scrubber (Anthropic, GitHub, AWS, Google, Slack, hex credentials, user paths)
-│   ├── journal.mjs                 # Append-only deterministic JSONL event store
-│   ├── claude-hook.mjs             # Claude Code CLI hook event normalizer
-│   └── codex-adapter.mjs           # OpenAI Codex event adapter
-├── demo-repo/                      # Standalone sample project (LobbySync)
-│   ├── package.json                # Zero-dependency configuration
-│   ├── server/lobby.mjs            # Room capacity logic with intentional fault injection
-│   ├── server/ws-server.mjs        # WebSocket message dispatcher
-│   ├── client/view.mjs             # Client state representation
-│   ├── data/db-mock.mjs            # In-memory storage mock
-│   └── tests/
-│       └── room-capacity.test.mjs  # Deterministic test suite verifying room capacity & overflow
-├── devpost/
-│   ├── feature-matrix.md           # Traceable audit of all 72 features mapped to code & tests
-│   ├── test-results.md             # Complete test results, assertions, and verification proofs
-│   ├── performance.md              # Latency benchmarks (p50/p95/p99) and memory allocation analysis
-│   ├── review.md                   # 3-round adversarial judge panel reviews (J1-J6) and code fixes
-│   ├── PRIOR_ART.md                # Comparative analysis (CodeCity, JetBrains XR, Zoetrope, Copilot)
-│   ├── build-log.md                # Detailed phase-by-phase implementation journal
-│   ├── submission.md               # Official Devpost submission text and Q&A
-│   ├── ai-disclosure.md            # Transparent AI usage disclosure
-│   ├── licenses.md                 # Open source licenses & dependency audit
-│   ├── source-evidence.md          # Scientific grounding, research papers & architectural citations
-│   ├── video-script.md             # Second-by-second cinematography script (165s)
-│   └── tests/
-│       ├── build-alive.sweep.mjs   # BUILD ALIVE deterministic sweep (2,165 checks)
-│       ├── sweep.mjs               # EarthProof rover sweep (172,258 checks)
-│       ├── sim.check.mjs           # Physics simulation assertion check
-│       └── layout.check.mjs        # World geometry & FOV assertion check
-├── video/
-│   ├── index.html                  # HyperFrames / HTML5 165s pixel-art-to-real-SPECS short film
-│   ├── assets/film.js              # Cinema animation engine with audio synchronization
-│   ├── generate-audio.mjs          # Synthesizer for original ambient soundtrack (ambient.wav)
-│   └── out/
-│       ├── build-alive-demo.mp4    # Rendered wordless submission video (< 3:00)
-│       └── thumbnail-1280x720.png  # Official high-contrast Devpost thumbnail
-└── EarthProof.esproj               # Official Lens Studio 5.23.2 Spectacles project
-```
-
----
-
-## How to Run
-
-### 1. Run the Test Suites
-Run all deterministic test suites directly from your terminal:
-
+### 1. Tests
 ```bash
-# BUILD ALIVE core sweep (Security, Layout, FOV, Engine, Stress, Latency)
-node devpost/tests/build-alive.sweep.mjs
-
-# Preserved EarthProof physics & state machine sweep
-node --no-warnings devpost/tests/sim.check.mjs
+node --no-warnings --import ./devpost/tools/ts-resolve.mjs devpost/tests/core.check.mjs
+node --no-warnings --import ./devpost/tools/ts-resolve.mjs devpost/tests/explain.check.mjs
 node --no-warnings --import ./devpost/tools/ts-resolve.mjs devpost/tests/layout.check.mjs
-node --no-warnings --import ./devpost/tools/ts-resolve.mjs devpost/tests/sweep.mjs
-
-# Demo repository test suite
-node demo-repo/tests/room-capacity.test.mjs
+node --no-warnings --import ./devpost/tools/ts-resolve.mjs devpost/tests/build-alive.sweep.mjs
+node --no-warnings devpost/tests/bridge-hook.test.mjs
+node --no-warnings devpost/tests/bridge-ws-guard.test.mjs
 ```
 
-### 2. Run the Live Bridge Server
-Start the local zero-dependency WebSocket event bridge:
-
+### 2. Bridge (local only, 127.0.0.1:8787)
 ```bash
-node -e "import('./bridge/ws-server.mjs').then(m => m.createBridgeServer({port: 8787}).listen().then(s => console.log('Bridge listening on port ' + s.port)))"
+node bridge/start-workspace.mjs
 ```
+It scans only folders you approve, redacts secrets and home paths, journals every event, and serves `/health`, `/workspace`, `/providers` and an authenticated `/hook` endpoint for Claude Code hook events (token in `bridge/.hook-token`, which is git-ignored).
 
-### 3. Open in Lens Studio
-1. Open `EarthProof.esproj` in **Lens Studio 5.23.2** (or newer).
-2. Set the Preview panel device to **SPECS 27** in **Interactive** mode.
-3. Observe the desk-scale workbench at $z = -75\text{ cm}$:
-   - **Click / Pinch `Step >`**: Advances agent execution turns.
-   - **Click / Pinch `Inspect`**: Focuses `server-lobby.mjs` and opens the read-only diff lens.
-   - **Click / Pinch `Learn ?`**: Enters Learning Atelier mode and poses an architectural failure question.
-   - **Click / Pinch `Approve`**: Confirms pending action with a cryptographic nonce receipt.
-   - **Click / Pinch `Reset`**: Rewinds execution to the clean baseline.
-   - **Click modules**: In Inspect mode, selects module; in Learn mode, answers the quiz!
+### 3. Lens Studio
+1. Open `EarthProof.esproj` in Lens Studio 5.23.2.
+2. For live events: **Project Settings → Experimental APIs** on (the Lens connects to `ws://127.0.0.1:8787`). Without it the Lens runs the labelled REPLAY.
+3. Preview device: Spectacles, Interactive. Pinch tiles, chips and dock icons.
 
----
-
-## Adversarial Quality Gate & Peer Review
-
-BUILD ALIVE was subjected to rigorous 3-round simulated evaluations by an adversarial hackathon judge panel across six distinct criteria:
-
-- **J1 (Spatial Computing & Ergonomics):** Verified front-rail control spacing $\ge 12\text{ cm}$ and 36.6° FOV compliance. Dimmed overlapping rover geometry during workbench operation.
-- **J2 (Performance & Latency):** Eliminated per-frame `vec3` allocations in `tick()` with a pre-allocated scratch vector; verified p99 latency $< 0.5\text{ ms}$.
-- **J3 (Genuine Engineering vs. Smoke & Mirrors):** Zero simulated stubbing—runs against real runnable files in `demo-repo/` with real test assertions.
-- **J4 (Clarity of Learning Purpose):** Learning Atelier directly ties spatial exploration to architectural comprehension via interactive quiz challenges.
-- **J5 (Security & Safety Gate):** Mitigated CSWSH (T07) via WebSocket Origin validation; enforced 2-step cryptographic nonce execution gate.
-- **J6 (Honesty & Provenance):** Honest provenance badges displayed in preview (`SIMULATED IN PREVIEW`); physical hardware testing clearly declared `unproven`.
-
-Full review notes and remediations are documented in [`devpost/review.md`](devpost/review.md).
+### 4. Film
+```bash
+node video/tools/build-film.mjs video/film-plan.json
+```
+Assembles the film from real Preview clips with ffmpeg (captions and provenance tags burned in, original score).
 
 ---
 
-## License & Credits
+## Repository map
+- `Assets/Scripts/BuildAlive*.ts`: Lens logic (core engine, layout, explainer, providers, scene UI, transport).
+- `Assets/Scripts/Leaf/`: LEAF scenarios run inside the Preview.
+- `Assets/Scripts/EarthProof*.ts`: the earlier rover prototype, kept as a fallback.
+- `bridge/`: zero-dependency Node bridge (scanner, hook receiver, redactor, journal, WebSocket).
+- `demo-repo/`: small sample project used by the REPLAY story.
+- `devpost/`: submission text, tests, receipts, screenshots, disclosures.
+- `video/`: film tooling.
 
-- **License:** MIT License ([`devpost/licenses.md`](devpost/licenses.md)).
-- **Target Platform:** Snap Spectacles (Snap Inc.).
-- **Author:** Team Antigravity (Learn AR with SPECS Hackathon Submission, November 2026).
+## Disclosures
+- **AI assistance:** built with Claude Code (and earlier Google Antigravity) under the entrant's direction; see `devpost/ai-disclosure.md`.
+- **Third-party:** Snap's Spectacles Interaction Kit, Spectacles UIKit and LEAF. Optional Simple Icons marks (CC0; trademarks belong to their owners) are credited in `THIRD_PARTY_NOTICES.md`. The default UI and the film use original monograms.
+- **Hardware:** Preview only, not tested on physical Spectacles. `127.0.0.1` refers to the PC; a headset would need a secured network path, which is not built.
+
+## License
+MIT (`LICENSE`). Dependency notes in `devpost/licenses.md`.
