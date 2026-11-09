@@ -153,6 +153,8 @@ const GRAPHITE_TILE = new vec4(0.37, 0.4, 0.45, 1)
 const GRAPHITE_TILE_HI = new vec4(0.5, 0.54, 0.6, 1)
 const ACCENT_CLAUDE = new vec4(0.851, 0.467, 0.341, 1) // brand accent, replaced by the official simple-icons hex in the logo step
 const ACCENT_CYAN = new vec4(0.38, 0.85, 0.95, 1)
+const STAGE_FILL = new vec4(0.16, 0.56, 0.66, 1) // the lit stage in the Learn window: a solid accent fill, not just a dot
+const STAGE_FILL_FAIL = new vec4(0.78, 0.28, 0.26, 1) // same, when the current step is the failed check
 /** 'monogram' (default; no third-party marks, safe for the submission film) or 'brand' (real simple-icons marks, for local use only). */
 const LOGO_MODE: "monogram" | "brand" = "monogram"
 /** Monogram per provider: one or two letters in a generic accent colour (not a brand logo). */
@@ -861,11 +863,11 @@ export class BuildAliveSceneUI {
     this.learnTitle = this.panelText(learn.root, "LearnTitle", 0.1, 7.7, 6.6, 2.2, 26, COLOR_WHITE, false)
     this.learnTitle.text = "How it works"
     for (let i = 0; i < FLOW_STAGES.length; i++) {
-      this.learnStageTiles.push(this.tile(learn.root, "FlowStageTile_" + FLOW_STAGES[i], 0, 5.0 - i * 1.55, 10.2, 1.4, GRAPHITE_TILE, null))
-      this.learnStages.push(this.panelText(learn.root, "FlowStage_" + FLOW_STAGES[i], 0.2, 5.0 - i * 1.55, 8.8, 1.3, 26, COLOR_CAPTION, false))
+      this.learnStageTiles.push(this.tile(learn.root, "FlowStageTile_" + FLOW_STAGES[i], 0, 5.2 - i * 1.45, 10.2, 1.3, GRAPHITE_TILE, null))
+      this.learnStages.push(this.panelText(learn.root, "FlowStage_" + FLOW_STAGES[i], 0.2, 5.2 - i * 1.45, 8.8, 1.2, 26, COLOR_CAPTION, false))
     }
-    this.tile(learn.root, "LearnWhyTile", 0, -6.4, 10.2, 5.2, GRAPHITE_TILE, null)
-    this.learnWhy = this.panelText(learn.root, "LearnWhy", 0, -6.4, 9.4, 4.8, 20, COLOR_WHITE, false)
+    this.tile(learn.root, "LearnWhyTile", 0, -7.0, 10.2, 4.5, GRAPHITE_TILE, null)
+    this.learnWhy = this.panelText(learn.root, "LearnWhy", 0, -7.0, 9.4, 4.1, 20, COLOR_WHITE, false)
 
     // Project window: header tile, and a graphite tile behind each module block (the blocks are the Module_* objects)
     this.tile(proj.root, "ProjectHeaderTile", 0, 7.7, 10.2, 2.4, GRAPHITE_TILE, ACCENT_CYAN)
@@ -1124,16 +1126,17 @@ export class BuildAliveSceneUI {
     const last = shown.length > 0 ? shown[shown.length - 1] : null
     const stage = last ? stageForEvent(last.kind, last.status) : -1
     this.lastStage = stage
+    const failedNow = !!last && last.status === "failed"
     for (let i = 0; i < this.learnStages.length; i++) {
       const on = i === stage
       this.learnStages[i].text = (on ? "● " : "○ ") + FLOW_STAGES[i]
-      this.learnStages[i].textFill.color = on ? COLOR_GOLD : COLOR_CAPTION
-      this.learnStageTiles[i].backgroundColor = on ? GRAPHITE_TILE_HI : GRAPHITE_TILE
+      this.learnStages[i].textFill.color = on ? COLOR_WHITE : COLOR_CAPTION
+      this.learnStageTiles[i].backgroundColor = on ? (failedNow ? STAGE_FILL_FAIL : STAGE_FILL) : GRAPHITE_TILE
     }
     if (this.learnWhy && this.sessionTry) {
       if (last) {
         const ex = explainStep({kind: last.kind, status: last.status, summary: last.summary, files: last.fileAliases, actor: last.actor})
-        this.learnWhy.text = ex.why
+        this.learnWhy.text = ex.why + "\nTry next: " + ex.tip
         this.sessionTry.text = "Try: " + ex.tip
       } else {
         const coach = promptCoach("")

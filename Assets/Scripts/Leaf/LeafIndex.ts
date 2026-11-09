@@ -8,8 +8,6 @@ import {EarthProofC3SwapTap} from "./C3SwapTap"
 import {EarthProofC3DropFar} from "./C3DropFar"
 import {EarthProofC4Pass} from "./C4Pass"
 import {EarthProofC5Reset} from "./C5Reset"
-import {EarthProofC6Controls} from "./C6Controls"
-import {EarthProofC6IkReach} from "./C6IkReach"
 import {EarthProofC7Latency} from "./C7Latency"
 import {BuildAliveL01BootProvenance} from "./L01BootProvenance"
 import {BuildAliveL02ProjectIslands} from "./L02ProjectIslands"
@@ -39,6 +37,16 @@ import {BuildAliveL25FeedbackRewards} from "./L25FeedbackRewards"
 import {BuildAliveL26MissionControl} from "./L26MissionControl"
 import {BuildAliveL27WindowMinimise} from "./L27WindowMinimise"
 import {BuildAliveL28AgentChips} from "./L28AgentChips"
+import {BuildAliveL29LearnReacts} from "./L29LearnReacts"
+
+/**
+ * Legacy scenarios: documented, registered nowhere, NOT run. The Rover prototype is hidden in v6.
+ * - c6-controls (C6Controls.ts): the old Rover "Small" motor-block slot is 22.5 deg off the gaze, outside the half-FOV the test computes.
+ *   That 22.5 deg slot test no longer applies to the v6 product. Kept as a file for history only.
+ * - c6-ik-reach (C6IkReach.ts): an IK arm pressing the hidden Rover's Run/Reset buttons; it only passes at the old Rover camera pose
+ *   and fails at the v6 presentation pose (camera y -24, pitch +4), where the Rover is not in play. The v6 dock reach is covered by L16.
+ */
+export const LEGACY_SCENARIOS: string[] = ["c6-controls", "c6-ik-reach"]
 
 @component
 export class LeafIndex extends BaseScriptComponent {
@@ -50,8 +58,6 @@ export class LeafIndex extends BaseScriptComponent {
     {id: "c3-drop-far", typename: EarthProofC3DropFar.getTypeName()},
     {id: "c4-pass-proof", typename: EarthProofC4Pass.getTypeName()},
     {id: "c5-reset", typename: EarthProofC5Reset.getTypeName()},
-    {id: "c6-controls", typename: EarthProofC6Controls.getTypeName()},
-    {id: "c6-ik-reach", typename: EarthProofC6IkReach.getTypeName()},
     {id: "c7-latency", typename: EarthProofC7Latency.getTypeName()},
     {id: "L01-scene-boot-provenance", typename: BuildAliveL01BootProvenance.getTypeName()},
     {id: "L02-project-islands-exist", typename: BuildAliveL02ProjectIslands.getTypeName()},
@@ -81,5 +87,6 @@ export class LeafIndex extends BaseScriptComponent {
     {id: "L26-agent-orbs-and-flow-pipeline", typename: BuildAliveL26MissionControl.getTypeName()},
     {id: "L27-window-minimise-restore", typename: BuildAliveL27WindowMinimise.getTypeName()},
     {id: "L28-agent-chips", typename: BuildAliveL28AgentChips.getTypeName()},
+    {id: "L29-learn-reacts", typename: BuildAliveL29LearnReacts.getTypeName()},
   ]
 }
