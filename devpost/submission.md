@@ -1,71 +1,72 @@
-# Devpost Submission Package — BUILD ALIVE
+# BUILD ALIVE: Devpost submission (paste-ready)
 
-*Copy-paste ready submission text for the Snap "Learn AR with SPECS" hackathon.*
-
----
-
-## 1. Project Information
-
-- **Project Name:** BUILD ALIVE — Walk inside what AI is building
-- **Tagline (under 50 chars):** Walk inside what AI is building on your desk.
-- **Target Platform:** Snap Spectacles (Lens Studio 5.23.2, Spectacles Interaction Kit 0.18, Spectacles UIKit, LEAF 2.0.2)
+Every field below maps to one Devpost box. Lines tagged `[VERIFY]` still need a real Preview receipt before submission; remove the tag only when the receipt exists, or delete the claim.
 
 ---
 
-## 2. Devpost Story / Description
+## Project name
+BUILD ALIVE
 
-### Inspiration
-Millions of developers now build software alongside autonomous AI coding agents (Claude Code, OpenAI Codex, Cursor). Yet when an agent edits code across six files and twenty tests, developers are trapped staring at rapid terminal text scroll or flat git diffs. When a test breaks, understanding *why* an agent made that change, *how* it broke an architectural contract three layers down, and *how* to safely approve a fix requires immense mental gymnastics.
+## Tagline (Devpost limit 200 chars)
+Watch your AI coding agent build your real project as a living voxel valley on Snap Spectacles, understand each step in plain words, and approve the fix.
 
-Flat screens separate code from physical reality. We asked:
-**What if your desk became an architectural observatory where you can literally walk inside what AI is building?**
+## Video URL
+`<YOUTUBE_URL>` (see devpost/YOUTUBE.md)
 
-What if agent swarms appeared as glowing vessels navigating physical districts, code fractures formed real 3D fault markers above failing tests, and you could physically rewind time to inspect diffs and safely approve repairs with a pinch?
-
-### What BUILD ALIVE Does
-BUILD ALIVE turns your desk into a physical spatial workbench for AI software engineering:
-1. **The Project Archipelago:** Three desk-anchored project islands (`LobbySync`, `EdgeGuard`, and the preserved `EarthProof Rover` hardware climb trial). Pinching an island transitions you into that project's spatial architecture.
-2. **Architecture City & Dependency Bridges:** Visualizes system modules as 3D architectural districts (UI, Logic, API, Data, Tests) connected by emissive dependency bridges that distinguish compiler-verified imports from unverified heuristic links.
-3. **Execution Theater:** Watch autonomous agent vessels physically travel between modules during execution. When a subagent spawns to run verification tests, a violet subagent vessel appears alongside the primary planner.
-4. **Spatial Fault Markers & Causal Trails:** When an agent edit in `server/lobby.ts` drops a room capacity guard, a coral fracture marker appears above `test-room-03` in the test district. Pinching the marker draws a physical causal beam showing the exact propagation path from edit to failure.
-5. **Timeline Rewind Crystal:** A floating crystal allows developers to scrub 4D time backward and inspect side-by-side color-coded git diffs on a floating optical glass card with +0.6 cm Z-lift.
-6. **Learning Atelier:** Interactive Socratic challenges where developers predict which downstream module will break before looking at the error logs, cultivating genuine architectural mastery.
-7. **Safe Action Gate & Physical Approval Dock:** Human-in-the-loop safety enforced by design. High-stakes actions (like applying patches or running tests) are staged in a physical approval dock requiring an explicit pinch confirmation and generating cryptographic SHA-256 audit receipts. No arbitrary shell commands can ever run.
-
-### How We Built It
-- **Lens Studio 5.23.2 & TypeScript:** Built with clean, type-safe TypeScript using the Spectacles Interaction Kit (SIK) and Spectacles UIKit. Per-frame scratch vectors are reused (no allocation profiling was done).
-- **CLAD & LEAF Automated Testing:** Authored 22 LEAF scenarios (`L01`–`L22`) covering UI boot, spatial ergonomics, IK avatar reachability, secret scrubbing, and latency, alongside the 9 preserved `c1`–`c7` rover scenarios. **Executed in Lens Studio Preview on 2026-11-08: final sweep 31/31 PASS** (first sweep 26/31; the failures exposed two wrong test expectations and one real defect, islands occluding the control rail, which we fixed). Raw receipts are in the repo under `devpost/receipts/`.
-- **Deterministic Test Sweep:** A pure Node.js engine test sweep (2,223 assertions, 0 failures, re-run 2026-11-08) plus the preserved rover physics sweep. The feature-matrix statuses (F01–F72) have not been re-audited against the running Lens.
-- **Zero-Dependency Native Bridge:** A local WebSocket bridge (`ws://127.0.0.1:8787/build-alive`) built with pure Node.js stdlib that can ingest Claude Code lifecycle hooks and recorded agent-session replays, scrubs secrets, and journals events. **Status: the bridge serves HTTP (/health, /workspace, /providers) and holds 24 recorded-replay events; the Lens did not open a WebSocket to it in Preview, so the scene plays recorded replay and no live agent event has driven it.**
-- **Optical Glass Design System:** Tailored for Snap's optical see-through waveguides using additive color palettes, non-color semantic double-coding (`[PASS]`, `[FAIL]`, `[CHG]`, `[AGT]`), and seated FOV ergonomics (>5 cm target size, >12 cm center separation).
-
-### Challenges We Overcame
-1. **Preventing Secret Leakage:** Autonomous agents frequently print logs with API keys and host user paths. We engineered an aggressive multi-pattern redactor that scrubs Anthropic, GitHub, Slack, AWS, and Google keys, and neutralizes path traversal before payloads reach AR.
-2. **Optical Transparency in Waveguides:** Black is transparent on Spectacles. We designed navy/slate backplates (`#141824`) and high-contrast double-coded badges that remain legible across diverse real-world lighting environments.
-3. **Ergonomic Safety:** Strict adherence to Snap's seated FOV constraints: placing controls on the front desk rail (`z = -62 cm`, `y = -24.5 / -12.5 cm`) to prevent the dreaded "gorilla arm" fatigue.
-
-### What We Learned
-Spatial computing transforms abstract distributed software architectures into intuitive spatial landscapes. When developers can point at a glowing red fault marker and trace a physical bridge to the exact line of code that caused it, software comprehension shifts from an exhausting mental simulation into immediate spatial intuition.
-
-### What's Next for BUILD ALIVE
-- Live multi-user collaborative pair-debugging where two Spectacles wearers share the same Architecture City workbench.
-- Dynamic codebase AST parsing via local LSP (Language Server Protocol) integration for any arbitrary Git repository.
-- Physical glasses hardware validation in a field study with university computer science students.
+## Repository URL
+`<GITHUB_URL>` (public repo with the full Lens Studio project)
 
 ---
 
-## 3. Built With
-- Snap Lens Studio 5.23.2
-- Spectacles Interaction Kit (SIK 0.18)
-- Spectacles UIKit (Snap OS 2.0 / 3.0 Themes)
-- LEAF (Lens Execution & Automation Framework 2.0.2)
-- TypeScript & Node.js v24 (Zero external npm dependencies)
-- RFC 6455 Native WebSocket & HTTP Bridge
-- HyperFrames & FFmpeg / FFprobe (Short film generation)
+## Inspiration
+Coding agents now edit many files, run tests and spawn helpers faster than a person can follow. The result is a scrolling terminal that beginners cannot read and experts skim. We wanted a place where you can see what the agent touched, why a check failed, and decide whether to let it fix it, without reading a log.
+
+## What it does
+- **Your real repos become islands.** BUILD ALIVE scans folders you approve (this build: EarthProof and mnemosyne). Each repo floats above a valley as an island with one tiny house per real module group.
+- **Pinch an island and its village appears.** Every module stands on the plateau as a building whose shape says what it is: a code workshop with a smoking chimney, a watchtower for checks, a barn for files and pictures, a windmill for connections in and out, a granary for stored data, a cottage for screens. Paths appear only between modules where a real import was found.
+- **Agents become little workers.** When the agent touches a module, a voxel worker walks to that building's door, carrying a crate when files change. A helper agent appears only when a real helper event exists.
+- **Plain words first, exact evidence on request.** Hover a building to see its name. Pinch it for one small card in plain language. Press Details for the exact folder, files, imports and event ID.
+- **Failures are visible and honest.** A failing check raises a warning lantern over the watchtower, and the card shows the likely cause clearly marked as a guess, not proof.
+- **Explain, then approve.** Explain turns the failure into a short lesson. Approve runs only the allowlisted, read-only check, and every approval or denial leaves a receipt.
+- **Call your mentor.** Ask a question out loud; the bridge transcribes it, answers in two plain sentences using only the recorded events (it says when it cannot see something, and never claims to read the agent's thoughts), and speaks the answer. This runs bridge-side, measured at n=5, total p50 1.31 s, p95 1.58 s.
+- **Live or replay, always labelled.** The caption under the controls says LIVE only for real agent events; otherwise REPLAY or Sample world.
+
+## How we built it
+- **Lens Studio 5.23.2 + TypeScript** for Snap Spectacles, with the Spectacles Interaction Kit (pinch, hover) and Spectacles UIKit (dock buttons, one glass card).
+- **An original voxel art pipeline.** The whole valley (terrain, river, waterfall, mountains, trees, six building types, islands, clouds, workers) is generated in code as palette-textured voxel meshes with Lens Studio's MeshBuilder: a few draw calls, deterministic, no third-party art.
+- **CLAD + the Lens Studio MCP** to build, inspect and drive the scene from an agent, and **LEAF** for scenario tests run inside the Lens Studio Preview.
+- **A zero-dependency Node bridge** (`bridge/`): scans approved repos into real module maps, receives Claude Code hook events over an authenticated loopback endpoint, redacts secrets and home paths, journals every event, and streams them to the Lens over a local WebSocket.
+- **Mentor voice:** Groq Whisper (speech to text) and gpt-oss-20b (answer), grounded only on journal events; the offline Windows voice speaks the answer.
+
+## Challenges we ran into
+- **Black is invisible on Spectacles.** Additive displays show dark as transparent, so the first design (dark panels, a big desk slab) looked like a ghostly box. We rebuilt the world from bright, sunlit fills with text only on demand.
+- **A button was stealing pinches.** In Preview, pinching a building failed with "Blocked by Collider": a control button sat on the sight line. All controls moved to a small dock below the world. [VERIFY: pinch on island + building in Preview after the fix]
+- **Honesty under pressure.** Hook events tell us which tool ran, not always which file. The mentor says "I can't see that in the events" instead of guessing.
+- **Security.** An audit found that the local WebSocket accepted pages from other localhost ports and that one message type approved itself. We added Host and exact-origin checks, required the shared secret on every event endpoint, and limited the one-step approval to the read-only check.
+
+## Accomplishments that we're proud of
+- Real repositories, not a mock city: module buildings, counts and paths come from an actual scan.
+- Real live agent events: this project's own Claude Code session streamed LIVE_VERIFIED tool events into the bridge journal (`devpost/receipts/g2-live/journal.jsonl`). [VERIFY: event visibly reaching a building in Preview]
+- Test receipts: Node engine sweep 2,224 assertions with 0 failures; core checks 62/62 plus 2,400 generated cases; bridge security tests 16/16 and 7/7. [VERIFY: LEAF L01-L24 + c1-c7 executed in Preview for this build]
+
+## What we learned
+Showing less text made the product more truthful, not less: when the world carries the story, the words that remain can be exact. And on an additive display, light is the only ink.
+
+## What's next for BUILD ALIVE
+- Test on physical Spectacles hardware (not tested yet; see disclosure).
+- File-level events from more agent tools (OpenCode, Codex) through their documented event APIs.
+- A shared valley for two people pairing on the same project.
+
+## Built with
+lens-studio, snap-spectacles, spectacles-interaction-kit, spectacles-uikit, typescript, leaf, clad, mcp, node.js, websocket, groq, whisper, claude-code, hyperframes, ffmpeg
 
 ---
 
-## 4. Honest Disclosures
-- **Working Prototype Status:** **Preview-only.** The Lens was exercised in Lens Studio 5.23.2 (SPECS 27 Interactive Preview): 31/31 LEAF scenarios in the final sweep, plus three real Preview screenshots and a Preview frame capture used in the film. The scene runs recorded replay data; live agent-to-Lens streaming is **not** demonstrated. Pinch inputs in the footage were injected by the Lens Studio Preview tooling, not a physical hand. There was **no physical Spectacles test**: on-glasses legibility, comfort, battery, and optics are unproven. Preview labels were de-overlapped and shown only on focus/inspect in a late polish pass; the live bridge link needs Lens Studio Experimental APIs (not enabled).
-- **AI Usage:** Code, tests, and documentation were pair-programmed with AI coding assistants (Google Antigravity / Claude Code) following strict verification and zero-fabrication guidelines.
-- **Zero Additional Spending:** Built with £0 / $0 additional expenditure, utilizing open-source tools, native platform primitives, and existing machine capabilities.
+## AI disclosure
+This project was built with AI coding assistants (Claude Code, and earlier Google Antigravity) under the entrant's direction. The assistants wrote and refactored code, tests, documentation and the film tooling, and drove Lens Studio through its official MCP server. Every reported result comes from a command or Preview run whose output is saved in `devpost/receipts/` or `devpost/evidence/`. The in-Lens mentor uses Groq-hosted models at runtime and is grounded only on recorded events.
+
+## Hardware note
+Tested in the Lens Studio 5.23.2 Preview (SPECS 27 device simulation) only. Not yet tested on physical Spectacles. The local bridge address 127.0.0.1 refers to the PC; on glasses the bridge would need a secured network path, which is not built yet.
+
+## Third-party assets
+No third-party 3D art, textures, music or sounds. Voxel art, palette and score are original and generated in this repo. Libraries: Snap's Spectacles Interaction Kit, Spectacles UIKit and LEAF packages.

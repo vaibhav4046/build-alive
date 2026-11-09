@@ -1,0 +1,13 @@
+<!doctype html><html><body style="margin:0;background:#222;display:grid;grid-template-columns:480px 480px;gap:4px">
+<canvas id="px" width="480" height="270" style="display:none"></canvas>
+<script src="assets/coldopen.js"></script>
+<script>
+for (const t of [2.2, 5.6, 7.9, 10.2]) {
+  window.__coldopen.render(t)
+  const c = document.createElement("canvas"); c.width = 480; c.height = 270
+  const x = c.getContext("2d"); x.imageSmoothingEnabled = false
+  x.drawImage(document.getElementById("px"), 0, 0, 480, 270)
+  x.fillStyle = "#fff"; x.font = "20px monospace"; x.fillText("t=" + t, 8, 24)
+  document.body.appendChild(c)
+}
+</script></body></html>
