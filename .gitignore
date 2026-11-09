@@ -50,3 +50,4 @@ bridge/.env
 *.env.local
 
 video/.film-work/
+video/tools/frames/

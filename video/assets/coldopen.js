@@ -1,8 +1,8 @@
 // BUILD ALIVE - wordless pixel cold open (0..12.4 s), labelled "concept" in the film. Pure function of time t:
 // no clocks, no Math.random. 480x270 canvas shown at 4x, nearest-neighbour. Story: 2 a.m., a vibe coder drowns in a
 // long agent session (terminal flood, helper pings, one red failure), puts on original pixel AR glasses (chunky
-// Specs-style frame, not any other brand), and a tiny valley of their project blooms above the desk. Then the
-// blocks dissolve (transparent) into the real Lens Studio Preview footage underneath.
+// Specs-style frame, not any other brand), and the session blooms above the desk as three floating graphite
+// windows plus a pill dock. Last 0.5 s fades to the film background #1b1d21.
 (() => {
   "use strict"
   const W = 480, H = 270
@@ -143,39 +143,60 @@
     R(x + fw / 2 - 3, y + 1, 2, 2, "#1a1a2a")
   }
 
+  // pixel-rounded rect: notched corners
+  const RR = (x, y, w, h, c, r = 2) => { R(x + r, y, w - 2 * r, h, c); R(x, y + r, w, h - 2 * r, c) }
+  const G1 = "#3a3f47", G2 = "#4a5059", INK = "#ffffff", CY = "#5ad1e6", CO = "#e8826a"
+
+  // the glasses reveal the session as three floating graphite windows plus a pill dock
   function bloom(t) {
     const g = ease(seg(t, 8.6, 10.2))
     if (g <= 0) return
-    ctx.globalAlpha = 0.12 * g
+    ctx.globalAlpha = 0.10 * g
     R(0, 0, W, H, C.cyan)
     ctx.globalAlpha = 1
-    const isl = [
-      {x: 200, y: 64, roof: C.roof, d: 0}, {x: 290, y: 50, roof: C.roof2, d: 0.25}, {x: 380, y: 68, roof: C.roof3, d: 0.5},
+    const wins = [
+      {x: 174, y: -12, w: 52, h: 70, acc: CY, d: 0.0, kind: "list"},
+      {x: 228, y: -20, w: 124, h: 80, acc: CO, d: 0.2, kind: "tiles"},
+      {x: 362, y: -12, w: 72, h: 70, acc: CY, d: 0.4, kind: "grid"},
     ]
-    for (const il of isl) {
-      const k = ease(seg(t, 8.6 + il.d, 9.8 + il.d))
+    for (const wn of wins) {
+      const k = ease(seg(t, 8.6 + wn.d, 9.6 + wn.d))
       if (k <= 0) continue
-      const bob = Math.sin(t * 2 + il.x) * 1.5
-      const w = 46 * k, y = il.y + bob + (1 - k) * 20
-      R(il.x - w / 2, y, w, 4, C.grass)
-      R(il.x - w / 2, y + 4, w, 3, C.grassD)
-      for (let r = 0; r < 4; r++) R(il.x - w / 2 + r * 5 * k, y + 7 + r * 3, w - r * 10 * k, 3, r % 2 ? C.dirt : "#7c563a")
-      if (k > 0.7) {
-        for (let h = 0; h < 3; h++) {
-          const hx = il.x - 14 + h * 12
-          R(hx, y - 6, 7, 6, C.white)
-          R(hx - 1, y - 9, 9, 3, il.roof)
-          R(hx + 2, y - 4, 2, 2, C.gold)
+      const x = wn.x, y = wn.y + Math.round(Math.sin(t * 2 + wn.x) * 1.2 + (1 - k) * 14)
+      ctx.globalAlpha = k
+      RR(x - 1, y - 1, wn.w + 2, wn.h + 2, "#262a30", 3)
+      RR(x, y, wn.w, wn.h, G1, 3)
+      R(x + 3, y + 3, wn.w - 6, 3, wn.acc)
+      if (wn.kind === "list") {
+        for (let i = 0; i < 6; i++) {
+          R(x + 5, y + 12 + i * 9, 3, 3, i === 1 ? wn.acc : INK)
+          R(x + 11, y + 13 + i * 9, 16 + hash(i * 4.1) * 18, 1, INK)
         }
-        R(il.x + 20, y + 4, 2, 12, C.water)
+      } else if (wn.kind === "tiles") {
+        for (let i = 0; i < 3; i++) {
+          const ty = y + 12 + i * 22
+          RR(x + 5, ty, wn.w - 10, 18, G2, 2)
+          R(x + 10, ty + 5, 50 + hash(i * 2.3) * 50, 2, INK)
+          R(x + 10, ty + 11, 24 + hash(i * 5.9) * 30, 1, INK)
+        }
+      } else {
+        for (let i = 0; i < 6; i++) {
+          const gx = x + 5 + (i % 2) * 32, gy = y + 12 + Math.floor(i / 2) * 19
+          RR(gx, gy, 30, 16, G2, 2)
+          R(gx + 4, gy + 4, 6, 6, INK)
+          R(gx + 13, gy + 6, 12, 1, INK)
+        }
       }
+      ctx.globalAlpha = 1
     }
-    if (t > 9.6) {
-      const wx = 270 + ((t - 9.6) * 14) % 40
-      R(wx, 41, 4, 5, C.cyan)
-      R(wx, 38, 4, 3, C.skin)
-      R(wx - 1, 37, 6, 1, C.gold)
-      R(wx + 4, 42, 3, 3, "#ac7a4c")
+    const kd = ease(seg(t, 9.4, 10.2))
+    if (kd > 0) {
+      ctx.globalAlpha = kd
+      const dx = 254, dy = 68 + Math.round((1 - kd) * 8)
+      RR(dx - 1, dy - 1, 74, 12, "#262a30", 5)
+      RR(dx, dy, 72, 10, G1, 4)
+      for (let i = 0; i < 4; i++) R(dx + 10 + i * 15, dy + 3, 6, 4, i === 0 ? CY : INK)
+      ctx.globalAlpha = 1
     }
   }
 
@@ -193,12 +214,8 @@
     ctx.restore()
     const fade = 1 - seg(t, 0, 1.0)
     if (fade > 0) { ctx.globalAlpha = fade; R(0, 0, W, H, "#000000"); ctx.globalAlpha = 1 }
-    const d = seg(t, 10.9, 12.4)
-    if (d > 0) {
-      for (let by = 0; by < H; by += 8) for (let bx = 0; bx < W; bx += 8) {
-        if (hash(bx * 0.13 + by * 1.7) < d * 1.08) ctx.clearRect(bx, by, 8, 8)
-      }
-    }
+    const out = seg(t, 11.85, 12.35)
+    if (out > 0) { ctx.globalAlpha = out; R(0, 0, W, H, "#1b1d21"); ctx.globalAlpha = 1 }
   }
 
   window.__coldopen = {render, DURATION: 12.4}
