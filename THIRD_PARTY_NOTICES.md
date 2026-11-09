@@ -21,6 +21,8 @@ The Lens shows a small logo next to an agent's name so people can recognise whic
 | Claude (Anthropic), for the Claude Code session | `simple-icons` `siClaude`, source https://claude.ai | `#D97757` | Session window header (when Claude Code is selected), Claude Code chip in the agent row |
 | OpenCode, for the OpenCode station | `simple-icons` `siOpencode`, source github.com/anomalyco/opencode (`packages/identity/mark.svg`) | `#000000` (white badge) | OpenCode chip in the agent row, Session header when OpenCode is selected |
 
+**Product names and logos are trademarks of their respective owners, used only to identify compatible tools; no affiliation or endorsement.** A third mode, `LOGO_MODE = "brand-tinted"`, draws the unmodified `simple-icons` mark geometry (Claude, OpenCode only), re-coloured in a vivid tint on a frosted-glass face (`devpost/tools/render-tinted-logos.cjs`); providers without a `simple-icons` mark keep their vivid letter badge. Recolouring is the only change; no shape is redrawn or distorted.
+
 **Default is monogram mode** (`LOGO_MODE = "monogram"` in `BuildAliveSceneUI.ts`): every chip and the Session header show a one- or two-letter monogram (CC, Cx, AG, OC...) in a generic accent colour, so no third-party mark appears in the submitted video or default build. The real marks below are only drawn when a user sets `LOGO_MODE = "brand"` locally; none of the film footage or submission screenshots use them.
 
 The agent row under the Session window has one chip per provider the local bridge reports (`GET /providers`). A chip's small dot is its honest status (green LIVE, amber REPLAY, grey OFFLINE, grey with a slash UNSUPPORTED); a chip is a selector only and never means the company endorses or is connected to this Lens.
