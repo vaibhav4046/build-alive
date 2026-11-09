@@ -1,0 +1,6 @@
+I 23:54:44.342 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.000s]RUNS: L17-latency-benchmark with args: []
+I 23:54:44.343 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 23:55:36.226 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF L17] 200-press latency ms: p50=2.0 p95=2.0 p99=3.0
+I 23:55:36.226 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [ 51.884s]PASSED: L17-latency-benchmark
+I 23:55:36.227 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [ 51.885s][L17-latency-benchmark] PASSED
+I 23:55:36.228 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario L17-latency-benchmark completed successfully.

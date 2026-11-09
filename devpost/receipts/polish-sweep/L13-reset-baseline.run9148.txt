@@ -1,0 +1,11 @@
+I 23:47:44.538 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.000s]RUNS: L13-reset-baseline with args: []
+I 23:47:44.538 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 23:47:45.949 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF L13] deterministic baseline reset verified
+I 23:47:45.949 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  1.412s]PASSED: L13-reset-baseline
+I 23:47:45.949 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  1.412s][L13-reset-baseline] PASSED
+I 23:47:45.950 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario L13-reset-baseline completed successfully.
+I 23:47:47.310 [Preview 1] [Packages/SpectaclesInteractionKit.lspkg/Core/ConfigurationValidator/ConfigurationValidator.ts:16] SIK Version : 0.18.0
+I 23:47:48.040 [Preview 1] [Assets/Scripts/BuildAliveTransport.ts:73] [BuildAlive] bridge websocket init threw: Exception in HostFunction: URL is not secure (Experimental API must be enabled to access insecure URLs)
+I 23:47:48.426 [Preview 1] [Assets/Scripts/EarthProofMain.ts:220] [EarthProof] ready: BUILD ALIVE primary workbench active (Rover fallback standby)
+I 23:47:48.617 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Loaded 31 scenario(s) from preview.
+I 23:47:48.618 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Running scenario: L14-control-size-spacing

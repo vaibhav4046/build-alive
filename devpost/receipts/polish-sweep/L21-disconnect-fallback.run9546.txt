@@ -1,0 +1,11 @@
+I 23:50:20.446 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.000s]RUNS: L21-disconnect-fallback with args: []
+I 23:50:20.446 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.000s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 23:50:21.604 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF L21] disconnect fallback to LOCAL_RECORDED_REPLAY verified
+I 23:50:21.604 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  1.158s]PASSED: L21-disconnect-fallback
+I 23:50:21.604 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  1.158s][L21-disconnect-fallback] PASSED
+I 23:50:21.604 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario L21-disconnect-fallback completed successfully.
+I 23:50:22.870 [Preview 1] [Packages/SpectaclesInteractionKit.lspkg/Core/ConfigurationValidator/ConfigurationValidator.ts:16] SIK Version : 0.18.0
+I 23:50:23.649 [Preview 1] [Assets/Scripts/BuildAliveTransport.ts:73] [BuildAlive] bridge websocket init threw: Exception in HostFunction: URL is not secure (Experimental API must be enabled to access insecure URLs)
+I 23:50:23.999 [Preview 1] [Assets/Scripts/EarthProofMain.ts:220] [EarthProof] ready: BUILD ALIVE primary workbench active (Rover fallback standby)
+I 23:50:24.194 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Loaded 31 scenario(s) from preview.
+I 23:50:24.195 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Running scenario: L22-reduced-motion-colour-safe

@@ -128,7 +128,7 @@ SWEEP PASSED: 5582 distinct scenarios, 172258 assertions, 0 failed
 **Executed in Lens Studio 5.23.2 Preview on 2026-11-08 via the lens-studio MCP (`run_leaf_scenario`, onDevice=false).** Raw receipts: `devpost/receipts/` (`first-pass-parallel-batches/` and `final-sweep/`, with `_summary.json` and `README.md` explaining failures).
 
 - First sweep: 26 PASS / 5 FAIL (L06, L16, L18, c6-controls, c6-ik-reach).
-- After fixes (two test-expectation corrections, one real layout occlusion fix): **final sweep 31/31 PASS**.
+- After fixes (two test-expectation corrections, one real layout occlusion fix): **final sweep 31/31 PASS**. A later polish pass (label scale/visibility, card layout, InternetModule) was re-run in full: 31/31 PASS (`receipts/polish-sweep*`).
 - Preview only. No physical Spectacles run. Scenarios exercise the scene in recorded-replay mode; no live agent event reached the Lens.
 
 ### BUILD ALIVE Suite (L01-L22)
@@ -190,5 +190,5 @@ Press-to-first-frame latency measurements over 200 consecutive interaction cycle
 
 - Bridge `node bridge/start-workspace.mjs` listening on 127.0.0.1:8787; `/health` ok, `/providers` and `/journal` answer (HTTP, checked with curl against the bridge only).
 - Journal = 24 events, all `provenance: LOCAL_RECORDED_REPLAY` (antigravity transcript replay). 0 live events.
-- **The Lens did NOT connect to the bridge in Preview**: `netstat` shows 127.0.0.1:8787 LISTENING and no ESTABLISHED connection while Preview ran; `internetModule` is not wired in `Assets/Scene.scene`, so `BuildAliveTransport.connect()` returns false and the scene fails closed to recorded replay (banner: `SIMULATED IN PREVIEW - LOCAL RECORDED REPLAY`).
+- **The Lens did NOT connect to the bridge in Preview**: `netstat` shows 127.0.0.1:8787 LISTENING and no ESTABLISHED connection. An `InternetModule` asset was then created and assigned (`EarthProofMain.internetModule`); `createWebSocket(ws://127.0.0.1:8787/build-alive)` throws `URL is not secure (Experimental API must be enabled to access insecure URLs)`. The scene fails closed to recorded replay (banner `OFFLINE FALLBACK - LOCAL RECORDED REPLAY`). The Experimental APIs project setting was not changed (user decision; blocks publishing).
 - Therefore: **the scene does not update from a bridge event in the current build.** Nothing in the film or submission may be labelled live. Any bridge event shown must be labelled replay/test.

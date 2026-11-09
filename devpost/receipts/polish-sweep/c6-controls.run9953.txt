@@ -1,0 +1,21 @@
+I 23:52:17.464 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.000s]RUNS: c6-controls with args: []
+I 23:52:17.464 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.000s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 23:52:19.253 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Run: 5 cm across, nearest other control 16.4 cm
+I 23:52:19.253 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Reset: 5 cm across, nearest other control 20.0 cm
+I 23:52:19.254 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Small: 6 cm across, nearest other control 14.0 cm
+I 23:52:19.254 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Geared: 6 cm across, nearest other control 14.0 cm
+I 23:52:19.256 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] camera fov 36.6 deg vertical, aspect 0.875, gaze at (-4.8, -20.3, -70.8)
+I 23:52:19.256 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Run is -2.7 deg right, -3.8 deg up of the gaze: in view
+I 23:52:19.257 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Reset is 6.4 deg right, -3.9 deg up of the gaze: in view
+I 23:52:19.257 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Small is -11.9 deg right, -2.9 deg up of the gaze: in view
+I 23:52:19.257 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] Geared is -6.3 deg right, -3.0 deg up of the gaze: in view
+I 23:52:19.258 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] EvidenceCard centre is 7.0 deg right, 5.1 deg up: in view
+I 23:52:19.258 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c6] ProofCard centre is 3.4 deg right, 4.8 deg up: in view
+I 23:52:19.260 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  1.796s]PASSED: c6-controls
+I 23:52:19.260 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  1.796s][c6-controls] PASSED
+I 23:52:19.260 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario c6-controls completed successfully.
+I 23:52:20.436 [Preview 1] [Packages/SpectaclesInteractionKit.lspkg/Core/ConfigurationValidator/ConfigurationValidator.ts:16] SIK Version : 0.18.0
+I 23:52:21.154 [Preview 1] [Assets/Scripts/BuildAliveTransport.ts:73] [BuildAlive] bridge websocket init threw: Exception in HostFunction: URL is not secure (Experimental API must be enabled to access insecure URLs)
+I 23:52:21.530 [Preview 1] [Assets/Scripts/EarthProofMain.ts:220] [EarthProof] ready: BUILD ALIVE primary workbench active (Rover fallback standby)
+I 23:52:21.732 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Loaded 31 scenario(s) from preview.
+I 23:52:21.733 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Running scenario: c6-ik-reach

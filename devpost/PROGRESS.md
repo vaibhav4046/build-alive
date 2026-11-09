@@ -1,5 +1,31 @@
 # BUILD ALIVE — Master Execution Progress
 
+## STATE 2026-11-08 ~23:45 (real Preview evidence session) — read this first
+
+**NEXT ACTION:** (1) Review the film (video/out/build-alive-demo.mp4) and thumbnail; (2) decide whether to spend remaining time on the two biggest honest gaps: wire an InternetModule so the Lens can actually receive bridge events (currently NOT connected, no live event has ever driven the scene) and fix label overlap/legibility in the Preview view; (3) submit on Devpost before Mon 9 Nov 2026 22:00 GMT.
+
+**Blockers:** none for submission. Not proven: live bridge-to-Lens events, any physical Spectacles run.
+
+### Ledger
+| Colour | Item | Evidence |
+|---|---|---|
+| GREEN | LEAF L01-L22 + c1-c7 executed in Lens Studio 5.23.2 Preview: **31/31 PASS** (final sweep) | devpost/receipts/final-sweep/ (+ README.md) |
+| GREEN | Lens Studio TypeScript compile succeeds | RecompileTypeScriptTool, 2026-11-08 |
+| GREEN | Node tests: build-alive.sweep 2,223 assertions 0 failures; core.check 62/62 named + generated; sim.check pass | re-run this session |
+| GREEN | Three real Preview screenshots + 26-frame Preview capture (idle auto-cycle, injected pinch Learn, injected pinch Step) | devpost/shots/preview-0*.png, video/assets/preview-frames/ |
+| YELLOW | First sweep was 26/31; L06 and L18 were wrong test expectations (corrected, recorded in receipts/README.md); L16 + c6-ik-reach exposed a real occlusion defect (islands in front of the control rail) which is fixed | receipts/first-pass-parallel-batches/ |
+| YELLOW | c6-controls failed once ("Small out of view"), passed on every other run; cause not isolated (order/state dependent) | first-pass receipts |
+| YELLOW | c7 MCP call times out client-side (scenario takes ~52 s); verdict taken from the Lens Studio log | receipts/README.md |
+| GREEN | Label overlap fixed (labels cancel parent box scale; module badges only on focus/inspect; card rows re-laid out). Shots re-captured; LEAF re-run 31/31 | receipts/polish-sweep*, devpost/shots |
+| YELLOW | Frame capture is ~0.7 fps (screenshot API), not smooth video | video/assets/preview-frames |
+| RED | Bridge -> Lens live updates / real workspace worlds on islands: **blocked**. InternetModule is now wired, but Preview throws `URL is not secure (Experimental API must be enabled...)` for ws://127.0.0.1. USER DECISION: enable Experimental APIs in Lens Studio Project Settings (blocks store publishing) then reload Preview; the Lens code already binds /workspace worlds (EarthProof, mnemosyne) on connect. Journal holds 24 replay events, 0 live | test-results.md section 6 |
+| RED | Physical Spectacles: not tested | n/a |
+| RED/UNAUDITED | F01-F72 feature matrix statuses not re-audited against the running Lens | feature-matrix.md |
+
+Bridge: node bridge/start-workspace.mjs is running on 127.0.0.1:8787 (PID seen: 24676) and was left running.
+
+---
+
 **PREFLIGHT CHECKPOINT (2026-11-08 05:18 UTC)**
 - **Actual working dir:** `D:\earthproof\lens\EarthProof` (`EarthProof.esproj`, Lens Studio 5.23.2.26081320, `targetPlatform: Spectacles`)
 - **Scene name:** `Assets/Scene.scene` (UUID `0a1ccb1a-fe88-4fbb-9883-e3af3c75fd99`, wired with `EarthProofMain`, `EarthProofControlsUI`, `EarthProofCardsUI`, `LeafIndex`, `LEAF Plugin Bridge`)

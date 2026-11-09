@@ -1,0 +1,9 @@
+[
+  {
+    "scenario": "L17-latency-benchmark",
+    "verdict": "PASS",
+    "startedAt": "23:54:44.342",
+    "logLine": 10120,
+    "receipt": "L17-latency-benchmark.run10120.txt"
+  }
+]

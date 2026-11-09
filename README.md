@@ -25,12 +25,12 @@ When autonomous AI coding agents (Claude Code, Cursor, Codex) write software, de
 
 | Dimension | Measured Outcome & Evidence | Provenance Status |
 |---|---|---|
-| **LEAF in Lens Studio Preview** | **31/31 scenarios PASS** (L01-L22 + 9 Rover c-scenarios) in the final sweep on 2026-11-08, Lens Studio 5.23.2 Preview. First sweep was 26/31; two test-expectation corrections and one real layout fix (islands occluded the control rail) followed. Raw receipts: [`devpost/receipts/`](devpost/receipts/README.md). | `VERIFIED` (Preview only) |
-| **Real Preview screenshots** | [`devpost/shots/`](devpost/shots/) (project universe, active agent card, learning + fault marker), captured with the Lens Studio MCP. Labels overlap in the free Preview camera view; known legibility defect. | `VERIFIED` (Preview only) |
+| **LEAF in Lens Studio Preview** | **31/31 scenarios PASS** (L01-L22 + 9 Rover c-scenarios), re-confirmed on the polished build, 2026-11-08, Lens Studio 5.23.2 Preview. First sweep was 26/31; two test-expectation corrections and one real layout fix (islands occluded the control rail) followed. Raw receipts: [`devpost/receipts/`](devpost/receipts/README.md). | `VERIFIED` (Preview only) |
+| **Real Preview screenshots** | [`devpost/shots/`](devpost/shots/) (project universe, active agent card, learning + fault marker), captured with the Lens Studio MCP. Re-captured after a label de-overlap pass (labels only on focus/inspect, card rows fixed). | `VERIFIED` (Preview only) |
 | **Deterministic Node tests** | `build-alive.sweep.mjs` 2,223 assertions 0 failures; `core.check.mjs` 62/62 named + generated cases; `sim.check.mjs` pass (re-run 2026-11-08). | `VERIFIED` |
 | **Lens Studio compile** | `RecompileTypeScriptTool`: succeeded. | `VERIFIED` |
 | **Bridge (HTTP)** | `bridge/start-workspace.mjs` serves /health /workspace /providers on 127.0.0.1:8787; journal = 24 recorded-replay events. | `VERIFIED` (HTTP) |
-| **Bridge -> Lens live updates** | **Not connected in Preview**: no WebSocket established (`internetModule` not wired in the scene), the Lens runs in `LOCAL_RECORDED_REPLAY`. No live agent event has driven the scene. | **`UNPROVEN`** |
+| **Bridge -> Lens live updates** | **Not connected in Preview**: `createWebSocket` to ws://127.0.0.1 throws in Preview ("URL is not secure (Experimental API must be enabled...)"; the setting was not changed), so the Lens runs recorded replay (`OFFLINE FALLBACK`). No live agent event has driven the scene. | **`UNPROVEN`** |
 | **72 feature claims (F01-F72)** | Engine logic is covered by Node tests; the feature matrix statuses have not been re-audited against the running Lens. | `UNAUDITED` |
 | **Latency** | Preview script-side press-to-first-frame p50 1.0 / p95 2.0 / p99 2.0 ms (n=200, c7). Not measured on a headset; no frame-rate claim. | `VERIFIED` (Preview script-side) |
 | **Zero Additional Spending** | £0 / $0 spend. | `VERIFIED` |

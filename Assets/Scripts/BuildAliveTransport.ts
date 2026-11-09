@@ -38,7 +38,9 @@ export class BuildAliveTransport {
     try {
       const ws = internetModule.createWebSocket(this.url)
       this.socket = ws
+      print("[BuildAlive] bridge websocket connecting: " + this.url)
       ws.onopen = () => {
+        print("[BuildAlive] bridge websocket OPEN")
         this.connected = true
         this.lastError = null
         this.engine.handleReconnect(true)
@@ -52,13 +54,15 @@ export class BuildAliveTransport {
           if (this.onStateChanged) this.onStateChanged()
         }
       }
-      ws.onerror = () => {
+      ws.onerror = (ev: unknown) => {
+        print("[BuildAlive] bridge websocket ERROR: " + JSON.stringify(ev))
         this.lastError = "bridge websocket error; falling back to LOCAL_RECORDED_REPLAY"
         this.connected = false
         this.engine.handleDisconnect()
         if (this.onStateChanged) this.onStateChanged()
       }
-      ws.onclose = () => {
+      ws.onclose = (ev: unknown) => {
+        print("[BuildAlive] bridge websocket CLOSED: " + JSON.stringify(ev))
         this.connected = false
         this.engine.handleDisconnect()
         if (this.onStateChanged) this.onStateChanged()
@@ -66,6 +70,7 @@ export class BuildAliveTransport {
       return true
     } catch (e) {
       this.lastError = e instanceof Error ? e.message : "websocket init failed"
+      print("[BuildAlive] bridge websocket init threw: " + this.lastError)
       this.connected = false
       this.engine.handleDisconnect()
       return false

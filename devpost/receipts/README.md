@@ -23,3 +23,15 @@ Caveats, stated plainly:
 | L16 / c6-ik-reach | IK hand could not trigger `BA_StepButton` / Run | **Real product defect**: `Island_*` sat at the same x/y directly in front of the row-1 rail buttons, so the Preview camera's line to the button was blocked (`PreviewInteractTool`: "obstructed by Island_LobbySync") | Islands moved onto the desk (`BuildAliveLayout.ts`, `ISLAND_Y`, y -24.5 -> -27.3). L16 and c6-ik-reach pass afterwards |
 
 L06 and L18 changed the test, not the product; that is recorded here so it is not mistaken for a product fix.
+
+## Polish pass (23:39-23:56): labels, card layout, InternetModule
+Changes in `BuildAliveSceneUI.ts`: floating labels no longer inherit their parent box scale (text had been rendering 5-8x oversize and overlapping), module name badges show only on focus/inspect, evidence-card rows use smaller sizes with shrink-to-fit, and re-enabled rows now trigger a FlexLayout re-layout (rows 3-5 were stacking at the card origin). `BuildAliveTransport.ts` prints WebSocket diagnostics. A native `InternetModule` asset (`Assets/BuildAliveInternetModule.internetModule`) was created and assigned to `EarthProofMain.internetModule`.
+
+| Folder | Result |
+|---|---|
+| `polish-sweep/` | 30 PASS, L17 NO_VERDICT: the next scenario call cancelled it (log: "There is already a scenario running"). L17 takes ~50 s; the MCP call times out client-side |
+| `polish-sweep-l17-rerun/` | L17 alone: **PASS** (200-press p50=2.0 / p95=2.0 / p99=3.0 ms) |
+
+Net on the polished build: **31/31 PASS** (30 in the sweep + L17 rerun).
+
+**Live link finding:** with the InternetModule assigned, `createWebSocket("ws://127.0.0.1:8787/build-alive")` throws in Preview: `URL is not secure (Experimental API must be enabled to access insecure URLs)` (log line in `polish-sweep/*.txt`). The Lens fails closed to recorded replay (banner now reads OFFLINE FALLBACK). Enabling Lens Studio Experimental APIs in Project Settings is a user decision (it blocks store publishing) and was NOT changed. Until then no bridge event or real-workspace world reaches the Lens.

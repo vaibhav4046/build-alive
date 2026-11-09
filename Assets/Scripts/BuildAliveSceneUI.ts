@@ -74,6 +74,8 @@ const COLOR_CAPTION = new vec4(0.78, 0.86, 0.96, 0.85)
 const CARD_CONTENT_Z_CM = 0.6
 const CARD_PAD_CM = 0.85
 const CARD_ROW_GAP_CM = 0.22
+/** World-space scale (cm) applied to floating labels after cancelling the parent box scale. */
+const LABEL_WORLD_SCALE_CM = 1.8
 const BUTTON_LABEL_SIZE = 50
 
 interface ModuleVisual {
@@ -117,6 +119,7 @@ export class BuildAliveSceneUI {
   private cardRoot!: SceneObject
   private cardRows: Text[] = []
   private cardRowObjects: SceneObject[] = []
+  private cardFlex: FlexLayout | null = null
   private buttons: Record<string, Button> = {}
   private pendingPresses: {kind: BuildAlivePressRecord["kind"]; target: string; pressMs: number}[] = []
   private pulseClock = 0
@@ -571,6 +574,7 @@ export class BuildAliveSceneUI {
       labelObj.setParent(island)
       labelObj.getTransform().setLocalPosition(new vec3(0, 1.55, 0))
       this.islandLabels[slot.id] = this.addText(labelObj, proj.title, 26, COLOR_WHITE)
+      this.compensateLabelScale(labelObj, slot.size, LABEL_WORLD_SCALE_CM)
 
       this.makeInteractable(island, () => {
         this.handleSelectProject(slot.id, Date.now())
@@ -651,6 +655,7 @@ export class BuildAliveSceneUI {
       badgeObj.setParent(obj)
       badgeObj.getTransform().setLocalPosition(new vec3(0, 1.42, 0))
       const badgeText = this.addText(badgeObj, "[PASS] " + m.label, 25, COLOR_WHITE)
+      this.compensateLabelScale(badgeObj, m.size, LABEL_WORLD_SCALE_CM)
 
       this.makeInteractable(obj, () => {
         const snap = this.engine.snapshot()
@@ -731,6 +736,7 @@ export class BuildAliveSceneUI {
     pLabel.setParent(this.primaryVessel)
     pLabel.getTransform().setLocalPosition(new vec3(0, 1.38, 0))
     this.addText(pLabel, "[AGT] Builder Bot", 24, COLOR_CYAN)
+    this.compensateLabelScale(pLabel, AGENT_VESSEL_SIZE, LABEL_WORLD_SCALE_CM)
 
     // 2. Subagent Verifier AI-Worker Character (Amethyst Judge Golem)
     this.subVessel = this.makeCylinderObject(
@@ -745,6 +751,7 @@ export class BuildAliveSceneUI {
     sLabel.setParent(this.subVessel)
     sLabel.getTransform().setLocalPosition(new vec3(0, 1.38, 0))
     this.addText(sLabel, "[AGT] Verifier Bot", 24, COLOR_VIOLET)
+    this.compensateLabelScale(sLabel, AGENT_VESSEL_SIZE, LABEL_WORLD_SCALE_CM)
 
     // 3. Rewind Crystal (Multi-faceted Voxel Time Relic)
     this.rewindCrystal = this.makeBoxObject(
@@ -759,6 +766,7 @@ export class BuildAliveSceneUI {
     rLabel.setParent(this.rewindCrystal)
     rLabel.getTransform().setLocalPosition(new vec3(0, 0.95, 0))
     this.addText(rLabel, "[CHG] Rewind", 24, COLOR_AMBER)
+    this.compensateLabelScale(rLabel, REWIND_CRYSTAL.size, LABEL_WORLD_SCALE_CM)
     this.makeInteractable(this.rewindCrystal, () => this.handleRewind(undefined, Date.now()))
 
     // 4. Spatial Fault Marker (above Testing Tower when test-room-03 fails)
@@ -774,6 +782,7 @@ export class BuildAliveSceneUI {
     fLabel.setParent(this.faultMarker)
     fLabel.getTransform().setLocalPosition(new vec3(0, 0.95, 0))
     this.addText(fLabel, "[FAIL] test-room-03", 26, COLOR_CORAL)
+    this.compensateLabelScale(fLabel, FAULT_MARKER_SIZE, LABEL_WORLD_SCALE_CM)
 
     // 5. Causal Fault Beam connecting Testing Tower Fault to Lobby Workshop
     const lobbyMod = CITY_MODULES.find((m) => m.moduleId === "server-lobby") || CITY_MODULES[1]
@@ -871,6 +880,7 @@ export class BuildAliveSceneUI {
     content.setParent(this.cardRoot)
     content.getTransform().setLocalPosition(new vec3(0, 0, CARD_CONTENT_Z_CM))
     const flex = content.createComponent(FlexLayout.getTypeName()) as FlexLayout
+    this.cardFlex = flex
     flex.width = BUILD_ALIVE_CARD_WIDTH_CM
     flex.height = -1
     flex.direction = FlexDirection.Column
@@ -887,12 +897,12 @@ export class BuildAliveSceneUI {
 
     const innerW = BUILD_ALIVE_CARD_WIDTH_CM - CARD_PAD_CM * 2
     const rowSpecs = [
-      {size: 52, color: COLOR_CYAN, h: 1.75, wrap: false},
-      {size: 42, color: COLOR_WHITE, h: 1.45, wrap: true},
-      {size: 40, color: COLOR_WHITE, h: 1.45, wrap: true},
-      {size: 40, color: COLOR_AMBER, h: 1.45, wrap: true},
-      {size: 38, color: COLOR_MINT, h: 1.40, wrap: true},
-      {size: 34, color: COLOR_CAPTION, h: 1.35, wrap: true},
+      {size: 40, color: COLOR_CYAN, h: 1.75, wrap: false},
+      {size: 28, color: COLOR_WHITE, h: 1.7, wrap: true},
+      {size: 26, color: COLOR_WHITE, h: 1.7, wrap: true},
+      {size: 26, color: COLOR_AMBER, h: 1.6, wrap: true},
+      {size: 24, color: COLOR_MINT, h: 1.45, wrap: true},
+      {size: 22, color: COLOR_CAPTION, h: 1.35, wrap: true},
     ]
 
     this.cardRowObjects = []
@@ -907,7 +917,7 @@ export class BuildAliveSceneUI {
       txt.horizontalAlignment = HorizontalAlignment.Center
       txt.verticalAlignment = VerticalAlignment.Center
       txt.horizontalOverflow = r.wrap ? HorizontalOverflow.Wrap : HorizontalOverflow.Overflow
-      txt.verticalOverflow = VerticalOverflow.Overflow
+      txt.verticalOverflow = r.wrap ? VerticalOverflow.Shrink : VerticalOverflow.Overflow
       txt.layoutRect = Rect.create(-innerW / 2, innerW / 2, -r.h / 2, r.h / 2)
       rowObj.createComponent(FlexItem.getTypeName())
       this.cardRowObjects.push(rowObj)
@@ -960,6 +970,9 @@ export class BuildAliveSceneUI {
       const col = isFailedMod ? COLOR_CORAL : isEditedMod ? COLOR_AMBER : this.workspaceBound ? COLOR_WHITE : COLOR_MINT
       vis.badgeText.text = (prefix ? prefix + " " : "") + label
       vis.badgeText.textFill.color = col
+      // Progressive disclosure: module names only on focus (selected / changed / failed) or once the user inspects.
+      vis.badgeText.getSceneObject().enabled =
+        snap.selectedModuleId === m.moduleId || isFailedMod || isEditedMod || this.disclosureTier !== "WORLD"
       this.setMaterialColor(vis.rmv, isFailedMod ? COLOR_CORAL : isEditedMod ? COLOR_AMBER : COLOR_SLATE)
       if (vis.accentRmv) {
         this.setMaterialColor(vis.accentRmv, col)
@@ -1038,7 +1051,7 @@ export class BuildAliveSceneUI {
       this.cardRoot.enabled = showCard
       if (showCard) {
         const eng = this.disclosureTier === "ENGINEER" || realFail || snap.sceneMode === "APPROVAL_PENDING"
-        for (let i = 0; i < this.cardRowObjects.length; i++) this.cardRowObjects[i].enabled = i < 3 || eng
+        this.setCardRowsVisible(eng)
       }
       return
     }
@@ -1091,11 +1104,22 @@ export class BuildAliveSceneUI {
           hasFailures ||
           snap.sceneMode === "LEARN" ||
           snap.sceneMode === "APPROVAL_PENDING"
-        for (let i = 0; i < this.cardRowObjects.length; i++) {
-          this.cardRowObjects[i].enabled = i < 3 || showEngineerRows
-        }
+        this.setCardRowsVisible(showEngineerRows)
       }
     }
+  }
+
+  /** Rows 0-2 always show; rows 3+ only for engineers. FlexLayout skips disabled rows, so re-run layout when this changes. */
+  private setCardRowsVisible(showEngineerRows: boolean): void {
+    let changed = false
+    for (let i = 0; i < this.cardRowObjects.length; i++) {
+      const want = i < 3 || showEngineerRows
+      if (this.cardRowObjects[i].enabled !== want) {
+        this.cardRowObjects[i].enabled = want
+        changed = true
+      }
+    }
+    if (changed && this.cardFlex) this.cardFlex.markDirty()
   }
 
   cardRowText(index: number): string {
@@ -1152,6 +1176,11 @@ export class BuildAliveSceneUI {
     if (rmv && rmv.mainMaterial && rmv.mainMaterial.mainPass) {
       rmv.mainMaterial.mainPass.baseColor = color
     }
+  }
+
+  /** Labels are children of boxes scaled to their cm size; cancel that so text keeps a fixed readable world size. */
+  private compensateLabelScale(labelObj: SceneObject, parentSize: BoxSizeCm, worldScale: number): void {
+    labelObj.getTransform().setLocalScale(new vec3(worldScale / parentSize.w, worldScale / parentSize.h, worldScale / parentSize.d))
   }
 
   private addText(parent: SceneObject, value: string, size: number, color: vec4): Text {
