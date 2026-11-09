@@ -159,7 +159,10 @@ const STAGE_FILL_FAIL = new vec4(0.78, 0.28, 0.26, 1) // same, when the current 
 /** 'monogram' (default; no third-party marks, safe for the submission film) or 'brand' (real simple-icons marks, for local use only). */
 // 'brand-tinted' = the ORIGINAL simple-icons mark geometry (recoloured only) on a frosted-glass face, for providers simple-icons carries; the
 // others keep their vivid letter badge. Needs the "tint-*.png" textures. UNVERIFIED in Preview until Lens Studio is back: default stays monogram.
-const LOGO_MODE: "monogram" | "brand" | "brand-tinted" = "monogram"
+// 'glass' = frosted-glass remaster of ALL ten badges (glass-<id>.png: original marks recoloured, letter badges where no mark exists).
+// UNVERIFIED in Preview: flip the default only after the textures import and the chips are seen working.
+const LOGO_MODE = "monogram" as "monogram" | "brand" | "brand-tinted" | "glass" // widened on purpose so mode comparisons compile whichever mode is set
+const USE_MARK_TEXTURES = LOGO_MODE === "brand-tinted" || LOGO_MODE === "glass"
 const FROSTED_FACE = new vec4(0.86, 0.9, 0.95, 1) // same flat colour as the tinted textures' face so the mark blends into its chip
 const MODULE_ICON_INK: Record<string, vec4> = {
   script: new vec4(0.1, 0.4, 1.0, 1), // blue </>
@@ -868,9 +871,9 @@ export class BuildAliveSceneUI {
       this.headerMonoTile.cornerRadius = firstMono.radius
       this.headerMonoText = this.monoText(sess.root, "HeaderMonoText", -7.4, 7.7, 2.1, 1.9, 38, firstMono.color)
       this.headerMonoText.text = PROVIDER_MONO[PROVIDER_STATIONS[0].id].letters
-      if (LOGO_MODE === "brand-tinted") {
+      if (USE_MARK_TEXTURES) {
         this.loadLogos()
-        this.headerLogoObj = this.logoImage(sess.root, "Logo_tinted_header", -7.4, 7.7, 1.7, this.logoTex[PROVIDER_STATIONS[0].id])
+        this.headerLogoObj = this.logoImage(sess.root, "Logo_tinted_header", -7.4, 7.7, LOGO_MODE === "glass" ? 2.1 : 1.7, this.logoTex[PROVIDER_STATIONS[0].id])
         this.headerLogoMat = this.headerLogoObj ? (this.headerLogoObj.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
         this.headerLogoShown = PROVIDER_STATIONS[0].id
       }
@@ -1075,6 +1078,21 @@ export class BuildAliveSceneUI {
   }
 
   private loadLogos(): void {
+    if (LOGO_MODE === "glass") {
+      this.logoTex = {
+        "claude-code": requireAsset("../Textures/logos/glass-claude-code.png") as Texture,
+        codex: requireAsset("../Textures/logos/glass-codex.png") as Texture,
+        antigravity: requireAsset("../Textures/logos/glass-antigravity.png") as Texture,
+        opencode: requireAsset("../Textures/logos/glass-opencode.png") as Texture,
+        hermes: requireAsset("../Textures/logos/glass-hermes.png") as Texture,
+        openclaw: requireAsset("../Textures/logos/glass-openclaw.png") as Texture,
+        "chatgpt-app": requireAsset("../Textures/logos/glass-chatgpt-app.png") as Texture,
+        "grok-bots": requireAsset("../Textures/logos/glass-grok-bots.png") as Texture,
+        instinct: requireAsset("../Textures/logos/glass-instinct.png") as Texture,
+        muse: requireAsset("../Textures/logos/glass-muse.png") as Texture,
+      }
+      return
+    }
     if (LOGO_MODE === "brand-tinted") {
       this.logoTex = {
         "claude-code": requireAsset("../Textures/logos/tint-claude-code.png") as Texture,
@@ -1098,7 +1116,7 @@ export class BuildAliveSceneUI {
 
   /** Compact row of agent chips under the Session window: real simple-icons mark where one exists, monogram otherwise. */
   private buildAgentRow(land: SceneObject): void {
-    if ((LOGO_MODE === "brand" || LOGO_MODE === "brand-tinted") && Object.keys(this.logoTex).length === 0) this.loadLogos()
+    if ((LOGO_MODE === "brand" || USE_MARK_TEXTURES) && Object.keys(this.logoTex).length === 0) this.loadLogos()
     const logos = this.logoTex
     const pitch = 2.5
     PROVIDER_STATIONS.forEach((st, i) => {
@@ -1107,7 +1125,7 @@ export class BuildAliveSceneUI {
       chip.getTransform().setLocalPosition(new vec3((i - (PROVIDER_STATIONS.length - 1) / 2) * pitch, AGENT_ROW_Y, AGENT_ROW_Z))
       const ring = chip.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
       const look = PROVIDER_MONO[st.id]
-      const tinted = LOGO_MODE === "brand-tinted" && !!this.logoTex[st.id]
+      const tinted = USE_MARK_TEXTURES && !!this.logoTex[st.id]
       const haloObj = global.scene.createSceneObject("AgentChipHalo_" + st.id)
       haloObj.setParent(chip)
       haloObj.getTransform().setLocalPosition(new vec3(0, 0, -0.15))
@@ -1129,7 +1147,7 @@ export class BuildAliveSceneUI {
       this.providerRings[st.id] = ring
       this.chipMarks[st.id] = {text: null, mat: null}
       if (LOGO_MODE === "brand" || tinted) {
-        const logo = this.logoImage(chip, "AgentChipLogo_" + st.id, 0, 0, tinted ? 1.6 : 1.75, logos[st.id])
+        const logo = this.logoImage(chip, "AgentChipLogo_" + st.id, 0, 0, LOGO_MODE === "glass" ? 2.25 : tinted ? 1.6 : 1.75, logos[st.id])
         this.chipMarks[st.id].mat = logo ? (logo.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
       } else {
         const mt = this.monoText(chip, "AgentChipMono_" + st.id, 0, -0.05, 2.2, 1.8, 38, PROVIDER_MONO[st.id].color)
