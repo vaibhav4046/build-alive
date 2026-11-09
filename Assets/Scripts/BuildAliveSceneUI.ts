@@ -142,10 +142,10 @@ const TINT_FAILED = new vec4(1.25, 1.25, 1.25, 1)
 const TINT_OFF = new vec4(0.5, 0.78, 1.0, 1)
 const COLOR_GOLD = new vec4(1.0, 0.82, 0.42, 1.0)
 // dark graphite family (additive display: pure black is transparent, so never #000)
-const GRAPHITE = new vec4(0.165, 0.176, 0.2, 1)
-const GRAPHITE_RIM = new vec4(0.3, 0.32, 0.37, 1)
-const GRAPHITE_TILE = new vec4(0.235, 0.255, 0.28, 1)
-const GRAPHITE_TILE_HI = new vec4(0.33, 0.36, 0.41, 1)
+const GRAPHITE = new vec4(0.29, 0.315, 0.36, 1) // brighter than #3a3f47 on purpose: on the additive display darker fills turn see-through
+const GRAPHITE_RIM = new vec4(0.43, 0.46, 0.52, 1)
+const GRAPHITE_TILE = new vec4(0.37, 0.4, 0.45, 1)
+const GRAPHITE_TILE_HI = new vec4(0.5, 0.54, 0.6, 1)
 const ACCENT_CLAUDE = new vec4(0.851, 0.467, 0.341, 1) // brand accent, replaced by the official simple-icons hex in the logo step
 const ACCENT_CYAN = new vec4(0.38, 0.85, 0.95, 1)
 const COLOR_BLOCK = new vec4(1.2, 1.28, 1.42, 1)
@@ -222,6 +222,8 @@ export class BuildAliveSceneUI {
   private sessionTitle: Text | null = null
   private sessionRows: Text[] = []
   private sessionTiles: RoundedRectangle[] = []
+  private projectTitle: Text | null = null
+  private chipDot: Record<string, RoundedRectangle> = {}
   private learnStageTiles: RoundedRectangle[] = []
   private learnTitle: Text | null = null
   private learnStages: Text[] = []
@@ -648,7 +650,6 @@ export class BuildAliveSceneUI {
       this.scratchScale.z = this.causalBeamLen
       this.causalBeam.getTransform().setLocalScale(this.scratchScale)
     }
-    this.rewindCrystal.getTransform().setLocalRotation(quat.angleAxis(t * 0.6, vec3.up()))
     // a crate rolls along a real road touching the active module (or along the sample roads)
     let from: ModuleLayoutSpec | undefined
     let to: ModuleLayoutSpec | undefined
@@ -780,9 +781,9 @@ export class BuildAliveSceneUI {
 
   /** Three floating graphite windows at seated distance: Session (centre), Learn (left), Project (right, holds the module blocks). */
   private buildGlassWindows(land: SceneObject): void {
-    const sess = this.glass("Glass_Session", land, 0, -11.6, WINDOW_Z, 19, 19, 0.97, GRAPHITE)
-    const learn = this.glass("Glass_Learn", land, -16.5, -11.6, WINDOW_Z, 11.5, 19, 0.97, GRAPHITE)
-    const proj = this.glass("Glass_Project", land, 16.5, -11.6, WINDOW_Z, 11.5, 19, 0.97, GRAPHITE)
+    const sess = this.glass("Glass_Session", land, 0, -11.6, WINDOW_Z, 19, 19, 1, GRAPHITE)
+    const learn = this.glass("Glass_Learn", land, -16.5, -11.6, WINDOW_Z, 11.5, 19, 1, GRAPHITE)
+    const proj = this.glass("Glass_Project", land, 16.5, -11.6, WINDOW_Z, 11.5, 19, 1, GRAPHITE)
     learn.root.getTransform().setLocalRotation(quat.angleAxis(0.17, vec3.up()))
 
     // Session window: header tile (per-app accent strip) + one tile per recent step + a "Try" tile
@@ -808,8 +809,9 @@ export class BuildAliveSceneUI {
 
     // Project window: header tile, and a graphite tile behind each module block (the blocks are the Module_* objects)
     this.tile(proj.root, "ProjectHeaderTile", 0, 7.7, 10.2, 2.4, GRAPHITE_TILE, ACCENT_CYAN)
-    const projTitle = this.panelText(proj.root, "ProjectTitle", 0.3, 7.7, 9.0, 2.2, 26, COLOR_WHITE, false)
+    const projTitle = this.panelText(proj.root, "ProjectTitle", 0.3, 7.7, 9.2, 2.2, 21, COLOR_WHITE, false)
     projTitle.text = "Project"
+    this.projectTitle = projTitle
     for (const m of CITY_MODULES) {
       this.tile(proj.root, "ModuleTile_" + m.moduleId, m.center.x - 16.5, m.center.y + 11.6, 5.5, 5.4, GRAPHITE_TILE, null)
     }
@@ -820,6 +822,7 @@ export class BuildAliveSceneUI {
     this.lensLive = lensLive
     const snap = this.engine.snapshot()
     const proj = this.engine.currentProject
+    if (this.projectTitle) this.projectTitle.text = proj.title + " · " + proj.modules.length + " modules"
     const hero = PROVIDER_STATIONS[0]
     const heroBadge = badgeFor(hero, lensLive)
     if (this.sessionTitle) {
@@ -881,7 +884,8 @@ export class BuildAliveSceneUI {
       const labelObj = global.scene.createSceneObject(slot.sceneName + "_Label")
       labelObj.setParent(island)
       labelObj.getTransform().setLocalPosition(new vec3(0, 0, 0.7))
-      labelObj.getTransform().setLocalScale(new vec3(0.85, 0.85, 0.85))
+      labelObj.getTransform().setLocalPosition(new vec3(0.6, 0, 0.9))
+      labelObj.getTransform().setLocalScale(new vec3(0.62, 0.62, 0.62))
       this.islandLabels[slot.id] = this.addText(labelObj, slot.label, LABEL_TEXT_SIZE, COLOR_WHITE)
 
       this.makeInteractable(
@@ -903,9 +907,23 @@ export class BuildAliveSceneUI {
     const island = this.islandObjects[slotId]
     const slot = PROJECT_ISLANDS.find((p) => p.id === slotId)
     const size = slot ? slot.size : {w: 10, h: 5, d: 3}
-    const chip = this.glass(island.name + "_Art", island, 0, 0, 0, size.w, size.h, 0.3, GRAPHITE)
+    // compact tab: dark graphite pill with an accent dot; the collider stays the full target size
+    const cw = size.w * 0.8
+    const ch = size.h * 0.62
+    const chip = this.glass(island.name + "_Art", island, 0, 0, 0, cw, ch, 1, GRAPHITE)
     this.chipRR[slotId] = chip.rr
     this.islandArt[slotId] = chip.root
+    const dotObj = global.scene.createSceneObject(island.name + "_Dot")
+    dotObj.setParent(chip.root)
+    dotObj.getTransform().setLocalPosition(new vec3(-cw / 2 + 1.1, 0, 0.5))
+    const dot = dotObj.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    dot.size = new vec2(0.9, 0.9)
+    dot.cornerRadius = 0.45
+    dot.backgroundColor = new vec4(0.55, 0.58, 0.64, 1)
+    dot.blendMode = 1
+    dot.opacity = 1
+    dot.initialize()
+    this.chipDot[slotId] = dot
   }
 
   /** Island art follows the bound worlds: house count = real module count; the third slot is the made-up Sample World. */
@@ -925,7 +943,7 @@ export class BuildAliveSceneUI {
 
       const art = global.scene.createSceneObject(m.sceneName + "_Art")
       art.setParent(obj)
-      art.getTransform().setLocalPosition(vec3.zero())
+      art.getTransform().setLocalPosition(new vec3(0, 0.8, 0)) // block sits high in its tile so the name fits under it
       const blockObj = global.scene.createSceneObject(m.sceneName + "_Block")
       blockObj.setParent(art)
       blockObj.getTransform().setLocalScale(new vec3(3.7, 3.7, 3.7))
@@ -943,11 +961,11 @@ export class BuildAliveSceneUI {
 
       const badgeObj = global.scene.createSceneObject(m.sceneName + "_Badge")
       badgeObj.setParent(obj)
-      badgeObj.getTransform().setLocalPosition(new vec3(0, -2.55, 0.4))
-      badgeObj.getTransform().setLocalScale(new vec3(0.95, 0.95, 0.95))
+      badgeObj.getTransform().setLocalPosition(new vec3(0, -1.95, 0.9))
+      badgeObj.getTransform().setLocalScale(new vec3(0.8, 0.8, 0.8))
       const badgeText = this.addText(badgeObj, m.label, LABEL_TEXT_SIZE, COLOR_WHITE)
       badgeText.horizontalOverflow = HorizontalOverflow.Shrink
-      badgeText.layoutRect = Rect.create(-2.9, 2.9, -0.9, 0.9)
+      badgeText.layoutRect = Rect.create(-3.5, 3.5, -0.9, 0.9)
 
       this.makeInteractable(
         obj,
@@ -1031,6 +1049,7 @@ export class BuildAliveSceneUI {
   private buildWorkersAndMarkers(): void {
     this.primaryVessel = this.voxelObject("AgentVessel_Primary", this.rootObj, buildWorker(C.CYAN, C.GOLD), WORKER_VOX, WORKER_ORIGIN, null)
     this.primaryVessel.getTransform().setLocalPosition(this.walkTarget)
+    this.primaryVessel.getTransform().setLocalScale(new vec3(0.001, 0.001, 0.001)) // glass layout: the active step tile shows the agent, no voxel character
     this.primaryCrate = this.voxelObject("AgentVessel_Primary_Crate", this.primaryVessel, buildCrate(), WORKER_VOX, [-0.5, 1.0, 0.45], null)
     this.primaryCrate.enabled = false
     const pLabel = global.scene.createSceneObject("AgentVessel_Primary_Label")
@@ -1042,11 +1061,15 @@ export class BuildAliveSceneUI {
 
     this.subVessel = this.voxelObject("AgentVessel_Sub01", this.rootObj, buildWorker(C.VIOLET, C.CLOUD), WORKER_VOX, WORKER_ORIGIN, null)
     this.subVessel.getTransform().setLocalPosition(this.subTarget)
+    this.subVessel.getTransform().setLocalScale(new vec3(0.001, 0.001, 0.001))
 
     this.rewindCrystal = global.scene.createSceneObject(REWIND_CRYSTAL.sceneName)
     this.rewindCrystal.setParent(this.rootObj)
     this.rewindCrystal.getTransform().setLocalPosition(new vec3(REWIND_CRYSTAL.center.x, REWIND_CRYSTAL.center.y, REWIND_CRYSTAL.center.z))
-    this.voxelObject("RewindCrystal_Art", this.rewindCrystal, buildHourglass(), PROP_VOX, [-0.25, -0.25, -0.25], null)
+    const crystalArt = this.voxelObject("RewindCrystal_Art", this.rewindCrystal, buildHourglass(), PROP_VOX, [-0.25, -0.25, -0.25], null)
+    crystalArt.getTransform().setLocalScale(new vec3(0.001, 0.001, 0.001)) // replaced by a graphite "Rewind" tile in the glass layout
+    this.tile(this.rewindCrystal, "RewindTile", 0, 0, 4.8, 2.6, GRAPHITE_TILE, COLOR_GOLD)
+    this.panelText(this.rewindCrystal, "RewindTileText", 0.3, 0, 4.2, 2.4, 22, COLOR_WHITE, false).text = "Rewind"
     const rLabel = global.scene.createSceneObject("RewindCrystal_Label")
     rLabel.setParent(this.rewindCrystal)
     rLabel.getTransform().setLocalPosition(new vec3(0, 4.2, 0))
@@ -1054,7 +1077,6 @@ export class BuildAliveSceneUI {
     this.addText(rLabel, "Rewind one step", LABEL_TEXT_SIZE, COLOR_AMBER)
     rLabel.enabled = false
     this.makeInteractable(this.rewindCrystal, REWIND_CRYSTAL.size, () => this.handleRewind(undefined, Date.now()), "rewind")
-    this.setBaseScale("rewind", 0.6)
 
     this.faultMarker = global.scene.createSceneObject("FaultMarker_Room03")
     this.faultMarker.setParent(this.rootObj)
@@ -1076,6 +1098,7 @@ export class BuildAliveSceneUI {
     this.causalBeam.getTransform().setLocalRotation(quat.lookAt(diffVec.uniformScale(1 / this.causalBeamLen), vec3.up()))
 
     this.dataPacket = this.voxelObject("DataFlowPacket", this.rootObj, buildCrate(), 0.3, [-0.6, 0, -0.6], null)
+    this.dataPacket.getTransform().setLocalScale(new vec3(0.001, 0.001, 0.001))
   }
 
   private buildControlDock(): void {
@@ -1083,6 +1106,11 @@ export class BuildAliveSceneUI {
     rail.setParent(this.rootObj)
     rail.getTransform().setLocalPosition(vec3.zero())
     rail.createComponent("Component.Canvas")
+
+    // one small dark pill behind all dock icons, centred under the session window
+    const mid = RAIL_CONTROLS[Math.floor(RAIL_CONTROLS.length / 2)].center
+    const pill = this.glass("DockPill", rail, mid.x, mid.y, mid.z - 0.9, 6.2 * RAIL_CONTROLS.length + 1.2, 4.4, 1, GRAPHITE)
+    pill.root.getTransform().setLocalRotation(quat.angleAxis(-0.42, vec3.right()))
 
     for (const spec of RAIL_CONTROLS) {
       const so = global.scene.createSceneObject(spec.sceneName)
@@ -1099,9 +1127,11 @@ export class BuildAliveSceneUI {
       })
       btn.size = new vec3(spec.size.w, spec.size.h, 1)
       const content = so.createComponent(ElementContent.getTypeName()) as ElementContent
-      content.text = spec.label
+      content.text = "" // icon-only dock (the pill and the line icons are drawn by this script; the Button keeps input and state)
       content.textSize = BUTTON_LABEL_SIZE
       btn.initialize()
+      btn.opacity = 0
+      this.addDockIcon(so, spec.id)
 
       btn.onTriggerUp.add(() => {
         const t0 = Date.now()
@@ -1112,6 +1142,50 @@ export class BuildAliveSceneUI {
         else if (spec.sceneName === "BA_ResetButton") this.handleReset(t0)
       })
       this.buttons[spec.sceneName] = btn
+    }
+  }
+
+  /** A thin white line segment (rounded rectangle) used to draw dock icons. */
+  private iconLine(parent: SceneObject, name: string, cx: number, cy: number, len: number, angleDeg: number): void {
+    const o = global.scene.createSceneObject(name)
+    o.setParent(parent)
+    o.getTransform().setLocalPosition(new vec3(cx, cy, 0.9))
+    o.getTransform().setLocalRotation(quat.angleAxis((angleDeg * Math.PI) / 180, vec3.forward()))
+    const rr = o.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    rr.size = new vec2(len, 0.3)
+    rr.cornerRadius = 0.15
+    rr.backgroundColor = COLOR_WHITE
+    rr.blendMode = 1
+    rr.opacity = 1
+    rr.initialize()
+  }
+
+  private chevron(parent: SceneObject, name: string, tipX: number, pointsRight: boolean): void {
+    const dir = pointsRight ? 1 : -1
+    this.iconLine(parent, name + "_a", tipX - dir * 0.4, 0.4, 1.15, pointsRight ? -45 : 45)
+    this.iconLine(parent, name + "_b", tipX - dir * 0.4, -0.4, 1.15, pointsRight ? 45 : -45)
+  }
+
+  /** Line icons, no text: Replay (skip back), Command (>_), Next step (>>), Explain (i), Approve (check). */
+  private addDockIcon(btnObj: SceneObject, id: string): void {
+    const holder = global.scene.createSceneObject(btnObj.name + "_Icon")
+    holder.setParent(btnObj)
+    holder.getTransform().setLocalPosition(vec3.zero())
+    if (id === "reset") {
+      this.iconLine(holder, "bar", -0.9, 0, 1.3, 90)
+      this.chevron(holder, "chev", 0.4, false)
+    } else if (id === "inspect") {
+      this.chevron(holder, "chev", -0.1, true)
+      this.iconLine(holder, "under", 0.8, -0.75, 1.0, 0)
+    } else if (id === "step") {
+      this.chevron(holder, "chev1", -0.2, true)
+      this.chevron(holder, "chev2", 0.8, true)
+    } else if (id === "learn") {
+      this.iconLine(holder, "dot", 0, 0.95, 0.35, 0)
+      this.iconLine(holder, "stem", 0, -0.2, 1.3, 90)
+    } else {
+      this.iconLine(holder, "short", -0.55, -0.3, 0.95, -50)
+      this.iconLine(holder, "long", 0.35, 0.1, 1.9, 50)
     }
   }
 
@@ -1208,7 +1282,9 @@ export class BuildAliveSceneUI {
       }
       this.setBaseScale(slot.id, isActiveProj ? 1.06 : 1.0)
       const chipRR = this.chipRR[slot.id]
-      if (chipRR) chipRR.opacity = isActiveProj ? 0.99 : this.hoveredId === slot.id ? 0.97 : 0.9
+      if (chipRR) chipRR.backgroundColor = isActiveProj || this.hoveredId === slot.id ? GRAPHITE_TILE_HI : GRAPHITE
+      const chipDot = this.chipDot[slot.id]
+      if (chipDot) chipDot.backgroundColor = isActiveProj ? COLOR_GOLD : new vec4(0.55, 0.58, 0.64, 1)
     }
 
     for (const m of CITY_MODULES) {
@@ -1614,13 +1690,17 @@ export class BuildAliveSceneUI {
     // quiet progress trail: one small lantern per building the user has actually inspected (persisted locally, no profiling)
     this.loadUnderstood()
     for (const m of CITY_MODULES) {
-      const lantern = this.voxelObject("Lantern_" + m.moduleId, land, null, 0.5, [-0.75, 0, -0.75], null, "lantern", () => {
-        const g = new VoxelGrid()
-        g.box(0, 0, 0, 2, 2, 2, H.AMBER)
-        g.set(1, 3, 1, H.WARM)
-        return g
-      })
-      lantern.getTransform().setLocalPosition(new vec3(m.center.x + 1.9, m.center.y + 1.7, m.center.z + 2.2))
+      // understood-building marker: a small gold dot on the module's tile corner
+      const lantern = global.scene.createSceneObject("Lantern_" + m.moduleId)
+      lantern.setParent(land)
+      const dot = lantern.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+      dot.size = new vec2(0.9, 0.9)
+      dot.cornerRadius = 0.45
+      dot.backgroundColor = COLOR_GOLD
+      dot.blendMode = 1
+      dot.opacity = 1
+      dot.initialize()
+      lantern.getTransform().setLocalPosition(new vec3(m.center.x + 2.2, m.center.y + 2.2, m.center.z + 1.4))
       lantern.enabled = !!this.understood[m.moduleId]
       this.lanterns[m.moduleId] = lantern
     }
