@@ -1,0 +1,60 @@
+{
+  "simpleIconsVersion": "16.37.0",
+  "note": "marks are trademarks of their owners; nominative use only; unrecoloured",
+  "logos": [
+    {
+      "id": "claude-code",
+      "kind": "simple-icons",
+      "title": "Claude",
+      "hex": "D97757",
+      "source": "https://claude.ai"
+    },
+    {
+      "id": "opencode",
+      "kind": "simple-icons",
+      "title": "OpenCode",
+      "hex": "000000",
+      "source": "https://github.com/anomalyco/opencode/blob/1251a870cb384543c150c4a72fb101b55eec971b/packages/identity/mark.svg"
+    },
+    {
+      "id": "codex",
+      "kind": "generated-monogram",
+      "text": "Cx"
+    },
+    {
+      "id": "antigravity",
+      "kind": "generated-monogram",
+      "text": "Ag"
+    },
+    {
+      "id": "hermes",
+      "kind": "generated-monogram",
+      "text": "He"
+    },
+    {
+      "id": "openclaw",
+      "kind": "generated-monogram",
+      "text": "Oc"
+    },
+    {
+      "id": "chatgpt-app",
+      "kind": "generated-monogram",
+      "text": "Cg"
+    },
+    {
+      "id": "grok-bots",
+      "kind": "generated-monogram",
+      "text": "Gr"
+    },
+    {
+      "id": "instinct",
+      "kind": "generated-monogram",
+      "text": "In"
+    },
+    {
+      "id": "muse",
+      "kind": "generated-monogram",
+      "text": "Mu"
+    }
+  ]
+}

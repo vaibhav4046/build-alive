@@ -13,6 +13,16 @@ EarthProof is a Lens Studio project. It uses the following components that it di
 
 I could not find a license file inside the `.lspkg` packages, so I am not stating a license for them. They are installed from Snap's own distribution channels for this project, under Snap's terms.
 
+## Brand marks shown in the Lens (nominative use only)
+The Lens shows a small logo next to an agent's name so people can recognise which app a session belongs to. This is identification only: it does not mean any of these companies sponsors, endorses or is affiliated with BUILD ALIVE. **All trademarks and logos belong to their respective owners.** Marks are drawn from the `simple-icons` package (version 16.37.0, https://simpleicons.org, package released under CC0-1.0); `simple-icons` states that its CC0 release does not by itself license the individual brand marks, and it carries no licence data for the two below, so they are used as trademarks only. Each mark keeps its official colour (never recoloured) and is placed on a white badge so it stays visible on an additive display.
+
+| Mark | Source | Official colour | Where used |
+|---|---|---|---|
+| Claude (Anthropic), for the Claude Code session | `simple-icons` `siClaude`, source https://claude.ai | `#D97757` | Session window header, Claude Code tab |
+| OpenCode, for the OpenCode station | `simple-icons` `siOpencode`, source github.com/anomalyco/opencode (`packages/identity/mark.svg`) | `#000000` (white badge) | OpenCode tab |
+
+Apps without a `simple-icons` entry (Codex, Antigravity, OpenClaw, ChatGPT app, Grok bots, Instinct, Muse) and Hermes (the `simple-icons` "Hermes" is a different company) get a neutral generated monogram badge (graphite square, two white letters) rendered by a script in this repository. No logo was scraped, redrawn or guessed.
+
 ## Project-made assets
 - All meshes are Lens Studio built-in primitives (boxes, cylinders) used as **placeholders**; no third-party 3D models.
 - Materials, labels and layout were made for this project.
