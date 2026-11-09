@@ -9,7 +9,7 @@ import {
   migratePersistedState, defaultPersistedState, THEMES,
 } from "../../Assets/Scripts/BuildAliveCore.ts"
 import {
-  auditControlErgonomics, CITY_MODULES, CITY_BRIDGES, RAIL_CONTROLS, PROJECT_ISLANDS,
+  auditControlErgonomics, MIN_RAIL_SEPARATION_CM, CITY_MODULES, CITY_BRIDGES, RAIL_CONTROLS, PROJECT_ISLANDS,
   angularOffsetFromGazeDeg, dist3D,
 } from "../../Assets/Scripts/BuildAliveLayout.ts"
 
@@ -255,9 +255,9 @@ t("deterministic hash is stable and discriminating", () => {
 })
 
 // ---- layout ergonomics ---------------------------------------------------------------------
-t("layout audit passes (>=5 cm, >=12 cm, in FOV)", () => {
+t("layout audit passes (>=5 cm targets, dock spacing >= MIN_RAIL_SEPARATION_CM, in FOV)", () => {
   const a = auditControlErgonomics(); assert.equal(a.passed, true, JSON.stringify(a))
-  assert.ok(a.minWidthCm >= 5); assert.ok(a.minRailSpacingCm >= 12 - 0.01); assert.ok(a.minIslandSpacingCm >= 12 - 0.01); assert.equal(a.allInView, true)
+  assert.ok(a.minWidthCm >= 5); assert.ok(a.minRailSpacingCm >= MIN_RAIL_SEPARATION_CM - 0.01); assert.ok(a.minIslandSpacingCm >= 12 - 0.01); assert.equal(a.allInView, true)
   assert.equal(a.cardInView, true); assert.ok(a.minCrossGroupGapCm >= 8)
 })
 t("6 modules / 5 bridges / 5 rail controls / 3 islands", () => {

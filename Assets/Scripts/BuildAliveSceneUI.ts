@@ -41,7 +41,7 @@ import {
   Vec3Cm,
 } from "./BuildAliveLayout"
 import {BuildAliveTransport} from "./BuildAliveTransport"
-import {buildVoxelMesh, C, VoxelGrid} from "./BuildAliveVoxel"
+import {buildVoxelMesh, C, PAL_COLS, PALETTE, VoxelGrid} from "./BuildAliveVoxel"
 import {
   BUILDING_ORIGIN,
   BuildingRole,
@@ -212,8 +212,10 @@ export class BuildAliveSceneUI {
     const boxRmv = boxSource.getComponent("Component.RenderMeshVisual") as RenderMeshVisual | null
     this.boxMesh = boxRmv ? boxRmv.mesh : null
     this.baseMat = boxRmv && boxRmv.mainMaterial ? boxRmv.mainMaterial : null
-    this.voxelMat = voxelMaterial
-    if (!this.voxelMat) print("[BuildAlive] voxelMaterial input missing: world meshes will render with the fallback material")
+    // Lit palette material built at runtime (no scene wiring needed): a 1-row texture of PALETTE colours on a clone of
+    // the scene's simple_pbr material, so the scene lights shade every voxel face. An explicitly wired material wins.
+    this.voxelMat = voxelMaterial || this.makePaletteMaterial()
+    if (!this.voxelMat) print("[BuildAlive] no voxel material: world meshes will render with the fallback material")
 
     this.rootObj = global.scene.createSceneObject("BuildAliveRoot")
     this.rootObj.setParent(host.getSceneObject())
@@ -1136,6 +1138,32 @@ export class BuildAliveSceneUI {
   }
 
   // ---- low-level helpers ------------------------------------------------------------------------
+
+  /** 1-row RGBA texture of PALETTE (4 px per colour) on a matte clone of the base PBR material. */
+  private makePaletteMaterial(): Material | null {
+    if (!this.baseMat) return null
+    const cell = 4
+    const w = PAL_COLS * cell
+    const h = cell
+    const tex = ProceduralTextureProvider.createWithFormat(w, h, TextureFormat.RGBA8Unorm)
+    const data = new Uint8Array(w * h * 4)
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const c = PALETTE[Math.floor(x / cell)]
+        const o = (y * w + x) * 4
+        data[o] = c[0]
+        data[o + 1] = c[1]
+        data[o + 2] = c[2]
+        data[o + 3] = 255
+      }
+    ;(tex.control as ProceduralTextureProvider).setPixels(0, 0, w, h, data)
+    const mat = this.baseMat.clone()
+    mat.mainPass.baseTex = tex
+    mat.mainPass.baseColor = new vec4(1, 1, 1, 1)
+    mat.mainPass.roughness = 1
+    mat.mainPass.metallic = 0
+    return mat
+  }
 
   /** Cached RenderMeshes for a voxel recipe (one per UInt16 chunk). */
   private meshesFor(key: string, make: () => VoxelGrid, voxCm: number, origin: [number, number, number]): RenderMesh[] {

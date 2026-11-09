@@ -10,13 +10,16 @@ const SECRET_PATTERNS = [
   /xox[baprs]-[a-zA-Z0-9-]{10,}/g, // Slack tokens
   /AIza[0-9A-Za-z-_]{35}/g, // Google API keys
   /AKIA[0-9A-Z]{16}/g, // AWS Access Keys
+  /gsk_[A-Za-z0-9]{20,}/g, // Groq API keys
+  /sk-(?:proj-)?[A-Za-z0-9_-]{20,}/g, // OpenAI-style keys
+  /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, // JWTs
   /(?:token|secret|key|password|api)[^a-zA-Z0-9]{1,5}[0-9a-f]{32,64}/gi, // Credential hex secrets
   /bearer\s+[a-zA-Z0-9._~+/-]+=*/gi, // Authorization Bearer tokens
   /password\s*[:=]\s*['"][^'"]+['"]/gi, // Inline passwords
 ]
 
 const HOST_PATH_PATTERNS = [
-  /[A-Za-z]:\\[Uu]sers\\[a-zA-Z0-9._-]+\\?/g, // Windows C:\Users\<username>
+  /[A-Za-z]:[\/][Uu]sers[\/][a-zA-Z0-9._-]+[\/]?/g, // Windows C:\Users\<username> or C:/Users/<username>
   /\/home\/[a-zA-Z0-9._-]+\/?/g, // Linux /home/<username>
   /\/Users\/[a-zA-Z0-9._-]+\/?/g, // macOS /Users/<username>
 ]

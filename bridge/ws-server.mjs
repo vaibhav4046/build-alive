@@ -120,7 +120,7 @@ export function createBridgeServer({
   hookTokenPath = path.join(HERE, ".hook-token"),
 } = {}) {
   const journal = new EventJournal(journalPath)
-  const hookToken = workspaceConfigPath ? loadOrCreateHookToken(hookTokenPath) : null
+  const hookToken = hookTokenPath ? loadOrCreateHookToken(hookTokenPath) : null
   const tokenMatches = (supplied) => {
     if (!hookToken || typeof supplied !== "string") return false
     const a = Buffer.from(supplied)
@@ -265,9 +265,26 @@ export function createBridgeServer({
 
     // Direct Antigravity step ingestion endpoint
     if (req.method === "POST" && req.url === "/antigravity") {
+      // Same shared-secret + size cap as /hook: unauthenticated callers must not be able to inject "LIVE" events.
+      if (!tokenMatches(req.headers["x-build-alive-token"])) {
+        res.writeHead(401, {"Content-Type": "application/json"})
+        res.end(JSON.stringify({accepted: false, reason: "bad_token"}))
+        return
+      }
       let body = ""
-      req.on("data", (chunk) => (body += chunk))
+      let tooBig = false
+      req.on("data", (chunk) => {
+        if (tooBig) return
+        body += chunk
+        if (body.length > HOOK_MAX_BYTES) {
+          tooBig = true
+          res.writeHead(413, {"Content-Type": "application/json"})
+          res.end(JSON.stringify({accepted: false, reason: "payload_too_large"}))
+          req.destroy()
+        }
+      })
       req.on("end", () => {
+        if (tooBig) return
         try {
           const payload = JSON.parse(body)
           const normalized = normalizeAntigravityStep(payload.step || payload, {
@@ -286,7 +303,7 @@ export function createBridgeServer({
           res.end(JSON.stringify({accepted: false, reason: "invalid_antigravity_step"}))
         } catch (e) {
           res.writeHead(400, {"Content-Type": "application/json"})
-          res.end(JSON.stringify({accepted: false, error: e.message}))
+          res.end(JSON.stringify({accepted: false, reason: "invalid_json"}))
         }
       })
       return
@@ -359,13 +376,22 @@ export function createBridgeServer({
       return
     }
 
-    // Origin header verification (mitigates Cross-Site WebSocket Hijacking T07)
+    // DNS-rebinding guard on upgrades too: only loopback Host headers.
+    const upHost = String(req.headers.host || "").toLowerCase()
+    if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(upHost)) {
+      socket.write("HTTP/1.1 403 Forbidden\r\n\r\n")
+      socket.destroy()
+      return
+    }
+    // Origin check (Cross-Site WebSocket Hijacking): the Lens sends no Origin; a browser always does, and is only
+    // allowed from this exact loopback origin (host AND port), so a page on another localhost port is refused.
     const origin = req.headers["origin"]
     if (origin) {
       try {
         const u = new URL(origin)
         const host = u.hostname.toLowerCase()
-        if (host !== "localhost" && host !== "127.0.0.1" && host !== "::1") {
+        const samePort = (u.port || (u.protocol === "https:" ? "443" : "80")) === String(port)
+        if ((host !== "localhost" && host !== "127.0.0.1" && host !== "[::1]") || !samePort) {
           socket.write("HTTP/1.1 403 Forbidden\r\n\r\n")
           socket.destroy()
           return
@@ -467,8 +493,10 @@ export function createBridgeServer({
                   }),
                 ),
               )
-            } else if (msg.type === "approved_action" && msg.actionId) {
-              // Backward-compatible single-step approval for preview/test harnesses
+            } else if (msg.type === "approved_action" && msg.actionId === "run_known_test") {
+              // The Lens's Approve pinch. The bridge cannot verify a pinch, so this single step is limited to the
+              // read-only demo test run and the receipt says the confirmation is self-reported by the Lens.
+              // Any other action must use propose_action + resolve_approval with the nonce.
               const prop = actionGate.proposeAction({
                 actionId: msg.actionId,
                 targetFile: msg.targetFile || "tests/room-capacity.test.mjs",
@@ -477,7 +505,7 @@ export function createBridgeServer({
                 const outcome = actionGate.resolveApproval({
                   requestId: prop.proposal.requestId,
                   nonce: prop.proposal.nonce,
-                  actorConfirmation: "LENS_STUDIO_PINCH_CONFIRMED",
+                  actorConfirmation: "LENS_PINCH_SELF_REPORTED",
                   approved: true,
                 })
                 socket.write(encodeTextFrame(JSON.stringify({type: "action_receipt", receipt: outcome.receipt})))

@@ -305,9 +305,12 @@ console.log("-> 8. Live Windows Antigravity, Claude Code & Codex Session Integra
   const sessJson = await sessRes.json()
   check(sessJson.status === "connected" && sessJson.watchingLive === true, "GET /sessions reports live watcher active")
 
+  const noTok = await fetch("http://127.0.0.1:8991/antigravity", {method: "POST", headers: {"Content-Type": "application/json"}, body: "{}"})
+  check(noTok.status === 401, "POST /antigravity without the shared secret is rejected (401)")
+  const agToken = (await import("node:fs")).readFileSync(new URL("../../bridge/.hook-token", import.meta.url), "utf8").trim()
   const postRes = await fetch("http://127.0.0.1:8991/antigravity", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: {"Content-Type": "application/json", "x-build-alive-token": agToken},
     body: JSON.stringify({
       sessionId: "ebc49ffb-1ff7-47ff-b06f-fe425801a26f",
       step: {

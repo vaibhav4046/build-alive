@@ -1,0 +1,66 @@
+{
+  "at": "2026-11-09T02:14:04.486Z",
+  "journalEvents": 94,
+  "n": 5,
+  "method": "wall clock per API call from this PC (Node fetch), cold+warm mixed, network included",
+  "p50": 1314,
+  "p95": 1579,
+  "max": 1579,
+  "runs": [
+    {
+      "asked": "What is the agent doing right now?",
+      "heard": "What is the agent doing right now?",
+      "answer": "The agent is starting a Bash command (event #94).",
+      "ms": {
+        "stt": 441,
+        "llm": 404,
+        "tts": 567,
+        "total": 1412
+      }
+    },
+    {
+      "asked": "Did anything fail?",
+      "heard": "Did anything fail?",
+      "answer": "No, all tool runs succeeded (see events #70, #71, #72, #73, #74, #75, #76, #77, #78, #79, #80, #81, #82, #83, #84, #85, #86, #87, #88, #90, #91, #92, #93, #94).",
+      "ms": {
+        "stt": 189,
+        "llm": 243,
+        "tts": 882,
+        "total": 1314
+      }
+    },
+    {
+      "asked": "Which file did it just change?",
+      "heard": "Which file did it just change?",
+      "answer": "I can’t see that in the events. (event #94)",
+      "ms": {
+        "stt": 350,
+        "llm": 296,
+        "tts": 579,
+        "total": 1225
+      }
+    },
+    {
+      "asked": "Is this live or a replay?",
+      "heard": "Is this live or a replay?",
+      "answer": "It is live, because the events are marked LIVE_VERIFIED (event #70).",
+      "ms": {
+        "stt": 206,
+        "llm": 271,
+        "tts": 1102,
+        "total": 1579
+      }
+    },
+    {
+      "asked": "What is the agent thinking?",
+      "heard": "What is the agent thinking?",
+      "answer": "I can't see that in the events. (event #70)",
+      "ms": {
+        "stt": 262,
+        "llm": 356,
+        "tts": 517,
+        "total": 1135
+      }
+    }
+  ]
+}
