@@ -128,7 +128,8 @@ export class BuildAliveL02ProjectIslands extends Scenario {
       expectTrue(exists(slot.sceneName), "island exists: " + slot.sceneName)
       const p = pos(slot.sceneName)
       expectNear(p.x, slot.center.x, 0.1, slot.sceneName + " x")
-      expectNear(p.y, slot.center.y, 0.1, slot.sceneName + " y")
+      // islands drift gently (+/-0.45 cm bob in BuildAliveSceneUI), so y is checked against the bob envelope
+      expectNear(p.y, slot.center.y, 0.55, slot.sceneName + " y")
     }
     log("L02", "all 3 project islands verified in world space")
   }
