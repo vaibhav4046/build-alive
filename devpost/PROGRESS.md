@@ -67,3 +67,14 @@ Scope: `design-brief.md` wins (no voice, no network, no cross-session memory, no
 | 7 | 200 presses, p50/p95/p99 latency | yes | `c7-latency` | PASS (1.0/1.0/2.0 ms) |
 
 Simulation numbers (node check, real output): needs 7.9 N.cm on the steep section, Small has 4.0, Geared has 17.0, margin 2.1x, flat speeds 47.1 and 9.4 cm/s.
+
+## Release, 2026-11-09 (16:37 UTC checkpoint)
+| Item | State | Evidence |
+|---|---|---|
+| Repo | **PUBLIC** https://github.com/vaibhav4046/build-alive (main = `bb36af5`, tag `v1.0-devpost`) | anonymous GET 200 |
+| Unverified Lens code (RECORDED history in Lens, glass badges) | parked on branch `wip/history-glass`, marked planned in README + submission | never compiled: Lens Studio MCP down |
+| Node suites | all 8 exit 0 (core 62/62 + 2,400, sweep 2,225/0, explain 11/11, layout 37/37, sim, history 13/13, hook 16/16, ws-guard 7/7) | `devpost/receipts/node-tests-2026-11-09/` |
+| Secret scan | gitleaks full history: 8 findings, all redaction test fixtures; hook + MCP tokens 0 hits; no key/.mcp.json/.hook-token ever tracked | |
+| Film | `video/out/build-alive-fallback.mp4` 66.4 s, 1920x1080 30 fps, no black ≥0.5 s, -18.5 LUFS, -4.9 dBTP; all Preview footage labelled REPLAY | `video/out/contact-fallback.png` |
+| YouTube | **BLOCKED: Google sign-in** in the built-in browser. Not uploaded. | |
+| Devpost | **BLOCKED: Devpost log-in** in the built-in browser. Not submitted. Paste-ready text: `devpost/submission.md` (only `<YOUTUBE_URL>` left) | |
