@@ -79,8 +79,54 @@ function decodeFrame(buf) {
   return {opcode, payload, totalLen: offset + payloadLen}
 }
 
-export function createBridgeServer({port = 8787, journalPath = null, watchWindowsSessions = false, workspaceConfigPath = null} = {}) {
+const HOOK_MAX_BYTES = 64 * 1024
+const HOOK_NAMES = new Set(["PreToolUse", "PostToolUse", "PostToolUseFailure", "SubagentStart", "SubagentStop"])
+const HERE = path.dirname(fileURLToPath(import.meta.url))
+
+/** Reads the shared hook secret, creating a random one (git-ignored file) on first start. */
+export function loadOrCreateHookToken(tokenPath) {
+  try {
+    const existing = fs.readFileSync(tokenPath, "utf8").trim()
+    if (/^[0-9a-f]{64}$/.test(existing)) return existing
+  } catch (_e) {
+    // fall through and create
+  }
+  const fresh = crypto.randomBytes(32).toString("hex")
+  fs.writeFileSync(tokenPath, fresh + "\n", {mode: 0o600})
+  return fresh
+}
+
+/** Resolves a hook payload to an approved repo: absolute file path first, else the working directory. Null = outside approved roots. */
+function resolveHookTarget(resolver, data) {
+  const p = data.params && typeof data.params === "object" ? data.params : {}
+  const file = [p.file_path, p.path, p.notebook_path].find((x) => typeof x === "string" && x)
+  if (file) {
+    const r = resolver.resolvePath(file)
+    return r ? {projectId: r.projectId, alias: r.alias} : null
+  }
+  const cwd = typeof p.cwd === "string" ? p.cwd : ""
+  if (cwd) {
+    const r = resolver.resolvePath(cwd) || resolver.resolveText(cwd)
+    return r ? {projectId: r.projectId, alias: null} : null
+  }
+  return null
+}
+
+export function createBridgeServer({
+  port = 8787,
+  journalPath = null,
+  watchWindowsSessions = false,
+  workspaceConfigPath = null,
+  hookTokenPath = path.join(HERE, ".hook-token"),
+} = {}) {
   const journal = new EventJournal(journalPath)
+  const hookToken = workspaceConfigPath ? loadOrCreateHookToken(hookTokenPath) : null
+  const tokenMatches = (supplied) => {
+    if (!hookToken || typeof supplied !== "string") return false
+    const a = Buffer.from(supplied)
+    const b = Buffer.from(hookToken)
+    return a.length === b.length && crypto.timingSafeEqual(a, b)
+  }
 
   // v3 real-workspace mode: approved roots -> real worlds; sessions resolved against them.
   let workspace = null
@@ -246,26 +292,49 @@ export function createBridgeServer({port = 8787, journalPath = null, watchWindow
       return
     }
 
-    // Claude Code hook receiver
+    // Claude Code hook receiver: shared-secret authenticated, size-capped, and scoped to approved repos only.
     if (req.method === "POST" && req.url === "/hook") {
+      const reply = (code, obj) => {
+        res.writeHead(code, {"Content-Type": "application/json"})
+        res.end(JSON.stringify(obj))
+      }
+      if (!workspace) return reply(503, {accepted: false, reason: "hook_disabled_no_approved_roots"})
+      if (!tokenMatches(req.headers["x-build-alive-token"])) return reply(401, {accepted: false, reason: "bad_token"})
       let body = ""
-      req.on("data", (chunk) => (body += chunk))
+      let tooBig = false
+      req.on("data", (chunk) => {
+        if (tooBig) return
+        body += chunk
+        if (body.length > HOOK_MAX_BYTES) {
+          tooBig = true
+          reply(413, {accepted: false, reason: "payload_too_large"})
+          req.destroy()
+        }
+      })
       req.on("end", () => {
+        if (tooBig) return
         try {
           const payload = JSON.parse(body)
-          const normalized = normalizeClaudeHookEvent(payload.hookName, payload.data)
-          if (normalized) {
-            const saved = journal.append(normalized)
-            broadcast(saved)
-            res.writeHead(200, {"Content-Type": "application/json"})
-            res.end(JSON.stringify({accepted: true, seq: saved.seq}))
-            return
+          if (!HOOK_NAMES.has(payload.hookName) || !payload.data || typeof payload.data !== "object") {
+            return reply(400, {accepted: false, reason: "invalid_hook_format"})
           }
-          res.writeHead(400, {"Content-Type": "application/json"})
-          res.end(JSON.stringify({accepted: false, reason: "invalid_hook_format"}))
+          const target = resolveHookTarget(workspace.resolver, payload.data)
+          if (!target) {
+            workspace.resolver.stats.unmapped++
+            return reply(403, {accepted: false, reason: "outside_approved_roots"})
+          }
+          const normalized = normalizeClaudeHookEvent(payload.hookName, {
+            ...payload.data,
+            projectId: target.projectId,
+            params: {file_path: target.alias || ""},
+          })
+          if (!normalized) return reply(400, {accepted: false, reason: "invalid_hook_format"})
+          const saved = journal.append(normalized)
+          hookEvents++
+          broadcast(saved)
+          reply(200, {accepted: true, seq: saved.seq, eventId: saved.eventId, projectId: saved.projectId, provenance: saved.provenance})
         } catch (e) {
-          res.writeHead(400, {"Content-Type": "application/json"})
-          res.end(JSON.stringify({accepted: false, error: e.message}))
+          reply(400, {accepted: false, reason: "invalid_json"})
         }
       })
       return

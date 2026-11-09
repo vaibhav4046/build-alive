@@ -39,3 +39,6 @@ video/assets/*.mov
 
 # Added by Lens Studio (LEAF plugin)
 leaf_plugin_settings.json
+
+# bridge hook shared secret (generated at first bridge start)
+bridge/.hook-token
