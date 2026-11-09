@@ -48,3 +48,5 @@ video/assets/preview-frames*/
 video/assets/score.wav
 bridge/.env
 *.env.local
+
+video/.film-work/
