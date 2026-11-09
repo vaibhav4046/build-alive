@@ -39,7 +39,6 @@ import {BuildAliveL27WindowMinimise} from "./L27WindowMinimise"
 import {BuildAliveL28AgentChips} from "./L28AgentChips"
 import {BuildAliveL29LearnReacts} from "./L29LearnReacts"
 import {BuildAliveL30VoiceCommands} from "./L30VoiceCommands"
-import {BuildAliveL31HistoryRecorded} from "./L31HistoryRecorded"
 
 /**
  * Legacy scenarios: documented, registered nowhere, NOT run. The Rover prototype is hidden in v6.
@@ -91,6 +90,5 @@ export class LeafIndex extends BaseScriptComponent {
     {id: "L28-agent-chips", typename: BuildAliveL28AgentChips.getTypeName()},
     {id: "L29-learn-reacts", typename: BuildAliveL29LearnReacts.getTypeName()},
     {id: "L30-voice-commands", typename: BuildAliveL30VoiceCommands.getTypeName()},
-    {id: "L31-history-recorded", typename: BuildAliveL31HistoryRecorded.getTypeName()},
   ]
 }

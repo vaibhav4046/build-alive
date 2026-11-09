@@ -43,7 +43,7 @@ import {
   REWIND_CRYSTAL,
   Vec3Cm,
 } from "./BuildAliveLayout"
-import {BuildAliveTransport, HistorySession, whenLabel} from "./BuildAliveTransport"
+import {BuildAliveTransport} from "./BuildAliveTransport"
 import {buildVoxelMesh, C, PAL_COLS, PALETTE, VoxelGrid} from "./BuildAliveVoxel"
 import {
   BUILDING_ORIGIN,
@@ -157,13 +157,7 @@ const ACCENT_CYAN = new vec4(0.38, 0.85, 0.95, 1)
 const STAGE_FILL = new vec4(0.16, 0.56, 0.66, 1) // the lit stage in the Learn window: a solid accent fill, not just a dot
 const STAGE_FILL_FAIL = new vec4(0.78, 0.28, 0.26, 1) // same, when the current step is the failed check
 /** 'monogram' (default; no third-party marks, safe for the submission film) or 'brand' (real simple-icons marks, for local use only). */
-// 'brand-tinted' = the ORIGINAL simple-icons mark geometry (recoloured only) on a frosted-glass face, for providers simple-icons carries; the
-// others keep their vivid letter badge. Needs the "tint-*.png" textures. UNVERIFIED in Preview until Lens Studio is back: default stays monogram.
-// 'glass' = frosted-glass remaster of ALL ten badges (glass-<id>.png: original marks recoloured, letter badges where no mark exists).
-// UNVERIFIED in Preview: flip the default only after the textures import and the chips are seen working.
-const LOGO_MODE = "monogram" as "monogram" | "brand" | "brand-tinted" | "glass" // widened on purpose so mode comparisons compile whichever mode is set
-const USE_MARK_TEXTURES = LOGO_MODE === "brand-tinted" || LOGO_MODE === "glass"
-const FROSTED_FACE = new vec4(0.86, 0.9, 0.95, 1) // same flat colour as the tinted textures' face so the mark blends into its chip
+const LOGO_MODE: "monogram" | "brand" = "monogram"
 const MODULE_ICON_INK: Record<string, vec4> = {
   script: new vec4(0.1, 0.4, 1.0, 1), // blue </>
   material: new vec4(0.9, 0.15, 0.7, 1), // magenta diamond
@@ -264,7 +258,6 @@ export class BuildAliveSceneUI {
   private sessionChip: Text | null = null
   private projectMinimised = false
   private selectedProvider = PROVIDER_STATIONS[0].id
-  private historySessions: HistorySession[] = []
   private voiceLines: string[] | null = null
   private voicePendingApproveAt = 0
   private voiceListener = new VoiceListener()
@@ -274,7 +267,6 @@ export class BuildAliveSceneUI {
   private headerLogoShown = ""
   private headerMonoText: Text | null = null
   private headerMonoTile: RoundedRectangle | null = null
-  private headerLogoObj: SceneObject | null = null
   private providerHalos: Record<string, RoundedRectangle> = {}
   private chipMarks: Record<string, {text: Text | null; mat: Material | null}> = {}
   private providerRings: Record<string, RoundedRectangle> = {}
@@ -353,7 +345,6 @@ export class BuildAliveSceneUI {
 
     this.transport.onStateChanged = () => this.syncVisuals()
     this.transport.onWorkspace = (worlds) => this.bindWorkspace(worlds)
-    this.transport.onHistory = (sessions) => this.loadHistory(sessions)
 
     this.buildLandscape()
     this.buildIslands(onSelectEarthProofFallback)
@@ -871,12 +862,6 @@ export class BuildAliveSceneUI {
       this.headerMonoTile.cornerRadius = firstMono.radius
       this.headerMonoText = this.monoText(sess.root, "HeaderMonoText", -7.4, 7.7, 2.1, 1.9, 38, firstMono.color)
       this.headerMonoText.text = PROVIDER_MONO[PROVIDER_STATIONS[0].id].letters
-      if (USE_MARK_TEXTURES) {
-        this.loadLogos()
-        this.headerLogoObj = this.logoImage(sess.root, "Logo_tinted_header", -7.4, 7.7, LOGO_MODE === "glass" ? 2.1 : 1.7, this.logoTex[PROVIDER_STATIONS[0].id])
-        this.headerLogoMat = this.headerLogoObj ? (this.headerLogoObj.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
-        this.headerLogoShown = PROVIDER_STATIONS[0].id
-      }
     }
     this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", -1.4, 7.7, 9.4, 2.5, 24, COLOR_WHITE, false)
     this.sessionChip = this.panelText(sess.root, "SessionStatusChip", 5.0, 7.7, 4.0, 2.2, 16, COLOR_CAPTION, true)
@@ -932,12 +917,6 @@ export class BuildAliveSceneUI {
       "Bridge says: " + st.note + ".",
       "To connect: install it, start the bridge (bridge/start-g2.mjs), then run a task.",
     ]
-  }
-
-  /** Persistent workspace: the bridge's recorded sessions (last few, newest first). Shown as RECORDED history, never as live events. */
-  loadHistory(sessions: HistorySession[]): void {
-    this.historySessions = sessions
-    this.syncVisuals()
   }
 
   /** Dock mic: start/stop the built-in ASR. Transcripts go through handleVoice(); if ASR cannot start the Session window says so. */
@@ -1051,12 +1030,6 @@ export class BuildAliveSceneUI {
         this.headerMonoTile.backgroundColor = mono.fill
         this.headerMonoTile.cornerRadius = mono.radius
       }
-      if (this.headerLogoObj && this.headerMonoTile) {
-        const hasMark = !!this.logoTex[this.selectedProvider]
-        this.headerLogoObj.enabled = hasMark
-        this.headerMonoText.getSceneObject().enabled = !hasMark
-        if (hasMark) this.headerMonoTile.backgroundColor = FROSTED_FACE
-      }
     }
     for (const st of PROVIDER_STATIONS) {
       const dot = this.providerDots[st.id]
@@ -1078,28 +1051,6 @@ export class BuildAliveSceneUI {
   }
 
   private loadLogos(): void {
-    if (LOGO_MODE === "glass") {
-      this.logoTex = {
-        "claude-code": requireAsset("../Textures/logos/glass-claude-code.png") as Texture,
-        codex: requireAsset("../Textures/logos/glass-codex.png") as Texture,
-        antigravity: requireAsset("../Textures/logos/glass-antigravity.png") as Texture,
-        opencode: requireAsset("../Textures/logos/glass-opencode.png") as Texture,
-        hermes: requireAsset("../Textures/logos/glass-hermes.png") as Texture,
-        openclaw: requireAsset("../Textures/logos/glass-openclaw.png") as Texture,
-        "chatgpt-app": requireAsset("../Textures/logos/glass-chatgpt-app.png") as Texture,
-        "grok-bots": requireAsset("../Textures/logos/glass-grok-bots.png") as Texture,
-        instinct: requireAsset("../Textures/logos/glass-instinct.png") as Texture,
-        muse: requireAsset("../Textures/logos/glass-muse.png") as Texture,
-      }
-      return
-    }
-    if (LOGO_MODE === "brand-tinted") {
-      this.logoTex = {
-        "claude-code": requireAsset("../Textures/logos/tint-claude-code.png") as Texture,
-        opencode: requireAsset("../Textures/logos/tint-opencode.png") as Texture,
-      }
-      return
-    }
     this.logoTex = {
       "claude-code": requireAsset("../Textures/logos/claude-code.png") as Texture,
       codex: requireAsset("../Textures/logos/codex.png") as Texture,
@@ -1116,7 +1067,7 @@ export class BuildAliveSceneUI {
 
   /** Compact row of agent chips under the Session window: real simple-icons mark where one exists, monogram otherwise. */
   private buildAgentRow(land: SceneObject): void {
-    if ((LOGO_MODE === "brand" || USE_MARK_TEXTURES) && Object.keys(this.logoTex).length === 0) this.loadLogos()
+    if (LOGO_MODE === "brand" && Object.keys(this.logoTex).length === 0) this.loadLogos()
     const logos = this.logoTex
     const pitch = 2.5
     PROVIDER_STATIONS.forEach((st, i) => {
@@ -1125,7 +1076,6 @@ export class BuildAliveSceneUI {
       chip.getTransform().setLocalPosition(new vec3((i - (PROVIDER_STATIONS.length - 1) / 2) * pitch, AGENT_ROW_Y, AGENT_ROW_Z))
       const ring = chip.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
       const look = PROVIDER_MONO[st.id]
-      const tinted = USE_MARK_TEXTURES && !!this.logoTex[st.id]
       const haloObj = global.scene.createSceneObject("AgentChipHalo_" + st.id)
       haloObj.setParent(chip)
       haloObj.getTransform().setLocalPosition(new vec3(0, 0, -0.15))
@@ -1140,14 +1090,14 @@ export class BuildAliveSceneUI {
       this.providerHalos[st.id] = halo
       ring.size = new vec2(2.3, 2.3)
       ring.cornerRadius = look.radius
-      ring.backgroundColor = tinted ? FROSTED_FACE : look.fill
+      ring.backgroundColor = look.fill
       ring.blendMode = 1
       ring.opacity = 1
       ring.initialize()
       this.providerRings[st.id] = ring
       this.chipMarks[st.id] = {text: null, mat: null}
-      if (LOGO_MODE === "brand" || tinted) {
-        const logo = this.logoImage(chip, "AgentChipLogo_" + st.id, 0, 0, LOGO_MODE === "glass" ? 2.25 : tinted ? 1.6 : 1.75, logos[st.id])
+      if (LOGO_MODE === "brand") {
+        const logo = this.logoImage(chip, "AgentChipLogo_" + st.id, 0, 0, 1.75, logos[st.id])
         this.chipMarks[st.id].mat = logo ? (logo.getComponent("Component.RenderMeshVisual") as RenderMeshVisual).mainMaterial : null
       } else {
         const mt = this.monoText(chip, "AgentChipMono_" + st.id, 0, -0.05, 2.2, 1.8, 38, PROVIDER_MONO[st.id].color)
@@ -1260,8 +1210,7 @@ export class BuildAliveSceneUI {
     if (!other && ev && !steps.some((e) => e.eventId === ev.eventId)) steps.push(ev)
     const shown = steps.slice(-4)
     // idle: show the first replay steps of the made-up Sample World as content, clearly labelled REPLAY (never as live work)
-    const histOn = this.historySessions.length > 0 && shown.length === 0 && !other && !this.voiceLines && this.workspaceBound
-    const idle = shown.length === 0 && !other && !this.voiceLines && !histOn
+    const idle = shown.length === 0 && !other && !this.voiceLines
     const sampleProj = DEMO_PROJECTS.find((p) => p.projectId === DEMO_SAMPLE_PROJECT_ID)
     const source: AgentEvent[] = idle && sampleProj ? sampleProj.recordedEvents.slice(0, 8) : shown
     // identical consecutive steps collapse into one tile with a count (honest to the data, not a duplicate-row bug)
@@ -1275,20 +1224,12 @@ export class BuildAliveSceneUI {
       } else groups.push({step: s, what: w, count: 1})
     }
     const voiceOn = !!this.voiceLines && !other
-    const nowMs = Date.now()
-    const historyTiles = this.historySessions.slice(0, 3).map((hs) => {
-      const lastEv = hs.events.length > 0 ? hs.events[hs.events.length - 1] : null
-      const lastWhat = lastEv ? explainStep({kind: lastEv.kind, status: lastEv.status, summary: lastEv.summary, files: lastEv.fileAliases, actor: lastEv.actor}).what : "no steps kept"
-      return {step: null as AgentEvent | null, what: "RECORDED · " + whenLabel(hs.lastAt, nowMs) + " · " + hs.count + " steps · last: " + lastWhat, count: 1}
-    })
     const display = voiceOn
       ? (this.voiceLines as string[]).slice(0, 4).map((t) => ({step: null as AgentEvent | null, what: t, count: 1}))
-      : histOn
-        ? historyTiles
-        : other
+      : other
         ? this.providerExplain(hero, heroBadge).map((t) => ({step: null as AgentEvent | null, what: t, count: 1}))
         : idle ? groups.slice(0, 3) : groups.slice(-4)
-    if (this.sessionChip) this.sessionChip.text = voiceOn ? (this.voiceListener.isListening ? "Listening" : "Voice") : histOn ? "History" : other ? heroBadge : idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
+    if (this.sessionChip) this.sessionChip.text = voiceOn ? (this.voiceListener.isListening ? "Listening" : "Voice") : other ? heroBadge : idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
     for (let i = 0; i < this.sessionRows.length; i++) {
       const row = this.sessionRows[i]
       const grp = display[i]
@@ -1305,7 +1246,7 @@ export class BuildAliveSceneUI {
       }
       this.sessionTiles[i].getSceneObject().enabled = true
       const step = grp.step
-      const isNow = !idle && !other && !voiceOn && !histOn && i === display.length - 1
+      const isNow = !idle && !other && !voiceOn && i === display.length - 1
       row.text = (idle && !voiceOn ? "REPLAY · " : isNow ? "Now: " : "") + grp.what
       row.textFill.color = step && step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : idle ? COLOR_CAPTION : COLOR_WHITE
       this.sessionTiles[i].backgroundColor = isNow ? GRAPHITE_TILE_HI : GRAPHITE_TILE

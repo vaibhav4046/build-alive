@@ -1,6 +1,6 @@
 # BUILD ALIVE: Devpost submission (paste-ready)
 
-Every field below maps to one Devpost box. Lines tagged `[VERIFY]` need a real Preview receipt before submission; remove the tag only when the receipt exists, or delete the claim.
+Every field below maps to one Devpost box. Every claim here has a saved receipt; anything not verified in Preview is labelled planned.
 
 ---
 
@@ -14,7 +14,7 @@ Learn AI engineering by doing: watch your coding agent work on your real repo in
 `<YOUTUBE_URL>`
 
 ## Repository URL
-`<GITHUB_URL>` (public repo with the full Lens Studio project, `EarthProof.esproj`)
+https://github.com/vaibhav4046/build-alive (public repo with the full Lens Studio project, `EarthProof.esproj`)
 
 ---
 
@@ -29,10 +29,10 @@ Millions of people now "vibe code": they ask an AI agent for a feature and watch
 - **Learn while you build.** A Learn window walks the agent loop (Prompt, Plan, Tools, Files, Tests, Result, Loop) and lights up the stage the current step belongs to. Each step carries *what happened*, *why it matters* and *what to try next*.
 - **Prompt Coach.** It checks your prompt for three things (a goal, a file, a way to check it worked) and gives one concrete tip. Rule-based and labelled as a tip, not AI reasoning.
 - **Your real project, not a mock.** A Project window shows the real module folders of a repo you approved (this build: EarthProof and mnemosyne, scanned by the local bridge), each tile with a type icon.
-- **One window per agent, honest status.** A chip row shows each supported agent with its real status: LIVE, REPLAY, OFFLINE or UNSUPPORTED. Nothing is ever shown as LIVE unless a real event arrived. [VERIFY: v64-agents shot]
-- **You stay in charge.** Explain, Approve and Deny live on one small icon dock. Approve only runs an allowlisted read-only check, and every decision leaves a receipt.
+- **One window per agent, honest status.** A chip row shows each supported agent with its real status: LIVE, REPLAY, OFFLINE or UNSUPPORTED. Nothing is ever shown as LIVE unless a real event arrived (LEAF L28). Badges are original coloured letter marks, not the tools' logos.
+- **You stay in charge.** Replay, Command, Next step, Explain, Approve and a mic live on one small icon dock. Approve only runs an allowlisted read-only check, and every decision leaves a receipt.
 - **Talk to your session.** A mic on the dock takes questions ("what just happened", "why did it fail", "what should I try", "explain the command") and commands ("next step", "approve", "deny"), answered as tiles by the same plain-language layer. Approve is two-step and only ever runs the allowlisted read-only check. Verified in Preview with injected transcripts (LEAF L30); live speech uses Spectacles' built-in ASR, which in our Preview session returned an auth error, so real-microphone use is **untested**.
-- **Your history stays.** The bridge keeps a journal of every real agent event; when the Lens connects it receives the last sessions as one compact history frame, shown as RECORDED tiles ("earlier today · 14 steps"), never as LIVE. [VERIFY: L31 + live connection]
+- **Your history stays (bridge done, Lens planned).** The bridge journals every real Claude Code hook event (2,487 so far) and can hand the last sessions to the Lens as one compact RECORDED history frame, never as LIVE (bridge test 13/13 on that real journal). Drawing those RECORDED tiles inside the Lens is written but not yet verified in Preview, so it is not in this build.
 - **Hands-first.** Pinch tiles and chips, minimise a window into its tab with the round X and pinch the tab to bring it back.
 
 ## How we built it
@@ -48,8 +48,8 @@ Millions of people now "vibe code": they ask an AI agent for a feature and watch
 - **Security.** An audit found the local WebSocket accepted other localhost origins and that one message type approved itself. We added Host and exact-origin checks, a shared secret on every event endpoint, and limited one-step approval to the read-only check.
 
 ## Accomplishments that we're proud of
-- Real repositories and real agent events, always labelled LIVE / REPLAY.
-- Test receipts: core checks 62/62 plus 2,400 generated cases; engine sweep 2,224 assertions with 0 failures; explainer checks 11/11; bridge security tests 16/16 and 7/7. [VERIFY: final LEAF sweep receipts for this build in `devpost/receipts/`]
+- Real repositories scanned by the bridge, real agent events journaled by it, and a Lens that labels everything LIVE or REPLAY. All footage in the video is REPLAY: live streaming into the Lens needs Lens Studio's Experimental API switch for the local WebSocket, which we did not have on for the recording.
+- Test receipts: 36/36 active LEAF scenarios pass in the Lens Studio Preview at tag `v6.4-agents` (`devpost/receipts/leaf-v6-4-agents-sweep/`), plus the injected-voice scenario L30; Node checks: core 62/62 plus 2,400 generated cases, engine sweep 2,225 assertions with 0 failures, explainer 11/11, layout 37/37, history 13/13, bridge security 16/16 and 7/7 (`devpost/receipts/node-tests-2026-11-09/`).
 
 ## What we learned
 Showing less text made the product more truthful. When each step is one honest sentence with the evidence one tap away, beginners follow along and experts still trust it.
@@ -57,7 +57,8 @@ Showing less text made the product more truthful. When each step is one honest s
 ## What's next for BUILD ALIVE
 - Test on physical Spectacles (not tested yet; see the hardware note).
 - Live events from more agents (Codex, OpenCode) through their documented event APIs.
-- Voice: ask "what just happened?" and hear the answer.
+- Spoken answers, and the mic tested with real speech (Preview's speech service returned an auth error for us).
+- RECORDED history tiles and frosted-glass agent badges in the Lens (code on the `wip/history-glass` branch, not yet verified).
 - A port to other glasses platforms later.
 
 ## Built with
@@ -72,4 +73,4 @@ Built with AI coding assistants (Claude Code, and earlier Google Antigravity) un
 Tested in the Lens Studio 5.23.2 Preview (Spectacles device simulation) only, not yet on physical Spectacles. The bridge address 127.0.0.1 refers to the PC; on glasses the bridge would need a secured network path, which is not built yet.
 
 ## Third-party assets
-No third-party 3D art, music or sounds. Agent chips show each tool's mark from Simple Icons (CC0 artwork), recoloured to the Lens theme, only to identify which tools the Lens is compatible with. Product names and logos are trademarks of their respective owners; no affiliation or endorsement is implied. Credits in `THIRD_PARTY_NOTICES.md`. An original letter-badge mode is one setting away (`LOGO_MODE`). Libraries: Snap's Spectacles Interaction Kit, Spectacles UIKit and LEAF packages.
+No third-party 3D art, music or sounds. In this build and the video, agent chips use original coloured letter badges (CC, Cx, AG...). The repo also holds an unverified frosted-glass badge set that recolours some tools' marks from Simple Icons (CC0 artwork), only to identify compatible tools. Product names and logos are trademarks of their respective owners; no affiliation or endorsement is implied. Credits in `THIRD_PARTY_NOTICES.md`. Libraries: Snap's Spectacles Interaction Kit, Spectacles UIKit and LEAF packages.

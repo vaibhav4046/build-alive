@@ -260,8 +260,8 @@ t("layout audit passes (>=5 cm targets, dock spacing >= MIN_RAIL_SEPARATION_CM, 
   assert.ok(a.minWidthCm >= 5); assert.ok(a.minRailSpacingCm >= MIN_RAIL_SEPARATION_CM - 0.01); assert.ok(a.minIslandSpacingCm >= 12 - 0.01); assert.equal(a.allInView, true)
   assert.equal(a.cardInView, true); assert.ok(a.minCrossGroupGapCm >= 8)
 })
-t("6 modules / 5 bridges / 5 rail controls / 3 islands", () => {
-  assert.deepEqual([CITY_MODULES.length, CITY_BRIDGES.length, RAIL_CONTROLS.length, PROJECT_ISLANDS.length], [6, 5, 5, 3])
+t("6 modules / 5 bridges / 6 dock controls (incl. mic) / 3 islands", () => {
+  assert.deepEqual([CITY_MODULES.length, CITY_BRIDGES.length, RAIL_CONTROLS.length, PROJECT_ISLANDS.length], [6, 5, 6, 3])
 })
 t("bridges reference real modules; one is explicitly unverified", () => {
   const ids = new Set(CITY_MODULES.map((m) => m.moduleId))

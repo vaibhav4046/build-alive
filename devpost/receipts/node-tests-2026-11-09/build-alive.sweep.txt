@@ -6,7 +6,7 @@
 -> 5. Schema Migration & Backward Compatibility
 -> 6. Permutation & Stress Invariants (1,000 runs)
 -> 7. Live Bridge WebSocket Round-Trip & Latency Profiling
-Latency benchmark: p50=0.02ms, p95=0.07ms, p99=0.38ms
+Latency benchmark: p50=0.02ms, p95=0.06ms, p99=0.43ms
 -> 8. Live Windows Antigravity, Claude Code & Codex Session Integration
 
-=== SWEEP COMPLETED SUCCESSFULLY: 2224 assertions verified, 0 failures ===
+=== SWEEP COMPLETED SUCCESSFULLY: 2225 assertions verified, 0 failures ===
