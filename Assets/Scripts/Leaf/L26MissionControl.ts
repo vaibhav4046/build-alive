@@ -23,7 +23,7 @@ export class BuildAliveL26MissionControl extends Scenario {
     for (const o of mc.orbs) {
       if (o.id !== "claude-code") expectTrue(o.badge !== "LIVE", o.id + " never claims LIVE")
     }
-    expectTrue(exists("AgentOrb_claude-code") && exists("FlowStage_Tests"), "orb and flow objects exist in the scene")
+    expectTrue(exists("AgentTab_Hero") && exists("FlowStage_Tests"), "agent tab and flow stage objects exist in the scene")
 
     const seen: number[] = []
     for (let i = 0; i < 8; i++) {

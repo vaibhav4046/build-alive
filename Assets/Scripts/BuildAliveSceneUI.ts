@@ -17,6 +17,7 @@ import {FlexItem} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/F
 import {FlexLayout} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexLayout"
 import {FlexAlign, FlexDirection, FlexJustify} from "SpectaclesUIKit.lspkg/Scripts/Components/Layout2D/Flex/FlexTypes"
 import {
+  AgentEvent,
   AllowlistedActionId,
   BuildAliveEngine,
   validateWorkspaceWorlds,
@@ -37,6 +38,7 @@ import {
   PROJECT_ISLANDS,
   PROVENANCE_BANNER_POS,
   RAIL_CONTROLS,
+  WINDOW_Z,
   REWIND_CRYSTAL,
   Vec3Cm,
 } from "./BuildAliveLayout"
@@ -74,6 +76,8 @@ import {
   WORKER_VOX,
 } from "./BuildAliveHolo"
 import {badgeFor, FLOW_STAGES, PROVIDER_STATIONS, PROVIDERS_SNAPSHOT_SOURCE, stageForEvent} from "./BuildAliveProviders"
+import {explainStep, promptCoach} from "./BuildAliveExplain"
+import {RoundedRectangle} from "SpectaclesUIKit.lspkg/Scripts/Visuals/RoundedRectangle/RoundedRectangle"
 
 /** The scripted recorded-replay project that stays selectable as "Sample World". */
 const DEMO_SAMPLE_PROJECT_ID = "lobby-sync"
@@ -129,13 +133,17 @@ const COLOR_AMBER = new vec4(1.0, 0.8, 0.35, 1.0)
 const COLOR_CORAL = new vec4(1.0, 0.45, 0.4, 1.0)
 const COLOR_VIOLET = new vec4(0.8, 0.66, 1.0, 1.0)
 const COLOR_WHITE = new vec4(1.0, 0.98, 0.94, 1.0)
-const COLOR_CAPTION = new vec4(0.86, 0.9, 0.96, 0.9)
+const COLOR_CAPTION = new vec4(0.9, 0.94, 1.0, 1.0)
 const COLOR_DIM = new vec4(0.4, 0.42, 0.48, 1.0)
 const COLOR_OFFLINE = new vec4(0.62, 0.74, 0.86, 1.0) // additive display: dim text vanishes, so OFFLINE stays readable
 const TINT_NORMAL = new vec4(1, 1, 1, 1)
 const TINT_CHANGED = new vec4(1.25, 1.25, 1.25, 1) // slight overdrive on the changed building
 const TINT_FAILED = new vec4(1.25, 1.25, 1.25, 1)
 const TINT_OFF = new vec4(0.5, 0.78, 1.0, 1)
+const COLOR_GOLD = new vec4(1.0, 0.82, 0.42, 1.0)
+const COLOR_BLOCK = new vec4(1.0, 1.3, 1.6, 1)
+const COLOR_BLOCK_GOLD = new vec4(1.6, 1.25, 0.5, 1)
+const COLOR_BLOCK_FAIL = new vec4(1.6, 0.5, 0.45, 1)
 const TINT_ON = new vec4(1.3, 1.3, 1.3, 1)
 
 const CARD_CONTENT_Z_CM = 0.6
@@ -201,6 +209,14 @@ export class BuildAliveSceneUI {
   private rewardsGiven = 0
   private understood: Record<string, boolean> = {}
   private lanterns: Record<string, SceneObject> = {}
+  private chipRR: Record<string, RoundedRectangle> = {}
+  private sessionTitle: Text | null = null
+  private sessionRows: Text[] = []
+  private learnTitle: Text | null = null
+  private learnStages: Text[] = []
+  private learnWhy: Text | null = null
+  private sessionTry: Text | null = null
+  private lensLive = false
   private scanRing: SceneObject | null = null
   private orbs: OrbVisual[] = []
   private stageNodes: {name: string; root: SceneObject; mat: Material; label: Text}[] = []
@@ -336,7 +352,7 @@ export class BuildAliveSceneUI {
   private rewardForModule(moduleId: string, force: boolean = false): void {
     const spec = CITY_MODULES.find((m) => m.moduleId === moduleId)
     if (!spec) return
-    const at = new vec3(spec.center.x, PLATEAU_Y, spec.center.z)
+    const at = new vec3(spec.center.x, spec.center.y, spec.center.z)
     if (force && this.understood[moduleId]) this.rewardBurst(at)
     else this.markUnderstood(moduleId, at)
   }
@@ -549,7 +565,7 @@ export class BuildAliveSceneUI {
       const obj = this.islandObjects[slot.id]
       if (!obj) continue
       this.scratchPos.x = slot.center.x
-      this.scratchPos.y = this.islandBaseY[slot.id] + 0.45 * Math.sin(t * 0.7 + slot.center.x * 0.07)
+      this.scratchPos.y = this.islandBaseY[slot.id] + 0.12 * Math.sin(t * 0.7 + slot.center.x * 0.07)
       this.scratchPos.z = slot.center.z
       obj.getTransform().setLocalPosition(this.scratchPos)
     }
@@ -633,7 +649,7 @@ export class BuildAliveSceneUI {
       const u = (t * 0.5) % 1
       const arcLen = Math.hypot(to.center.x - from.center.x, to.center.z - from.center.z)
       this.scratchPos.x = from.center.x + (to.center.x - from.center.x) * u
-      this.scratchPos.y = PLATEAU_Y + 1.2 + Math.min(6, arcLen * 0.28) * 4 * u * (1 - u) // rides the glowing arc
+      this.scratchPos.y = from.center.y + (to.center.y - from.center.y) * u + Math.min(2, arcLen * 0.12) * 4 * u * (1 - u) // rides the line between blocks
       this.scratchPos.z = from.center.z + (to.center.z - from.center.z) * u
       this.dataPacket.getTransform().setLocalPosition(this.scratchPos)
     }
@@ -653,32 +669,7 @@ export class BuildAliveSceneUI {
   private buildLandscape(): void {
     const land = global.scene.createSceneObject("DeskShelf") // name kept for LEAF L01; it is the valley root
     land.setParent(this.rootObj)
-    this.voxelObject("Valley_Terrain", land, buildTerrain(), TERRAIN_VOX, [0, 0, 0], null)
-    this.voxelObject("Valley_Mountains", land, buildMountains(), MOUNTAIN_VOX, [0, 0, 0], null)
-    this.voxelObject("Valley_Props", land, buildProps(), PROP_VOX, [0, 0, 0], null)
-    // slow scanner ring around the project core (animated in animateScenery)
-    this.scanRing = this.voxelObject("Holo_ScanRing", land, buildScanRing(), PROP_VOX, [0, 0, 0], null)
-    this.scanRing.getTransform().setLocalPosition(new vec3(0, PLATEAU_Y + 0.2, PLATFORM_CENTER_Z))
-
-    const cloudSpots: Vec3Cm[] = [
-      {x: -40, y: -12, z: -130}, {x: 10, y: -8, z: -150}, {x: 52, y: -16, z: -120}, {x: -80, y: -4, z: -190},
-      {x: 75, y: 2, z: -200}, {x: -12, y: 6, z: -220}, {x: 30, y: -24, z: -110},
-    ]
-    for (let i = 0; i < CLOUD_COUNT; i++) {
-      const s = cloudSpots[i % cloudSpots.length]
-      const c = this.voxelObject("Cloud_" + i, land, buildCloud(i + 1), CLOUD_VOX, [0, 0, 0], null)
-      c.getTransform().setLocalPosition(new vec3(s.x, s.y, s.z))
-      this.clouds.push(c)
-      this.cloudSpeed.push(0.6 + (i % 3) * 0.35)
-    }
-    // data sparks that rise around the core (bounded: DROPLET_COUNT objects)
-    for (let i = 0; i < DROPLET_COUNT; i++) {
-      this.droplets.push(this.voxelObject("Waterfall_Drop_" + i, land, null, 0.45, [-0.22, -0.22, -0.22], null, "drop" + (i % 2), () => buildPuff(i % 2 ? H.CYAN_LT : H.AMBER)))
-    }
-    for (let i = 0; i < SMOKE_COUNT; i++) {
-      this.smoke.push(this.voxelObject("Chimney_Smoke_" + i, land, null, 0.6, [-0.3, -0.3, -0.3], null, "smoke", () => buildPuff(H.CYAN_LT)))
-    }
-    this.buildMissionControl(land)
+    this.buildGlassWindows(land)
     this.buildFeedbackFx(land)
 
     // Small honest status caption under the dock + one gentle hint (both plain language).
@@ -687,6 +678,7 @@ export class BuildAliveSceneUI {
     bannerObj.getTransform().setLocalPosition(new vec3(PROVENANCE_BANNER_POS.x, PROVENANCE_BANNER_POS.y, PROVENANCE_BANNER_POS.z))
     bannerObj.getTransform().setLocalScale(new vec3(0.62, 0.62, 0.62))
     this.provenanceText = this.addText(bannerObj, "Sample world · made-up story · REPLAY", 30, COLOR_CAPTION)
+    bannerObj.enabled = false
 
     const hintObj = global.scene.createSceneObject("BA_Hint")
     hintObj.setParent(this.rootObj)
@@ -694,85 +686,129 @@ export class BuildAliveSceneUI {
     hintObj.createComponent(Billboard.getTypeName())
     hintObj.getTransform().setLocalScale(new vec3(1.6, 1.6, 1.6))
     this.hintText = this.addText(hintObj, "Pinch an island to choose a project", LABEL_TEXT_SIZE, COLOR_WHITE)
+    hintObj.enabled = false
   }
 
-  /** Agent orbs (one per provider station, honest badge) in a crown around the core + the Prompt -> Loop flow pipeline. */
-  private buildMissionControl(land: SceneObject): void {
-    const baseMaterial = (this.voxelMat || this.baseMat) as Material
-    const n = PROVIDER_STATIONS.length
-    for (let i = 0; i < n; i++) {
-      const st = PROVIDER_STATIONS[i]
-      // a shallow crown behind the city, in front of the project chips; two heights so neighbouring labels never collide
-      const x = -25 + (50 * i) / (n - 1)
-      const z = -90 - 3 * Math.sin((Math.PI * i) / (n - 1))
-      const y = i % 2 === 0 ? -8 : -11.5
-      const root = global.scene.createSceneObject("AgentOrb_" + st.id)
-      root.setParent(land)
-      root.getTransform().setLocalPosition(new vec3(x, y, z))
-      const mat = baseMaterial.clone()
-      const ringMat = baseMaterial.clone()
-      this.voxelObject("AgentOrb_" + st.id + "_Core", root, null, PROP_VOX, [0, 0, 0], mat, "orb", () => buildOrb(3, H.WHITE))
-      const halo = this.voxelObject("AgentOrb_" + st.id + "_Halo", root, null, PROP_VOX, [0, 0, 0], ringMat, "orbring", () => buildOrbRing(6, H.WHITE))
-      halo.getTransform().setLocalRotation(quat.angleAxis(0.5 + (i % 3) * 0.3, vec3.right()))
-      const lab = global.scene.createSceneObject("AgentOrb_" + st.id + "_Label")
-      lab.setParent(root)
-      lab.getTransform().setLocalPosition(new vec3(0, -4.6, 0))
-      lab.createComponent(Billboard.getTypeName())
-      lab.getTransform().setLocalScale(new vec3(1.5, 1.5, 1.5))
-      const badge = this.addText(lab, st.name, 24, COLOR_CAPTION)
-      this.orbs.push({stationId: st.id, root, mat, ringMat, badge, baseY: y, phase: i * 0.9})
-    }
+  // ---- glass windows (visionOS-style session / learn / project panels) ------------------------------
 
-    // flow pipeline along the front of the platform: Prompt -> Plan -> Tools -> Files -> Tests -> Result -> Loop
-    const m = FLOW_STAGES.length
-    const spacing = 6.6
-    const flowZ = PLATFORM_CENTER_Z + 22
-    const line = this.voxelObject("Holo_FlowLine", land, null, PROP_VOX, [0, 0, 0], null, "flowline", () => {
-      const g = new VoxelGrid()
-      const half = Math.round(((m - 1) * spacing * 0.5) / PROP_VOX)
-      for (let i = -half; i <= half; i++) g.set(i, 0, 0, i % 4 === 0 ? H.WHITE : H.CYAN_MID)
-      return g
-    })
-    line.getTransform().setLocalPosition(new vec3(0, PLATEAU_Y + 0.3, flowZ))
-    for (let i = 0; i < m; i++) {
-      const node = global.scene.createSceneObject("FlowStage_" + FLOW_STAGES[i])
-      node.setParent(land)
-      node.getTransform().setLocalPosition(new vec3((i - (m - 1) / 2) * spacing, PLATEAU_Y + 0.4, flowZ))
-      const mat = baseMaterial.clone()
-      this.voxelObject("FlowStage_" + FLOW_STAGES[i] + "_Pad", node, null, PROP_VOX, [0, 0, 0], mat, "stagenode", () => buildStageNode())
-      const lab = global.scene.createSceneObject("FlowStage_" + FLOW_STAGES[i] + "_Label")
-      lab.setParent(node)
-      lab.getTransform().setLocalPosition(new vec3(0, 0.6, 4.6))
-      lab.createComponent(Billboard.getTypeName())
-      lab.getTransform().setLocalScale(new vec3(0.95, 0.95, 0.95))
-      const label = this.addText(lab, FLOW_STAGES[i], 28, COLOR_CAPTION)
-      this.stageNodes.push({name: FLOW_STAGES[i], root: node, mat, label})
-    }
+  private glass(name: string, parent: SceneObject, x: number, y: number, z: number, w: number, h: number, opacity: number, color: vec4): {root: SceneObject; rr: RoundedRectangle} {
+    const root = global.scene.createSceneObject(name)
+    root.setParent(parent)
+    root.getTransform().setLocalPosition(new vec3(x, y, z))
+    // soft light rim behind the body gives the frosted-glass edge
+    const rimObj = global.scene.createSceneObject(name + "_Rim")
+    rimObj.setParent(root)
+    rimObj.getTransform().setLocalPosition(new vec3(0, 0, -0.15))
+    const rim = rimObj.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    rim.size = new vec2(w + 0.45, h + 0.45)
+    rim.cornerRadius = 2.1
+    rim.backgroundColor = new vec4(0.85, 0.93, 1, 1)
+    rim.blendMode = 1
+    rim.opacity = Math.min(0.5, opacity * 0.8)
+    rim.initialize()
+    const rr = root.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
+    rr.size = new vec2(w, h)
+    rr.cornerRadius = 1.8
+    rr.backgroundColor = color
+    rr.blendMode = 1
+    rr.opacity = opacity
+    rr.initialize()
+    return {root, rr}
   }
 
-  /** Orb badges and the flow pipeline follow honest state: the bridge snapshot + this Lens's own connection + the active event. */
+  private panelText(parent: SceneObject, name: string, x: number, y: number, w: number, h: number, size: number, color: vec4, centered: boolean): Text {
+    const o = global.scene.createSceneObject(name)
+    o.setParent(parent)
+    o.getTransform().setLocalPosition(new vec3(x, y, 0.4))
+    const t = o.createComponent("Component.Text") as Text
+    t.text = ""
+    t.size = size
+    t.depthTest = false
+    t.textFill.color = color
+    t.horizontalAlignment = centered ? HorizontalAlignment.Center : HorizontalAlignment.Left
+    t.verticalAlignment = VerticalAlignment.Center
+    t.horizontalOverflow = HorizontalOverflow.Wrap
+    t.verticalOverflow = VerticalOverflow.Shrink
+    t.layoutRect = Rect.create(-w / 2, w / 2, -h / 2, h / 2)
+    return t
+  }
+
+  /** Three floating glass windows at seated distance: Session (centre), Learn (left), Project (right, holds the module blocks). */
+  private buildGlassWindows(land: SceneObject): void {
+    const glassCol = new vec4(0.13, 0.22, 0.46, 1)
+    const sess = this.glass("Glass_Session", land, 0, -11.6, WINDOW_Z, 19, 19, 0.86, glassCol)
+    const learn = this.glass("Glass_Learn", land, -16.5, -11.6, WINDOW_Z, 11.5, 19, 0.86, glassCol)
+    const proj = this.glass("Glass_Project", land, 16.5, -11.6, WINDOW_Z, 11.5, 19, 0.86, glassCol)
+    learn.root.getTransform().setLocalRotation(quat.angleAxis(0.17, vec3.up()))
+    proj.root.getTransform().setLocalRotation(quat.angleAxis(-0.17, vec3.up()))
+
+    // Session window: provenance title + the five most recent steps as one plain sentence each
+    this.sessionTitle = this.panelText(sess.root, "AgentTab_Hero", 0, 7.7, 17, 2.6, 26, COLOR_WHITE, true)
+    for (let i = 0; i < 4; i++) {
+      this.sessionRows.push(this.panelText(sess.root, "SessionRow_" + i, 0, 4.4 - i * 3.0, 17, 2.8, 28, COLOR_WHITE, false))
+    }
+    this.sessionTry = this.panelText(sess.root, "SessionTry", 0, -7.4, 17, 3.4, 23, COLOR_GOLD, false)
+
+    // Learn window: the flow from prompt to result (active step lit), why it matters, one thing to try
+    this.learnTitle = this.panelText(learn.root, "LearnTitle", 0, 7.7, 10, 2.2, 27, COLOR_WHITE, true)
+    this.learnTitle.text = "How it works"
+    for (let i = 0; i < FLOW_STAGES.length; i++) {
+      this.learnStages.push(this.panelText(learn.root, "FlowStage_" + FLOW_STAGES[i], -0.4, 5.0 - i * 1.55, 9.2, 1.5, 27, COLOR_CAPTION, false))
+    }
+    this.learnWhy = this.panelText(learn.root, "LearnWhy", 0, -6.3, 9.8, 5.0, 20, COLOR_WHITE, false)
+
+    // Project window title (blocks + names are the Module_* objects)
+    const projTitle = this.panelText(proj.root, "ProjectTitle", 0, 7.7, 10, 2.2, 27, COLOR_WHITE, true)
+    projTitle.text = "Project"
+  }
+
+  /** Session / Learn windows follow honest state: the replayed (or live) events, the active step and its plain-words explanation. */
   private syncMissionControl(ev: BuildAliveEngine["activeEvent"], lensLive: boolean): void {
-    for (const orb of this.orbs) {
-      const st = PROVIDER_STATIONS.find((s) => s.id === orb.stationId)
-      if (!st) continue
-      const badge = badgeFor(st, lensLive)
-      const tint =
-        badge === "LIVE" ? new vec4(0.5, 1.15, 0.8, 1) : badge === "REPLAY" ? new vec4(1.15, 0.85, 0.35, 1) : badge === "UNSUPPORTED" ? new vec4(0.5, 0.4, 0.8, 1) : new vec4(0.28, 0.4, 0.5, 1)
-      const col = badge === "LIVE" ? COLOR_MINT : badge === "REPLAY" ? COLOR_AMBER : badge === "UNSUPPORTED" ? COLOR_VIOLET : COLOR_OFFLINE
-      orb.mat.mainPass.baseColor = tint
-      orb.ringMat.mainPass.baseColor = tint
-      orb.badge.text = st.name + "\n" + badge
-      orb.badge.textFill.color = col
+    this.lensLive = lensLive
+    const snap = this.engine.snapshot()
+    const proj = this.engine.currentProject
+    const hero = PROVIDER_STATIONS[0]
+    const heroBadge = badgeFor(hero, lensLive)
+    if (this.sessionTitle) {
+      const where = this.workspaceBound ? proj.title : "Sample world · made-up story"
+      this.sessionTitle.text = hero.name + " · " + where + " · " + heroBadge + "  (+" + (PROVIDER_STATIONS.length - 1) + " apps)"
     }
-    const stage = ev ? stageForEvent(ev.kind, ev.status) : -1
+    // recent steps: replayed events up to the cursor, plus the live/active one
+    const steps: AgentEvent[] = proj.recordedEvents.filter((e) => e.seq <= snap.cursorSeq).slice(-5)
+    if (ev && !steps.some((e) => e.eventId === ev.eventId)) steps.push(ev)
+    const shown = steps.slice(-4)
+    for (let i = 0; i < this.sessionRows.length; i++) {
+      const row = this.sessionRows[i]
+      const step = shown[i]
+      if (!step) {
+        row.text = shown.length === 0 ? (i === 0 ? (this.workspaceBound ? "No agent is connected yet." : "Press Next step to watch the agent work.") : i === 1 && this.workspaceBound ? "Pinch Sample World above, then Next step, to watch a made-up story." : "") : ""
+        row.textFill.color = COLOR_CAPTION
+        continue
+      }
+      const ex = explainStep({kind: step.kind, status: step.status, summary: step.summary, files: step.fileAliases, actor: step.actor})
+      const isNow = i === shown.length - 1
+      row.text = (isNow ? "Now: " : "") + ex.what
+      row.textFill.color = step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : COLOR_WHITE
+    }
+    // learn window
+    const last = shown.length > 0 ? shown[shown.length - 1] : null
+    const stage = last ? stageForEvent(last.kind, last.status) : -1
     this.lastStage = stage
-    for (let i = 0; i < this.stageNodes.length; i++) {
-      const node = this.stageNodes[i]
+    for (let i = 0; i < this.learnStages.length; i++) {
       const on = i === stage
-      node.mat.mainPass.baseColor = on ? TINT_ON : i < stage ? new vec4(0.8, 0.9, 1.0, 1) : TINT_OFF
-      const s = on ? 1.35 : 1.0
-      node.root.getTransform().setLocalScale(new vec3(s, s, s))
-      node.label.textFill.color = on ? COLOR_WHITE : COLOR_CAPTION
+      this.learnStages[i].text = (on ? "● " : "○ ") + FLOW_STAGES[i]
+      this.learnStages[i].textFill.color = on ? COLOR_GOLD : COLOR_CAPTION
+    }
+    if (this.learnWhy && this.sessionTry) {
+      if (last) {
+        const ex = explainStep({kind: last.kind, status: last.status, summary: last.summary, files: last.fileAliases, actor: last.actor})
+        this.learnWhy.text = ex.why
+        this.sessionTry.text = "Try: " + ex.tip
+      } else {
+        const coach = promptCoach("")
+        this.learnWhy.text = "Each step the agent takes shows up here with the reason it matters."
+        this.sessionTry.text = "Try: " + coach.tip
+      }
     }
     if (PROVIDERS_SNAPSHOT_SOURCE.length === 0) print("[BuildAlive] provider snapshot has no source label")
   }
@@ -789,11 +825,9 @@ export class BuildAliveSceneUI {
 
       const labelObj = global.scene.createSceneObject(slot.sceneName + "_Label")
       labelObj.setParent(island)
-      labelObj.getTransform().setLocalPosition(new vec3(0, 7.2, 0))
-      labelObj.createComponent(Billboard.getTypeName())
-      labelObj.getTransform().setLocalScale(new vec3(1.5, 1.5, 1.5))
+      labelObj.getTransform().setLocalPosition(new vec3(0, 0, 0.7))
+      labelObj.getTransform().setLocalScale(new vec3(0.85, 0.85, 0.85))
       this.islandLabels[slot.id] = this.addText(labelObj, slot.label, LABEL_TEXT_SIZE, COLOR_WHITE)
-      labelObj.enabled = false
 
       this.makeInteractable(
         island,
@@ -809,12 +843,14 @@ export class BuildAliveSceneUI {
   }
 
   /** (Re)builds an island's voxel art (house count = real module count). */
-  private setIslandArt(slotId: string, spec: {seed: number; houses: number; roof: number; sample: boolean}): void {
+  private setIslandArt(slotId: string, _spec: {seed: number; houses: number; roof: number; sample: boolean}): void {
+    if (this.islandArt[slotId]) return
     const island = this.islandObjects[slotId]
-    const old = this.islandArt[slotId]
-    if (old) old.destroy()
-    const key = "island:" + spec.seed + ":" + spec.houses + ":" + spec.roof + ":" + spec.sample
-    this.islandArt[slotId] = this.voxelObject(island.name + "_Art", island, null, PROP_VOX, ISLAND_ORIGIN, null, key, () => buildIsland(spec))
+    const slot = PROJECT_ISLANDS.find((p) => p.id === slotId)
+    const size = slot ? slot.size : {w: 10, h: 5, d: 3}
+    const chip = this.glass(island.name + "_Art", island, 0, 0, 0, size.w, size.h, 0.3, new vec4(0.13, 0.22, 0.46, 1))
+    this.chipRR[slotId] = chip.rr
+    this.islandArt[slotId] = chip.root
   }
 
   /** Island art follows the bound worlds: house count = real module count; the third slot is the made-up Sample World. */
@@ -834,9 +870,13 @@ export class BuildAliveSceneUI {
 
       const art = global.scene.createSceneObject(m.sceneName + "_Art")
       art.setParent(obj)
-      art.getTransform().setLocalPosition(new vec3(0, -m.size.h / 2, 0))
-      const rmv = art.createComponent("Component.RenderMeshVisual") as RenderMeshVisual
-      const mat = (this.voxelMat || (this.baseMat as Material)).clone()
+      art.getTransform().setLocalPosition(vec3.zero())
+      const blockObj = global.scene.createSceneObject(m.sceneName + "_Block")
+      blockObj.setParent(art)
+      blockObj.getTransform().setLocalScale(new vec3(3.7, 3.7, 3.7))
+      const rmv = blockObj.createComponent("Component.RenderMeshVisual") as RenderMeshVisual
+      const mat = (this.baseMat as Material).clone()
+      if (this.boxMesh) rmv.mesh = this.boxMesh
       rmv.mainMaterial = mat
 
       const sails = this.voxelObject(m.sceneName + "_Sails", art, null, PROP_VOX, [-0.25, -0.25, 0], null, "sails", () => buildWindmillSails())
@@ -848,10 +888,11 @@ export class BuildAliveSceneUI {
 
       const badgeObj = global.scene.createSceneObject(m.sceneName + "_Badge")
       badgeObj.setParent(obj)
-      badgeObj.getTransform().setLocalPosition(new vec3(0, m.size.h / 2 + 2.6, 0))
-      badgeObj.createComponent(Billboard.getTypeName())
-      badgeObj.getTransform().setLocalScale(new vec3(1.15, 1.15, 1.15))
-      const badgeText = this.addText(badgeObj, STATUS_WORD.ok + " · " + m.label, LABEL_TEXT_SIZE, COLOR_WHITE)
+      badgeObj.getTransform().setLocalPosition(new vec3(0, -2.55, 0.4))
+      badgeObj.getTransform().setLocalScale(new vec3(0.95, 0.95, 0.95))
+      const badgeText = this.addText(badgeObj, m.label, LABEL_TEXT_SIZE, COLOR_WHITE)
+      badgeText.horizontalOverflow = HorizontalOverflow.Shrink
+      badgeText.layoutRect = Rect.create(-2.9, 2.9, -0.9, 0.9)
 
       this.makeInteractable(
         obj,
@@ -889,9 +930,12 @@ export class BuildAliveSceneUI {
       const dx = b.center.x - a.center.x
       const dz = b.center.z - a.center.z
       const len = Math.max(1, Math.sqrt(dx * dx + dz * dz))
-      const so = this.voxelObject(name, this.rootObj, buildPath(len, verified, seed++), PROP_VOX, pathOrigin(len), null)
-      so.getTransform().setLocalPosition(new vec3((a.center.x + b.center.x) / 2, PLATEAU_Y, (a.center.z + b.center.z) / 2))
-      so.getTransform().setLocalRotation(quat.angleAxis(Math.atan2(dx, dz), vec3.up()))
+      const dy = b.center.y - a.center.y
+      const len3 = Math.max(1, Math.sqrt(dx * dx + dy * dy + dz * dz))
+      const so = this.voxelObject(name, this.rootObj, buildPath(len3, verified, seed++), PROP_VOX, pathOrigin(len3), null)
+      so.getTransform().setLocalPosition(new vec3((a.center.x + b.center.x) / 2, (a.center.y + b.center.y) / 2, (a.center.z + b.center.z) / 2 - 0.2))
+      so.getTransform().setLocalRotation(quat.lookAt(new vec3(dx / len3, dy / len3, dz / len3), vec3.up()))
+      so.getTransform().setLocalScale(new vec3(0.001, 0.001, 0.001)) // calm look: dependency lines are not drawn in the glass layout
       return so
     }
     for (const b of CITY_BRIDGES) {
@@ -920,17 +964,13 @@ export class BuildAliveSceneUI {
     vis.role = role
     vis.tier = tier
     vis.hot = hot
-    vis.rmv.mesh = this.meshesFor("building:" + role + ":" + tier + ":" + hot, () => buildBuilding(role, tier, hot), PROP_VOX, BUILDING_ORIGIN)[0]
-    const up = tier * 2
-    vis.sails.enabled = role === "API"
-    if (role === "API") vis.sails.getTransform().setLocalPosition(new vec3(0, (13.5 + up) * PROP_VOX, 0.4 + 4.6 * PROP_VOX))
-    const lampY = (role === "Tests" ? 19.5 + up : 18 + up) * PROP_VOX
-    vis.lamp.getTransform().setLocalPosition(new vec3(0, lampY + 1.2, 0))
-    const glow = vis.lampRmv ? vis.lampRmv.getSceneObject() : null
-    if (glow) {
-      glow.getTransform().setLocalPosition(new vec3(0, lampY, 0))
-      glow.enabled = role === "Tests"
-    }
+    // clean block: height grows with the module's real file count; colour = state (soft white / gold / coral)
+    const h = 3.0 + tier * 0.5
+    vis.rmv.getSceneObject().getTransform().setLocalScale(new vec3(3.7, h, 3.7))
+    vis.mat.mainPass.baseColor = hot === 2 ? COLOR_BLOCK_FAIL : hot === 1 ? COLOR_BLOCK_GOLD : COLOR_BLOCK
+    vis.sails.enabled = false
+    vis.lamp.enabled = false
+    if (vis.lampRmv) vis.lampRmv.getSceneObject().enabled = false
   }
 
   private buildWorkersAndMarkers(): void {
@@ -959,6 +999,7 @@ export class BuildAliveSceneUI {
     this.addText(rLabel, "Rewind one step", LABEL_TEXT_SIZE, COLOR_AMBER)
     rLabel.enabled = false
     this.makeInteractable(this.rewindCrystal, REWIND_CRYSTAL.size, () => this.handleRewind(undefined, Date.now()), "rewind")
+    this.setBaseScale("rewind", 0.6)
 
     this.faultMarker = global.scene.createSceneObject("FaultMarker_Room03")
     this.faultMarker.setParent(this.rootObj)
@@ -1096,10 +1137,10 @@ export class BuildAliveSceneUI {
       const hintObj = this.hintText.getSceneObject()
       if (!this.everPinchedIsland) {
         this.hintText.text = "Pinch an island to choose a project"
-        hintObj.enabled = true
+        hintObj.enabled = false
       } else if (!this.everPinchedModule) {
         this.hintText.text = "Pinch a building to look inside"
-        hintObj.enabled = true
+        hintObj.enabled = false
       } else hintObj.enabled = false
     }
 
@@ -1107,10 +1148,12 @@ export class BuildAliveSceneUI {
       const isActiveProj = snap.projectId === (this.slotProject[slot.id] || slot.id)
       const lbl = this.islandLabels[slot.id]
       if (lbl) {
-        lbl.getSceneObject().enabled = this.hoveredId === slot.id || isActiveProj
-        lbl.textFill.color = isActiveProj ? COLOR_MINT : COLOR_WHITE
+        lbl.getSceneObject().enabled = true
+        lbl.textFill.color = isActiveProj ? COLOR_GOLD : COLOR_WHITE
       }
-      this.setBaseScale(slot.id, isActiveProj ? 1.12 : 1.0)
+      this.setBaseScale(slot.id, isActiveProj ? 1.06 : 1.0)
+      const chipRR = this.chipRR[slot.id]
+      if (chipRR) chipRR.opacity = isActiveProj ? 0.9 : this.hoveredId === slot.id ? 0.8 : 0.66
     }
 
     for (const m of CITY_MODULES) {
@@ -1129,18 +1172,20 @@ export class BuildAliveSceneUI {
       const isFailedMod = this.workspaceBound ? evHere && realFail : hasFailures && m.moduleId === "test-suite"
       const isEditedMod = this.workspaceBound ? evHere && !realFail : ev !== null && m.moduleId === "server-lobby" && ev.kind === "tool_finished"
       this.setBuilding(vis, role, files > 40 ? 2 : files > 10 ? 1 : 0, isFailedMod ? 2 : isEditedMod ? 1 : 0)
-      let status = this.workspaceBound ? "" : STATUS_WORD.ok
+      let status = this.workspaceBound ? "" : STATUS_WORD.ok // status is a word, never colour alone (LEAF L22)
       if (isFailedMod) status = STATUS_WORD.broken
       else if (isEditedMod) status = this.workspaceBound && ev!.status === "running" ? STATUS_WORD.running : STATUS_WORD.changed
       const col = isFailedMod ? COLOR_CORAL : isEditedMod ? COLOR_AMBER : COLOR_WHITE
       const isSelected = snap.selectedModuleId === m.moduleId
-      vis.badgeText.text = (status ? status + " · " : "") + name + (isSelected || this.hoveredId === m.moduleId ? " — " + ROLE_WORD[role] : "")
-      vis.badgeText.textFill.color = col
-      vis.badgeText.getSceneObject().enabled = isSelected || isFailedMod || isEditedMod || this.hoveredId === m.moduleId
-      // mesh colour carries the state; hover adds a glow overdrive
-      vis.mat.mainPass.baseColor = this.hoveredId === m.moduleId ? TINT_ON : isFailedMod ? TINT_FAILED : isEditedMod ? TINT_CHANGED : TINT_NORMAL
+      vis.badgeText.text = (status ? status + " · " : "") + name
+      vis.badgeText.textFill.color = isFailedMod ? COLOR_CORAL : isEditedMod ? COLOR_GOLD : COLOR_WHITE
+      vis.badgeText.getSceneObject().enabled = true
+      if (col === COLOR_DIM) print("[BuildAlive] unreachable dim badge colour")
+      // block colour carries the state (soft white / gold / coral); hover brightens it
+      const stateCol = isFailedMod ? COLOR_BLOCK_FAIL : isEditedMod ? COLOR_BLOCK_GOLD : COLOR_BLOCK
+      vis.mat.mainPass.baseColor = this.hoveredId === m.moduleId ? new vec4(Math.min(1.4, stateCol.x * 1.25), Math.min(1.4, stateCol.y * 1.25), Math.min(1.4, stateCol.z * 1.25), 1) : stateCol
       if (vis.lampRmv) this.setMaterialColor(vis.lampRmv, isFailedMod ? COLOR_CORAL : this.workspaceBound && !evHere ? COLOR_DIM : COLOR_MINT)
-      vis.lamp.enabled = isEditedMod && vis.role !== "Tests"
+      vis.lamp.enabled = false
       this.setBaseScale(m.moduleId, isSelected ? 1.08 : 1.0)
     }
 
@@ -1173,7 +1218,7 @@ export class BuildAliveSceneUI {
       CITY_MODULES[0]
     const idle = this.workspaceBound && !ev && !snap.selectedModuleId
     this.walkTarget.x = idle ? AGENT_PRIMARY_HOME.x : targetMod.center.x + 2.6
-    this.walkTarget.y = PLATEAU_Y + 2.4 // agents are hovering drones
+    this.walkTarget.y = idle ? AGENT_PRIMARY_HOME.y : targetMod.center.y + 2.4 // the agent drone hovers beside the block it is working on
     this.walkTarget.z = idle ? AGENT_PRIMARY_HOME.z : targetMod.center.z + targetMod.size.d / 2 + 1.0
     this.primaryCrate.enabled = ev !== null && (ev.kind === "tool_finished" || ev.kind === "tool_started")
     if (this.primaryLabel) {
@@ -1186,7 +1231,7 @@ export class BuildAliveSceneUI {
       : snap.glyph.lane === "subagent" || snap.cursorSeq >= 4
     const testMod = CITY_MODULES.find((m) => m.moduleId === "test-suite") || CITY_MODULES[5]
     this.subTarget.x = testMod.center.x - 2.4
-    this.subTarget.y = PLATEAU_Y + 2.4
+    this.subTarget.y = testMod.center.y + 2.4
     this.subTarget.z = testMod.center.z + testMod.size.d / 2 + 1.2
     this.syncMissionControl(ev, live)
     this.faultMarker.enabled = hasFailures || realFail
@@ -1223,7 +1268,7 @@ export class BuildAliveSceneUI {
     this.cardRows[3].text = rows ? rows[3] : ev ? "Last event " + ev.eventId : "No agent event seen yet"
     this.cardRows[4].text = rows ? rows[4] : ""
     this.cardRows[5].text = banner + (ev ? " | " + ev.eventId + " " + ev.timestamp.slice(11, 19) : "")
-    const show = this.disclosureTier !== "WORLD" || realFail || snap.selectedModuleId !== null || snap.sceneMode === "APPROVAL_PENDING"
+    const show = this.disclosureTier === "ENGINEER" || snap.selectedModuleId !== null || snap.sceneMode === "APPROVAL_PENDING"
     this.cardRoot.enabled = show
     if (show) this.setCardRowsVisible(this.disclosureTier === "ENGINEER" || snap.sceneMode === "APPROVAL_PENDING")
   }
@@ -1258,12 +1303,10 @@ export class BuildAliveSceneUI {
     }
     this.cardRows[5].text = banner + " | state " + snap.stateHash
     const show =
-      this.disclosureTier !== "WORLD" ||
-      hasFailures ||
+      this.disclosureTier === "ENGINEER" ||
       snap.selectedModuleId !== null ||
       snap.sceneMode === "LEARN" ||
-      snap.sceneMode === "APPROVAL_PENDING" ||
-      snap.testRepaired
+      snap.sceneMode === "APPROVAL_PENDING"
     this.cardRoot.enabled = show
     if (show) this.setCardRowsVisible(this.disclosureTier === "ENGINEER" || snap.sceneMode === "APPROVAL_PENDING")
   }
@@ -1522,7 +1565,7 @@ export class BuildAliveSceneUI {
         g.set(1, 3, 1, H.WARM)
         return g
       })
-      lantern.getTransform().setLocalPosition(new vec3(m.center.x + 4.2, PLATEAU_Y + 1.2, m.center.z + 4.2))
+      lantern.getTransform().setLocalPosition(new vec3(m.center.x + 1.9, m.center.y + 1.7, m.center.z + 2.2))
       lantern.enabled = !!this.understood[m.moduleId]
       this.lanterns[m.moduleId] = lantern
     }
@@ -1558,10 +1601,7 @@ export class BuildAliveSceneUI {
 
   /** Test/diagnostic hook (LEAF): what the agent orbs and the flow pipeline currently show. */
   missionControlSnapshot(): {orbs: {id: string; badge: string}[]; stage: number; stageName: string} {
-    const orbs = this.orbs.map((o) => {
-      const parts = o.badge.text.split("\n")
-      return {id: o.stationId, badge: parts.length > 1 ? parts[1] : ""}
-    })
+    const orbs = PROVIDER_STATIONS.map((st) => ({id: st.id, badge: badgeFor(st, this.lensLive)}))
     return {orbs, stage: this.lastStage, stageName: this.lastStage >= 0 ? FLOW_STAGES[this.lastStage] : ""}
   }
 

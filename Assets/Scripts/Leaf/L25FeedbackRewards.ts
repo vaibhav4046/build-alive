@@ -45,6 +45,8 @@ export class BuildAliveL25FeedbackRewards extends Scenario {
 
     const stored = global.persistentStorageSystem.store.getString("ba_understood")
     expectTrue(!!stored && stored.indexOf("server-lobby") >= 0, "lantern progress is persisted locally")
+    ba.resetProgressForTest() // tests must not leave earned-looking lanterns behind
+    global.persistentStorageSystem.store.putString("ba_understood", "{}")
     log("L25", "feedback and rewards verified: release pop, 1 reward per real action, lanterns persisted")
   }
 }

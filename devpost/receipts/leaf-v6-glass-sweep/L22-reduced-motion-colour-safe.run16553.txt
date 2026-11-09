@@ -1,0 +1,11 @@
+I 07:14:33.317 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]RUNS: L22-reduced-motion-colour-safe with args: []
+I 07:14:33.317 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 07:14:40.747 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF L22] reduced-motion and colour-blind safe double-coded badges verified
+I 07:14:40.747 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  7.431s]PASSED: L22-reduced-motion-colour-safe
+I 07:14:40.747 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  7.431s][L22-reduced-motion-colour-safe] PASSED
+I 07:14:40.747 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario L22-reduced-motion-colour-safe completed successfully.
+I 07:14:45.440 [Preview 1] [Packages/SpectaclesInteractionKit.lspkg/Core/ConfigurationValidator/ConfigurationValidator.ts:16] SIK Version : 0.18.0
+I 07:14:46.464 [Preview 1] [Assets/Scripts/BuildAliveTransport.ts:73] [BuildAlive] bridge websocket init threw: Exception in HostFunction: URL is not secure (Experimental API must be enabled to access insecure URLs)
+I 07:14:47.124 [Preview 1] [Assets/Scripts/EarthProofMain.ts:226] [EarthProof] ready: BUILD ALIVE primary workbench active (Rover fallback standby)
+I 07:14:47.694 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Loaded 35 scenario(s) from preview.
+I 07:14:47.694 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Running scenario: L23-real-workspace-islands

@@ -78,20 +78,22 @@ export const RAIL_BUTTON_SIZE: BoxSizeCm = {w: 5.4, h: 2.8, d: 1.0}
 const DOCK_Y = -29.5
 const DOCK_Z = -40
 export const RAIL_CONTROLS: readonly ControlSpec[] = [
-  {id: "reset", sceneName: "BA_ResetButton", label: "Start over", center: {x: -12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
-  {id: "inspect", sceneName: "BA_InspectButton", label: "Details", center: {x: -6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
-  {id: "step", sceneName: "BA_StepButton", label: "Next", center: {x: 0, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "reset", sceneName: "BA_ResetButton", label: "Replay", center: {x: -12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "inspect", sceneName: "BA_InspectButton", label: "Command", center: {x: -6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
+  {id: "step", sceneName: "BA_StepButton", label: "Next step", center: {x: 0, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
   {id: "learn", sceneName: "BA_LearnButton", label: "Explain", center: {x: 6.2, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
   {id: "approve", sceneName: "BA_ApproveButton", label: "Approve", center: {x: 12.4, y: DOCK_Y, z: DOCK_Z}, size: RAIL_BUTTON_SIZE, group: "rail"},
 ]
 
 // Real-repo islands float in the sky above the far valley. Collider box = ISLAND_SIZE (grass top + rocky underside).
-export const ISLAND_SIZE: BoxSizeCm = {w: 12, h: 8, d: 12}
-export const ISLAND_Y = -3
+// v6 glass layout: project tabs are three glass chips in a row above the session window.
+export const ISLAND_SIZE: BoxSizeCm = {w: 10, h: 4.2, d: 3}
+export const ISLAND_Y = 0.1
+export const WINDOW_Z = -58
 export const PROJECT_ISLANDS: readonly ControlSpec[] = [
-  {id: "lobby-sync", sceneName: "Island_LobbySync", label: "LobbySync", center: {x: -21, y: ISLAND_Y, z: -96}, size: ISLAND_SIZE, group: "island"},
-  {id: "edge-guard", sceneName: "Island_EdgeGuard", label: "EdgeGuard", center: {x: 0, y: ISLAND_Y + 2, z: -104}, size: ISLAND_SIZE, group: "island"},
-  {id: "earthproof-rover", sceneName: "Island_EarthProof", label: "EarthProof", center: {x: 21, y: ISLAND_Y, z: -96}, size: ISLAND_SIZE, group: "island"},
+  {id: "lobby-sync", sceneName: "Island_LobbySync", label: "LobbySync", center: {x: -12, y: ISLAND_Y, z: WINDOW_Z}, size: ISLAND_SIZE, group: "island"},
+  {id: "edge-guard", sceneName: "Island_EdgeGuard", label: "EdgeGuard", center: {x: 0, y: ISLAND_Y, z: WINDOW_Z}, size: ISLAND_SIZE, group: "island"},
+  {id: "earthproof-rover", sceneName: "Island_EarthProof", label: "EarthProof", center: {x: 12, y: ISLAND_Y, z: WINDOW_Z}, size: ISLAND_SIZE, group: "island"},
 ]
 
 // Rewind: a small amber hourglass hovering at the left edge of the village.
@@ -99,25 +101,30 @@ export const REWIND_CRYSTAL: ControlSpec = {
   id: "rewind-crystal",
   sceneName: "RewindCrystal",
   label: "Rewind",
-  center: {x: -22, y: -16, z: -72},
+  center: {x: -20.6, y: 0.1, z: WINDOW_Z},
   size: {w: 5.0, h: 5.0, d: 5.0},
   group: "crystal",
 }
 
 // Six village plots on the plateau. Each plot shows the building for the REAL module's role (UI cottage, Logic
 // workshop, API windmill, Data granary, Assets barn, Tests watchtower); centre y is the middle of the collider box.
-const PLOT: BoxSizeCm = {w: 7.5, h: 9, d: 7.5}
-const PLOT_Y = PLATEAU_Y + PLOT.h / 2
+const PLOT: BoxSizeCm = {w: 5, h: 5, d: 5}
+// Project window (right): two columns x three rows of clean blocks, one block per real module.
+const PX0 = 13.8
+const PX1 = 19.2
+const PY0 = -8.6
+const PY1 = -13.9
+const PY2 = -19.2
 export const CITY_MODULES: readonly ModuleLayoutSpec[] = [
-  {moduleId: "client-ui", sceneName: "Module_Client", label: "Screens", role: "UI", center: {x: -16, y: PLOT_Y, z: -66}, size: PLOT},
-  {moduleId: "server-lobby", sceneName: "Module_Lobby", label: "Game rules", role: "Logic", center: {x: -3, y: PLOT_Y, z: -70}, size: PLOT},
-  {moduleId: "ws-gateway", sceneName: "Module_WSServer", label: "Network door", role: "API", center: {x: 10, y: PLOT_Y, z: -66}, size: PLOT},
-  {moduleId: "shared-state", sceneName: "Module_SharedState", label: "Shared memory", role: "Data", center: {x: -12, y: PLOT_Y, z: -83}, size: PLOT},
-  {moduleId: "db-mock", sceneName: "Module_DBMock", label: "Pretend database", role: "Assets", center: {x: 4, y: PLOT_Y, z: -85}, size: PLOT},
-  {moduleId: "test-suite", sceneName: "Module_TestSuite", label: "Checks", role: "Tests", center: {x: 17, y: PLOT_Y, z: -80}, size: PLOT},
+  {moduleId: "client-ui", sceneName: "Module_Client", label: "Screens", role: "UI", center: {x: PX0, y: PY0, z: WINDOW_Z}, size: PLOT},
+  {moduleId: "server-lobby", sceneName: "Module_Lobby", label: "Game rules", role: "Logic", center: {x: PX1, y: PY0, z: WINDOW_Z}, size: PLOT},
+  {moduleId: "ws-gateway", sceneName: "Module_WSServer", label: "Network door", role: "API", center: {x: PX0, y: PY1, z: WINDOW_Z}, size: PLOT},
+  {moduleId: "shared-state", sceneName: "Module_SharedState", label: "Shared memory", role: "Data", center: {x: PX1, y: PY1, z: WINDOW_Z}, size: PLOT},
+  {moduleId: "db-mock", sceneName: "Module_DBMock", label: "Pretend database", role: "Assets", center: {x: PX0, y: PY2, z: WINDOW_Z}, size: PLOT},
+  {moduleId: "test-suite", sceneName: "Module_TestSuite", label: "Checks", role: "Tests", center: {x: PX1, y: PY2, z: WINDOW_Z}, size: PLOT},
 ]
 
-export const FAULT_MARKER_POS: Vec3Cm = {x: 17, y: PLATEAU_Y + 15, z: -80}
+export const FAULT_MARKER_POS: Vec3Cm = {x: PX1, y: PY2 + 3.6, z: WINDOW_Z + 1.5}
 export const FAULT_MARKER_SIZE: BoxSizeCm = {w: 2.2, h: 2.2, d: 2.2}
 
 export const CITY_BRIDGES: readonly BridgeLayoutSpec[] = [
@@ -130,11 +137,11 @@ export const CITY_BRIDGES: readonly BridgeLayoutSpec[] = [
 
 // Little voxel workers walk on the plateau (feet on the ground).
 export const AGENT_VESSEL_SIZE: BoxSizeCm = {w: 1.8, h: 3.0, d: 1.4}
-export const AGENT_PRIMARY_HOME: Vec3Cm = {x: -3, y: PLATEAU_Y, z: -63}
-export const AGENT_SUB_HOME: Vec3Cm = {x: 17, y: PLATEAU_Y, z: -73}
+export const AGENT_PRIMARY_HOME: Vec3Cm = {x: 16.5, y: -24, z: WINDOW_Z + 1}
+export const AGENT_SUB_HOME: Vec3Cm = {x: 21, y: -24, z: WINDOW_Z + 1}
 
 // One small glass card, upper-left, clear of every sight line from the eye to a building or island.
-export const BUILD_ALIVE_CARD_POS: Vec3Cm = {x: -9, y: -8.5, z: -62}
+export const BUILD_ALIVE_CARD_POS: Vec3Cm = {x: -1.5, y: -12, z: -52}
 export const BUILD_ALIVE_CARD_WIDTH_CM = 17
 export const BUILD_ALIVE_CARD_HEIGHT_CM = 10
 

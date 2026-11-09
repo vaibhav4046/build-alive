@@ -1,0 +1,11 @@
+I 07:01:36.105 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]RUNS: L15-camera-fov-visibility with args: []
+I 07:01:36.105 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 07:01:44.218 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF L15] camera FOV visibility verified across all controls and modules
+I 07:01:44.219 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  8.114s]PASSED: L15-camera-fov-visibility
+I 07:01:44.219 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  8.115s][L15-camera-fov-visibility] PASSED
+I 07:01:44.219 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario L15-camera-fov-visibility completed successfully.
+I 07:01:48.749 [Preview 1] [Packages/SpectaclesInteractionKit.lspkg/Core/ConfigurationValidator/ConfigurationValidator.ts:16] SIK Version : 0.18.0
+I 07:01:49.929 [Preview 1] [Assets/Scripts/BuildAliveTransport.ts:73] [BuildAlive] bridge websocket init threw: Exception in HostFunction: URL is not secure (Experimental API must be enabled to access insecure URLs)
+I 07:01:50.619 [Preview 1] [Assets/Scripts/EarthProofMain.ts:226] [EarthProof] ready: BUILD ALIVE primary workbench active (Rover fallback standby)
+I 07:01:51.164 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Loaded 35 scenario(s) from preview.
+I 07:01:51.165 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Running scenario: L16-ik-reachability
