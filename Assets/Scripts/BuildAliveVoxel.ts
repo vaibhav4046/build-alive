@@ -7,38 +7,40 @@ export type Rgb = readonly [number, number, number]
 
 /** Original restrained warm palette (sRGB 0-255). Order is the texture column order; append only. */
 export const PALETTE: readonly Rgb[] = [
-  [112, 188, 84], // 0 grass a
-  [128, 202, 92], // 1 grass b
-  [98, 172, 76], // 2 grass c
-  [156, 110, 70], // 3 dirt
-  [124, 86, 58], // 4 dirt dark
-  [156, 156, 166], // 5 stone
-  [118, 118, 132], // 6 stone dark
-  [232, 208, 152], // 7 sand
-  [84, 172, 236], // 8 water
-  [150, 214, 250], // 9 water light
-  [242, 246, 252], // 10 snow
-  [172, 122, 76], // 11 wood
-  [124, 86, 54], // 12 wood dark
-  [72, 158, 74], // 13 leaf a
-  [100, 184, 86], // 14 leaf b
-  [214, 92, 72], // 15 roof red
-  [84, 132, 204], // 16 roof blue
-  [64, 172, 160], // 17 roof teal
-  [240, 228, 204], // 18 plaster
-  [192, 114, 82], // 19 brick
-  [248, 200, 76], // 20 gold
-  [255, 220, 128], // 21 warm window glow
-  [96, 222, 242], // 22 cyan
-  [255, 112, 98], // 23 coral
-  [176, 136, 242], // 24 violet
-  [116, 232, 172], // 25 mint
-  [252, 252, 255], // 26 cloud
-  [250, 152, 192], // 27 flower pink
-  [255, 232, 104], // 28 flower yellow
-  [242, 198, 152], // 29 skin
-  [66, 70, 86], // 30 dark
-  [50, 124, 84], // 31 pine
+  // v5 holographic mission-control palette (names in C are legacy; BuildAliveHolo.ts's H gives the real roles).
+  // Additive display: dark = transparent, so fills are deep blue and edges/cores are bright light.
+  [18, 52, 86], // 0 fill
+  [24, 66, 108], // 1 fill b
+  [14, 40, 70], // 2 fill c
+  [38, 140, 182], // 3 grid line
+  [8, 26, 48], // 4 fill darkest
+  [64, 176, 214], // 5 edge dim
+  [92, 122, 152], // 6 steel
+  [150, 102, 32], // 7 amber dim
+  [44, 196, 240], // 8 cyan mid
+  [140, 238, 255], // 9 cyan light
+  [236, 252, 255], // 10 white
+  [232, 162, 52], // 11 amber mid
+  [122, 78, 22], // 12 amber dark
+  [52, 202, 154], // 13 mint mid
+  [132, 255, 204], // 14 mint light
+  [255, 96, 84], // 15 coral
+  [76, 136, 255], // 16 blue
+  [44, 214, 204], // 17 teal
+  [196, 228, 242], // 18 pale
+  [120, 32, 44], // 19 red dim
+  [255, 198, 74], // 20 amber
+  [255, 238, 176], // 21 warm white
+  [84, 236, 255], // 22 cyan
+  [255, 112, 98], // 23 coral hot
+  [178, 138, 255], // 24 violet
+  [112, 246, 192], // 25 mint
+  [212, 242, 255], // 26 mote
+  [255, 122, 204], // 27 magenta
+  [255, 242, 124], // 28 yellow
+  [204, 224, 238], // 29 pale 2
+  [20, 32, 52], // 30 dark
+  [32, 84, 144], // 31 deep blue
 ]
 
 export const C = {

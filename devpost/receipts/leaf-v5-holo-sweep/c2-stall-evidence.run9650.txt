@@ -1,0 +1,14 @@
+I 05:36:48.886 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.000s]RUNS: c2-stall-evidence with args: []
+I 05:36:48.886 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  0.001s]Running with runner config: {"__leaf__log_level":"INFO","__leaf__timeout_secs":"600","__leaf__diagnostic_policy":"fallback","__leaf__diagnostic_report_duration_ms":"-1"}
+I 05:36:51.213 [Preview 1] [Assets/Scripts/EarthProofMain.ts:332] [EarthProof] stalled: needs 7.94 has 4.00
+I 05:36:51.524 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c2] evidence visible 736 ms after the Run press
+I 05:36:51.530 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c2] beam end to motor 0.00 cm, beam end to stall marker 0.00 cm
+I 05:36:51.532 [Preview 1] [Assets/Scripts/Leaf/EarthProofLeafKit.ts:11] [LEAF c2] evidence card is 10.8 cm right of the stall marker, at x=14.0
+I 05:36:51.532 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  2.647s]PASSED: c2-stall-evidence
+I 05:36:51.532 [Preview 1] [Packages/Leaf.lspkg/Utils/common/Logger.ts:89] I [DefaultLeafScenarioManager] [  2.647s][c2-stall-evidence] PASSED
+I 05:36:51.534 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] ✅ Scenario c2-stall-evidence completed successfully.
+I 05:36:52.772 [Preview 1] [Packages/SpectaclesInteractionKit.lspkg/Core/ConfigurationValidator/ConfigurationValidator.ts:16] SIK Version : 0.18.0
+I 05:36:53.901 [Preview 1] [Assets/Scripts/BuildAliveTransport.ts:73] [BuildAlive] bridge websocket init threw: Exception in HostFunction: URL is not secure (Experimental API must be enabled to access insecure URLs)
+I 05:36:54.227 [Preview 1] [Assets/Scripts/EarthProofMain.ts:226] [EarthProof] ready: BUILD ALIVE primary workbench active (Rover fallback standby)
+I 05:36:54.935 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Loaded 33 scenario(s) from preview.
+I 05:36:54.936 ${CONFIG_DIR}/Bundle/Plugins/[ChatTool] LEAF Plugin@5.23.0@362f6c78a8b5e47e6431049afb6a7109/dist/main.js:805 log] [LeafPlugin][PluginViewModel] Running scenario: c3-swap-pinch
