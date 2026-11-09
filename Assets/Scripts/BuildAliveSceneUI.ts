@@ -102,6 +102,8 @@ interface ModuleVisual {
   readonly lamp: SceneObject
   readonly lampRmv: RenderMeshVisual | null
   readonly badgeText: Text
+  iconKind: string
+  iconHolder: SceneObject
   role: BuildingRole
   tier: number
   /** 0 normal, 1 changed, 2 failed: the building mesh itself changes light colour (cyan/role -> amber -> coral). */
@@ -223,6 +225,8 @@ export class BuildAliveSceneUI {
   private sessionTitle: Text | null = null
   private sessionRows: Text[] = []
   private sessionTiles: RoundedRectangle[] = []
+  private sessionRepeatTiles: RoundedRectangle[] = []
+  private sessionRepeatTexts: Text[] = []
   private projectTitle: Text | null = null
   private sessionChip: Text | null = null
   private projectMinimised = false
@@ -797,7 +801,12 @@ export class BuildAliveSceneUI {
     this.sessionChip = this.panelText(sess.root, "SessionStatusChip", 4.7, 7.7, 4.4, 2.2, 18, COLOR_CAPTION, true)
     for (let i = 0; i < 4; i++) {
       this.sessionTiles.push(this.tile(sess.root, "SessionTile_" + i, 0, 4.4 - i * 3.0, 17.6, 2.7, GRAPHITE_TILE, null))
-      this.sessionRows.push(this.panelText(sess.root, "SessionRow_" + i, 0.3, 4.4 - i * 3.0, 16.2, 2.5, 28, COLOR_WHITE, false))
+      this.sessionRows.push(this.panelText(sess.root, "SessionRow_" + i, -0.6, 4.4 - i * 3.0, 14.2, 2.5, 28, COLOR_WHITE, false))
+      // small "x2" count badge when identical consecutive steps are collapsed into this tile
+      const bt = this.tile(sess.root, "SessionRepeat_" + i, 7.5, 4.4 - i * 3.0, 2.4, 1.5, GRAPHITE_TILE_HI, null)
+      bt.getSceneObject().getTransform().setLocalPosition(new vec3(7.5, 4.4 - i * 3.0, 0.5))
+      this.sessionRepeatTiles.push(bt)
+      this.sessionRepeatTexts.push(this.panelText(sess.root, "SessionRepeatText_" + i, 7.5, 4.4 - i * 3.0, 2.2, 1.4, 20, COLOR_WHITE, true))
     }
     this.tile(sess.root, "SessionTryTile", 0, -7.5, 17.6, 3.2, GRAPHITE_TILE, COLOR_GOLD)
     this.sessionTry = this.panelText(sess.root, "SessionTry", 0.3, -7.5, 16.2, 3.0, 23, COLOR_GOLD, false)
@@ -911,20 +920,35 @@ export class BuildAliveSceneUI {
     // idle: show the first replay steps of the made-up Sample World as content, clearly labelled REPLAY (never as live work)
     const idle = shown.length === 0
     const sampleProj = DEMO_PROJECTS.find((p) => p.projectId === DEMO_SAMPLE_PROJECT_ID)
-    const display: AgentEvent[] = idle && sampleProj ? sampleProj.recordedEvents.slice(0, 3) : shown
+    const source: AgentEvent[] = idle && sampleProj ? sampleProj.recordedEvents.slice(0, 8) : shown
+    // identical consecutive steps collapse into one tile with a count (honest to the data, not a duplicate-row bug)
+    const groups: {step: AgentEvent; what: string; count: number}[] = []
+    for (const s of source) {
+      const w = explainStep({kind: s.kind, status: s.status, summary: s.summary, files: s.fileAliases, actor: s.actor}).what
+      const g = groups.length > 0 ? groups[groups.length - 1] : null
+      if (g && g.what === w) {
+        g.count++
+        g.step = s
+      } else groups.push({step: s, what: w, count: 1})
+    }
+    const display = idle ? groups.slice(0, 3) : groups.slice(-4)
     if (this.sessionChip) this.sessionChip.text = idle ? (this.workspaceBound ? "No agent connected" : "Replay ready") : "+" + (PROVIDER_STATIONS.length - 1) + " apps"
     for (let i = 0; i < this.sessionRows.length; i++) {
       const row = this.sessionRows[i]
-      const step = display[i]
-      if (!step) {
+      const grp = display[i]
+      const repeat = grp && grp.count > 1
+      this.sessionRepeatTiles[i].getSceneObject().enabled = !!repeat
+      this.sessionRepeatTexts[i].getSceneObject().enabled = !!repeat
+      if (repeat) this.sessionRepeatTexts[i].text = "x" + grp.count
+      if (!grp) {
         row.text = ""
         row.textFill.color = COLOR_CAPTION
         this.sessionTiles[i].backgroundColor = GRAPHITE_TILE
         continue
       }
-      const ex = explainStep({kind: step.kind, status: step.status, summary: step.summary, files: step.fileAliases, actor: step.actor})
-      const isNow = !idle && i === shown.length - 1
-      row.text = (idle ? "REPLAY · " : isNow ? "Now: " : "") + ex.what
+      const step = grp.step
+      const isNow = !idle && i === display.length - 1
+      row.text = (idle ? "REPLAY · " : isNow ? "Now: " : "") + grp.what
       row.textFill.color = step.status === "failed" ? COLOR_CORAL : isNow ? COLOR_GOLD : idle ? COLOR_CAPTION : COLOR_WHITE
       this.sessionTiles[i].backgroundColor = isNow ? GRAPHITE_TILE_HI : GRAPHITE_TILE
     }
@@ -1070,11 +1094,14 @@ export class BuildAliveSceneUI {
         lamp,
         lampRmv: lampBox.getComponent("Component.RenderMeshVisual") as RenderMeshVisual | null,
         badgeText,
+        iconKind: "",
+        iconHolder: global.scene.createSceneObject("ModuleIcon_" + m.moduleId + "_Empty"),
         role: m.role,
         tier: -1,
         hot: 0,
       }
       this.moduleVisuals[m.moduleId] = vis
+      this.setModuleIcon(vis, this.iconKindFor(m.label, m.role))
       this.setBuilding(vis, m.role, 1, 0)
     }
 
@@ -1150,7 +1177,7 @@ export class BuildAliveSceneUI {
     const crystalArt = this.voxelObject("RewindCrystal_Art", this.rewindCrystal, buildHourglass(), PROP_VOX, [-0.25, -0.25, -0.25], null)
     crystalArt.getTransform().setLocalScale(new vec3(0.001, 0.001, 0.001)) // replaced by a graphite "Rewind" tile in the glass layout
     this.tile(this.rewindCrystal, "RewindTile", 0, 0, 4.8, 2.6, GRAPHITE_TILE, COLOR_GOLD)
-    this.panelText(this.rewindCrystal, "RewindTileText", 0.3, 0, 4.2, 2.4, 22, COLOR_WHITE, false).text = "Rewind"
+    this.panelText(this.rewindCrystal, "RewindTileText", 0.7, 0, 3.4, 2.4, 22, COLOR_WHITE, false).text = "Rewind"
     const rLabel = global.scene.createSceneObject("RewindCrystal_Label")
     rLabel.setParent(this.rewindCrystal)
     rLabel.getTransform().setLocalPosition(new vec3(0, 4.2, 0))
@@ -1227,18 +1254,61 @@ export class BuildAliveSceneUI {
   }
 
   /** A thin white line segment (rounded rectangle) used to draw dock icons. */
-  private iconLine(parent: SceneObject, name: string, cx: number, cy: number, len: number, angleDeg: number): void {
+  private iconLine(parent: SceneObject, name: string, cx: number, cy: number, len: number, angleDeg: number, thick: number = 0.3, color: vec4 = COLOR_WHITE): void {
     const o = global.scene.createSceneObject(name)
     o.setParent(parent)
     o.getTransform().setLocalPosition(new vec3(cx, cy, 0.9))
     o.getTransform().setLocalRotation(quat.angleAxis((angleDeg * Math.PI) / 180, vec3.forward()))
     const rr = o.createComponent(RoundedRectangle.getTypeName()) as RoundedRectangle
-    rr.size = new vec2(len, 0.3)
-    rr.cornerRadius = 0.15
-    rr.backgroundColor = COLOR_WHITE
+    rr.size = new vec2(len, thick)
+    rr.cornerRadius = thick / 2
+    rr.backgroundColor = color
     rr.blendMode = 1
     rr.opacity = 1
     rr.initialize()
+  }
+
+  /** Which simple line icon a module tile shows: from its name first (real folders), then its role (sample world). */
+  private iconKindFor(name: string, role: BuildingRole): string {
+    const n = name.toLowerCase()
+    if (/script|src|code|\.ts|\.js/.test(n)) return "script"
+    if (/material|texture|asset|image|shader/.test(n)) return "material"
+    if (/bridge|api|network|door|gateway/.test(n)) return "bridge"
+    if (/doc|readme|devpost|notes|guide/.test(n)) return "docs"
+    if (role === "Logic" || role === "UI") return "script"
+    if (role === "Assets") return "material"
+    if (role === "API") return "bridge"
+    return "folder"
+  }
+
+  /** Rebuild the small dark line icon on a module's block front: folder, script (</>), material (diamond), bridge (arch) or docs (page). */
+  private setModuleIcon(vis: ModuleVisual, kind: string): void {
+    if (vis.iconKind === kind) return
+    vis.iconKind = kind
+    vis.iconHolder.destroy()
+    const holder = global.scene.createSceneObject("ModuleIcon_" + vis.moduleId)
+    holder.setParent(vis.art)
+    holder.getTransform().setLocalPosition(new vec3(0, 0, 2.05))
+    holder.getTransform().setLocalScale(new vec3(1.15, 1.15, 1.15))
+    vis.iconHolder = holder
+    const L = (n: string, x: number, y: number, len: number, a: number) => this.iconLine(holder, n, x, y, len, a, 0.32, GRAPHITE)
+    if (kind === "script") {
+      L("l1", -0.85, 0.35, 0.95, 40); L("l2", -0.85, -0.35, 0.95, -40)
+      L("r1", 0.85, 0.35, 0.95, -40); L("r2", 0.85, -0.35, 0.95, 40)
+      L("sl", 0, 0, 1.5, 70)
+    } else if (kind === "material") {
+      L("d1", -0.6, 0.6, 1.7, 45); L("d2", 0.6, 0.6, 1.7, -45)
+      L("d3", -0.6, -0.6, 1.7, -45); L("d4", 0.6, -0.6, 1.7, 45)
+    } else if (kind === "bridge") {
+      L("deck", 0, -0.8, 3.0, 0); L("p1", -1.3, 0.1, 1.8, 90); L("p2", 1.3, 0.1, 1.8, 90)
+      L("a1", -0.65, 0.45, 1.7, -40); L("a2", 0.65, 0.45, 1.7, 40)
+    } else if (kind === "docs") {
+      L("t", 0, 0.9, 1.8, 0); L("b", 0, -0.9, 1.8, 0); L("l", -0.9, 0, 1.8, 90); L("r", 0.9, 0, 1.8, 90)
+      L("x1", 0, 0.3, 1.0, 0); L("x2", 0, -0.2, 1.0, 0); L("x3", -0.2, -0.65, 0.6, 0)
+    } else {
+      L("body", 0, -0.2, 2.6, 0); L("bot", 0, -1.0, 2.6, 0); L("fl", -1.3, -0.6, 0.9, 90); L("fr", 1.3, -0.6, 0.9, 90)
+      L("top", 0, 0.6, 2.6, 0); L("tabL", -0.9, 0.95, 0.8, 0)
+    }
   }
 
   private chevron(parent: SceneObject, name: string, tipX: number, pointsRight: boolean): void {
@@ -1381,6 +1451,7 @@ export class BuildAliveSceneUI {
       const files = pm ? pm.files.length : 12
 
       const name = pm ? pm.label : m.label
+      this.setModuleIcon(vis, this.iconKindFor(name, this.workspaceBound ? "Data" : role))
       const evHere = this.workspaceBound && ev !== null && activeMod === m.moduleId
       const isFailedMod = this.workspaceBound ? evHere && realFail : hasFailures && m.moduleId === "test-suite"
       const isEditedMod = this.workspaceBound ? evHere && !realFail : ev !== null && m.moduleId === "server-lobby" && ev.kind === "tool_finished"
